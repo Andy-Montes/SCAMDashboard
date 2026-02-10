@@ -117,13 +117,41 @@
         .incident-card { border-radius: 6px; padding: 10px; transition: all 0.3s ease; position: relative; }
         .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
         
-        .tipo-conexion { background: #fef3c7; border-left: 5px solid #f59e0b; }
-        .tipo-obstruida { background: #fee2e2; border-left: 5px solid #ef4444; }
-        .tipo-desconectada { background: #dbeafe; border-left: 5px solid #3b82f6; }
-        .tipo-offline { background: #e9d5ff; border-left: 5px solid #a855f7; }
-        .tipo-imagen { background: #fce7f3; border-left: 5px solid #ec4899; }
-        .tipo-acceso { background: #ccfbf1; border-left: 5px solid #14b8a6; }
-        .tipo-otro { background: #e5e7eb; border-left: 5px solid #6b7280; }
+        /* Cámara desalineada / mal posicionada → amarillo */
+        .tipo-desalineada {
+            background: #FFF9C4;
+            border-left: 5px solid #FBC02D;
+        }
+
+        /* Error de configuración → rojo */
+        .tipo-configuracion {
+            background: #FFCDD2;
+            border-left: 5px solid #D32F2F;
+        }
+
+        /* Obstrucción de cámara → celeste */
+        .tipo-obstruida {
+            background: #E3F2FD;
+            border-left: 5px solid #1E88E5;
+        }
+
+        /* Problema de imagen → naranjo */
+        .tipo-imagen {
+            background: #FFE0B2;
+            border-left: 5px solid #FB8C00;
+        }
+
+        /* Sin acceso a Camara → rojo más fuerte */
+        .tipo-acceso {
+            background: #FFEBEE;
+            border-left: 5px solid #B71C1C;
+        }
+
+        /* Fallback */
+        .tipo-otro {
+            background: #e5e7eb;
+            border-left: 5px solid #6b7280;
+        }
         
         .incident-header { font-size: 0.8rem; color: #1a202c; font-weight: 700; margin-bottom: 3px; }
         .incident-type { font-size: 0.75rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
@@ -180,15 +208,13 @@
                     <div class="form-group">
                         <label>Tipo Anomalía</label>
                         <select id="newTipoAnomalia" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Problemas de conexión">Problemas de conexión</option>
-                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
-                            <option value="Camara desconectada">Cámara desconectada</option>
-                            <option value="Camara offline">Cámara offline</option>
-                            <option value="Problema de imagen">Problema de imagen</option>
-                            <option value="Sin acceso a camara">Sin acceso a cámara</option>
-                            <option value="Otro">Otro</option>
-                        </select>
+                                <option value="">Seleccione...</option>
+                                <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                                <option value="Error de configuración">Error de configuración</option>
+                                <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                                <option value="Problema de imagen">Problema de imagen</option>
+                                <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                            </select>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -441,15 +467,35 @@ function createCard(inc) {
 }
 
 function getTipoClass(t) {
-    const tl = (t||'').toLowerCase();
-    if (tl.includes('conexión')||tl.includes('conexion')) return 'tipo-conexion';
-    if (tl.includes('obstruida')||tl.includes('obstrucción')||tl.includes('obstruccion')) return 'tipo-obstruida';
-    if (tl.includes('desconectada')) return 'tipo-desconectada';
-    if (tl.includes('offline')) return 'tipo-offline';
-    if (tl.includes('imagen')) return 'tipo-imagen';
-    if (tl.includes('acceso')) return 'tipo-acceso';
-    return 'tipo-otro';
-}
+        const tl = (t || '').toLowerCase();
+
+        // Cámara desalineada / mal posicionada → amarillo
+        if (tl.includes('desalineada') || tl.includes('mal posicionada')) {
+            return 'tipo-desalineada';
+        }
+
+        // Error de configuración → rojo
+        if (tl.includes('error de configuración') || tl.includes('error de configuracion')) {
+            return 'tipo-configuracion';
+        }
+
+        // Obstrucción de cámara → celeste
+        if (tl.includes('obstrucción') || tl.includes('obstruccion')) {
+            return 'tipo-obstruida';
+        }
+
+        // Problema de imagen → naranjo
+        if (tl.includes('problema de imagen') || tl.includes('imagen')) {
+            return 'tipo-imagen';
+        }
+
+        // Sin acceso a Camara → rojo más fuerte
+        if (tl.includes('sin acceso a camara') || tl.includes('sin acceso a cámara')) {
+            return 'tipo-acceso';
+        }
+
+        return 'tipo-otro';
+    }
 
 function setupEvents() {
     document.getElementById('searchInput').addEventListener('input', applyFilters);
