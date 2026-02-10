@@ -4,6 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cámaras Sodimac</title>
+        <script>
+                    // Protección con contraseña
+                    var intentos = 0;
+                    var claveCorrecta = "scam2026"; // Puedes cambiar esta contraseña
+
+                    function pedirClave() {
+                                    var password = prompt("🔒 Ingresa la contraseña para acceder:");
+
+                                    if (password === null) {
+                                                        alert("Acceso denegado");
+                                                        window.location.href = "about:blank";
+                                                        return;
+                                                    }
+
+                                                    if (password !== claveCorrecta) {
+                                                                        intentos++;
+                                                                        if (intentos >= 3) {
+                                                                                                alert("❌ Demasiados intentos fallidos. Acceso bloqueado.");
+                                                                                                window.location.href = "about:blank";
+                                                                                            } else {
+                                                                                                alert("❌ Contraseña incorrecta. Intento " + intentos + " de 3");
+                                                                                                pedirClave();
+                                                                                            }
+                                                                    }
+                                                                }
+
+                    pedirClave();
+                </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B2A3B; color: #2d3748; min-height: 100vh; padding: 20px; }
