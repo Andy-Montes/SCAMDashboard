@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cámaras Sodimac</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0B2A3B; color: #2d3748; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        .header { text-align: center; padding: 25px 0; background: white; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .header h1 { font-size: 2.2rem; color: white; font-weight: 700; background: #7AAB51; padding: 15px 30px; margin: -25px -25px 15px -25px; }
+        .header p { font-size: 0.85rem; color: #718096; margin-top: 8px; }
+        .loading { text-align: center; padding: 100px 20px; }
+        .loading-spinner { display: inline-block; width: 50px; height: 50px; border: 5px solid #e2e8f0; border-top: 5px solid #7AAB51; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        
+        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .kpi-card { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); }
+        .kpi-label { font-size: 0.85rem; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .kpi-value { font-size: 2.2rem; font-weight: bold; margin-bottom: 4px; }
+        .kpi-subtitle { font-size: 0.8rem; color: #a0aec0; }
+        .kpi-green { color: #7AAB51; }
+        .kpi-yellow { color: #f59e0b; }
+        .kpi-red { color: #ef4444; }
+        .kpi-blue { color: #3b82f6; }
+        .kpi-purple { color: #a78bfa; }
+        
+        .add-incident-section { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .add-incident-section h3 { margin-bottom: 15px; font-size: 1.1rem; color: #2d3748; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
+        .form-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; }
+        .form-group textarea { min-height: 60px; resize: vertical; }
+        .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
+        .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
+        
+        .search-filters-container { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 25px; }
+        
+        .search-box { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 18px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .search-box h3 { margin-bottom: 12px; font-size: 1.1rem; color: #2d3748; }
+        .search-input { width: 100%; padding: 12px; border-radius: 4px; border: 2px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 1rem; }
+        .search-input:focus { outline: none; border-color: #7AAB51; background: white; }
+        
+        .filters { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 18px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .filters h3 { margin-bottom: 12px; font-size: 1.1rem; color: #2d3748; }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .filter-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+        .filter-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; cursor: pointer; transition: all 0.3s ease; }
+        .filter-group select:focus { outline: none; border-color: #7AAB51; background: white; }
+        
+        .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .view-tab { padding: 10px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
+        .view-tab.active { background: #7AAB51; color: white; border-color: #7AAB51; }
+        .view-tab:hover { border-color: #7AAB51; }
+        
+        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .store-card { background: white; border-radius: 6px; border: 1px solid #e2e8f0; padding: 12px; transition: all 0.3s ease; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .store-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12); }
+        .store-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .store-name { font-size: 0.95rem; font-weight: bold; color: #2d3748; }
+        .store-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        .badge-green { background: #d1fae5; color: #065f46; }
+        .badge-yellow { background: #fef3c7; color: #92400e; }
+        .badge-red { background: #fee2e2; color: #991b1b; }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; }
+        .store-stat { display: flex; justify-content: space-between; padding: 4px 6px; background: #f7fafc; border-radius: 3px; }
+        .stat-label { color: #718096; }
+        .stat-value { font-weight: bold; color: #2d3748; }
+        
+        .store-section { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        .store-section-header { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px;
+            padding: 10px 16px;
+            background: #7AAB51;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .store-section-title { font-size: 1rem; font-weight: 700; color: white; }
+        .store-section-count { background: rgba(255, 255, 255, 0.9); padding: 4px 12px; border-radius: 4px; color: #7AAB51; font-size: 0.85rem; font-weight: 700; }
+        .no-incidents-message { text-align: center; padding: 30px; color: #718096; font-size: 1rem; background: #f7fafc; border-radius: 6px; border: 2px dashed #cbd5e0; }
+        
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 280px)); gap: 10px; }
+        .incident-card { border-radius: 6px; padding: 10px; transition: all 0.3s ease; position: relative; }
+        .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        
+        .tipo-conexion { background: #fef3c7; border-left: 5px solid #f59e0b; }
+        .tipo-obstruida { background: #fee2e2; border-left: 5px solid #ef4444; }
+        .tipo-desconectada { background: #dbeafe; border-left: 5px solid #3b82f6; }
+        .tipo-offline { background: #e9d5ff; border-left: 5px solid #a855f7; }
+        .tipo-imagen { background: #fce7f3; border-left: 5px solid #ec4899; }
+        .tipo-acceso { background: #ccfbf1; border-left: 5px solid #14b8a6; }
+        .tipo-otro { background: #e5e7eb; border-left: 5px solid #6b7280; }
+        
+        .incident-header { font-size: 0.8rem; color: #1a202c; font-weight: 700; margin-bottom: 3px; }
+        .incident-type { font-size: 0.75rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
+        .incident-meta { font-size: 0.65rem; color: #718096; margin-bottom: 6px; }
+        .incident-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+        .btn-resolve { background: #7AAB51; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .btn-resolve:hover { background: #6a9847; }
+        .btn-resolve:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .btn-delete:hover { background: #dc2626; }
+        .btn-delete:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .resolved-badge { background: #a78bfa; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.6rem; }
+            .search-filters-container { grid-template-columns: 1fr; }
+            .filters-grid, .form-grid { grid-template-columns: 1fr; }
+            .stores-grid { grid-template-columns: 1fr 1fr; }
+            .incidents-grid { grid-template-columns: 1fr; }
+            .store-section-header { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cámaras con Incidencias Sodimac</h1>
+            <p id="lastUpdate">Conectando...</p>
+        </div>
+        
+        <div id="loadingDiv" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 20px; color: #718096;">Cargando datos...</p>
+        </div>
+        
+        <div id="errorDiv" class="error" style="display: none;"></div>
+        
+        <div id="contentDiv" style="display: none;">
+            <div class="kpis">
+                <div class="kpi-card"><div class="kpi-label">Total Cámaras</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">En 15 tiendas</div></div>
+                <div class="kpi-card"><div class="kpi-label">Cámaras Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
+                <div class="kpi-card"><div class="kpi-label">Cámaras Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div></div>
+                <div class="kpi-card"><div class="kpi-label">Incidencias Activas</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Sin resolver</div></div>
+                <div class="kpi-card"><div class="kpi-label">Incidencias Resueltas</div><div class="kpi-value kpi-purple" id="kpiIncidentsResolved">--</div><div class="kpi-subtitle" id="kpiIncidentsTotal">--</div></div>
+            </div>
+            
+            <div class="add-incident-section">
+                <h3>Agregar Nueva Incidencia</h3>
+                <form id="addIncidentForm" class="form-grid">
+                    <div class="form-group">
+                        <label>DeviceId</label>
+                        <input type="number" id="newDeviceId" required placeholder="Ej: 23">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo Anomalía</label>
+                        <select id="newTipoAnomalia" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Problemas de conexión">Problemas de conexión</option>
+                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                            <option value="Camara desconectada">Cámara desconectada</option>
+                            <option value="Camara offline">Cámara offline</option>
+                            <option value="Problema de imagen">Problema de imagen</option>
+                            <option value="Sin acceso a camara">Sin acceso a cámara</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <textarea id="newDescripcion" placeholder="Detalles opcionales..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn-primary" id="btnAddIncident">Agregar</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="search-filters-container">
+                <div class="search-box">
+                    <h3>Buscar Incidencia</h3>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por DeviceId, Tienda, Tipo, IP, Zona...">
+                </div>
+                
+                <div class="filters">
+                    <h3>Filtros</h3>
+                    <div class="filters-grid">
+                        <div class="filter-group"><label>Tipo</label><select id="filterType"><option value="">Todos</option></select></div>
+                        <div class="filter-group"><label>Estado Cámara</label><select id="filterCameraStatus"><option value="">Todas</option><option value="1">Activas</option><option value="0">Inactivas</option></select></div>
+                        <div class="filter-group"><label>Resolución</label><select id="filterResolved"><option value="No">NO resueltas</option><option value="">Todas</option><option value="Si">Resueltas</option></select></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="view-tabs">
+                <div class="view-tab active" id="tabResumen">Vista Resumen</div>
+                <div class="view-tab" id="tabAgrupada">Vista por Tienda</div>
+            </div>
+            
+            <div id="resumenView">
+                <div style="background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
+                    <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Resumen Tiendas (<span id="storeCountResumen">--</span>)</h2>
+                    <div class="stores-grid" id="storesGridResumen"></div>
+                </div>
+                <div id="incidentsByStoreContainer"></div>
+            </div>
+            
+            <div id="agrupadaView" style="display: none;">
+                <div id="storesSectionsContainer"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFHAxkT-5DbhP_d6pdVt3trgjwNh3NIfKA3I8JiNj0PPe7tlT-O02KU0CZC8kPiEhBXg/exec';
+
+let allDevices = [];
+let allIncidents = [];
+let filteredIncidents = [];
+let currentView = 'resumen';
+
+async function loadData() {
+    try {
+        const resp = await fetch(APPS_SCRIPT_URL);
+        const data = await resp.json();
+        
+        if (data.status === 'error') throw new Error(data.error);
+        
+        allDevices = data.devices || [];
+        allIncidents = data.incidencias || [];
+        
+        document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
+        document.getElementById('loadingDiv').style.display = 'none';
+        document.getElementById('contentDiv').style.display = 'block';
+        
+        initDashboard();
+    } catch (err) {
+        document.getElementById('loadingDiv').style.display = 'none';
+        document.getElementById('errorDiv').style.display = 'block';
+        document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #047857; color: white; border: none; border-radius: 6px; cursor: pointer;">Reintentar</button>';
+    }
+}
+
+function initDashboard() {
+    const merged = allIncidents.map(inc => {
+        const dev = allDevices.find(d => d.DeviceId === inc.DeviceId);
+        return {...inc, CameraActive: dev ? String(dev.Active) : '0', DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
+    });
+    
+    allIncidents = merged;
+    renderKPIs();
+    populateFilters();
+    applyFilters();
+    setupEvents();
+}
+
+function renderKPIs() {
+    const total = allDevices.length;
+    const active = allDevices.filter(d => d.Active === 1).length;
+    const inactive = total - active;
+    const totalInc = allIncidents.length;
+    const resolved = allIncidents.filter(i => i['Resuelto? Si/N0'] === 'Si').length;
+    const activeInc = totalInc - resolved;
+    
+    document.getElementById('kpiTotal').textContent = total;
+    document.getElementById('kpiActive').textContent = active;
+    document.getElementById('kpiActivePercent').textContent = ((active/total)*100).toFixed(1) + '%';
+    document.getElementById('kpiInactive').textContent = inactive;
+    document.getElementById('kpiInactivePercent').textContent = ((inactive/total)*100).toFixed(1) + '%';
+    document.getElementById('kpiIncidentsActive').textContent = activeInc;
+    document.getElementById('kpiIncidentsResolved').textContent = resolved;
+    document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
+}
+
+function populateFilters() {
+    const types = [...new Set(allIncidents.map(i => i['Tipo Anomalía']).filter(Boolean))].sort();
+    const sel = document.getElementById('filterType');
+    types.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        sel.appendChild(opt);
+    });
+}
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const type = document.getElementById('filterType').value;
+    const status = document.getElementById('filterCameraStatus').value;
+    const resolved = document.getElementById('filterResolved').value;
+    
+    filteredIncidents = allIncidents.filter(i => {
+        const matchSearch = !search || String(i.DeviceId).includes(search) || (i.Tienda||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search);
+        const matchType = !type || i['Tipo Anomalía'] === type;
+        const matchStatus = !status || i.CameraActive === status;
+        const matchResolved = !resolved || i['Resuelto? Si/N0'] === resolved;
+        return matchSearch && matchType && matchStatus && matchResolved;
+    });
+    
+    if (currentView === 'resumen') renderResumen();
+    else renderAgrupada();
+}
+
+function renderResumen() {
+    const stores = [...new Set(allDevices.map(d => d.StoreName))].sort();
+    const stats = {};
+    stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, incidents:0});
+    allDevices.forEach(d => {
+        if (stats[d.StoreName]) {
+            stats[d.StoreName].total++;
+            if (d.Active === 1) stats[d.StoreName].active++;
+            else stats[d.StoreName].inactive++;
+        }
+    });
+    filteredIncidents.forEach(i => {
+        if (stats[i.Tienda]) stats[i.Tienda].incidents++;
+    });
+    
+    const grid = document.getElementById('storesGridResumen');
+    grid.innerHTML = '';
+    document.getElementById('storeCountResumen').textContent = stores.length;
+    
+    stores.forEach(s => {
+        const st = stats[s];
+        let badge = 'badge-green', text = 'OK';
+        if (st.incidents > 8) {badge = 'badge-red'; text = 'CRÍTICO';}
+        else if (st.incidents > 4) {badge = 'badge-yellow'; text = 'ALERTA';}
+        else if (st.incidents === 0) text = 'SIN INC';
+        
+        const card = document.createElement('div');
+        card.className = 'store-card';
+        card.innerHTML = `
+            <div class="store-header">
+                <div class="store-name">${s}</div>
+                <div class="store-badge ${badge}">${text}</div>
+            </div>
+            <div class="store-stats">
+                <div class="store-stat"><span class="stat-label">Total:</span><span class="stat-value">${st.total}</span></div>
+                <div class="store-stat"><span class="stat-label">Activas:</span><span class="stat-value" style="color: #7AAB51;">${st.active}</span></div>
+                <div class="store-stat"><span class="stat-label">Inactivas:</span><span class="stat-value" style="color: #f59e0b;">${st.inactive}</span></div>
+                <div class="store-stat"><span class="stat-label">Inc:</span><span class="stat-value" style="color: #ef4444;">${st.incidents}</span></div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+    
+    const cont = document.getElementById('incidentsByStoreContainer');
+    cont.innerHTML = '';
+    stores.forEach(s => {
+        const storeInc = filteredIncidents.filter(i => i.Tienda === s);
+        if (storeInc.length === 0) return;
+        
+        const sec = document.createElement('div');
+        sec.className = 'store-section';
+        sec.innerHTML = `
+            <div class="store-section-header">
+                <h3 class="store-section-title">${s}</h3>
+                <div class="store-section-count">${storeInc.length}</div>
+            </div>
+            <div class="incidents-grid" id="grid-${s.replace(/\s/g,'-')}"></div>
+        `;
+        cont.appendChild(sec);
+        
+        const g = document.getElementById('grid-' + s.replace(/\s/g,'-'));
+        storeInc.forEach(inc => g.appendChild(createCard(inc)));
+    });
+}
+
+function renderAgrupada() {
+    const stores = [...new Set(allDevices.map(d => d.StoreName))].sort();
+    const cont = document.getElementById('storesSectionsContainer');
+    cont.innerHTML = '';
+    
+    stores.forEach(s => {
+        const storeInc = filteredIncidents.filter(i => i.Tienda === s);
+        const sec = document.createElement('div');
+        sec.className = 'store-section';
+        
+        const hdr = document.createElement('div');
+        hdr.className = 'store-section-header';
+        hdr.innerHTML = `<h2 class="store-section-title">${s}</h2><div class="store-section-count">${storeInc.length}</div>`;
+        sec.appendChild(hdr);
+        
+        if (storeInc.length === 0) {
+            const msg = document.createElement('div');
+            msg.className = 'no-incidents-message';
+            msg.textContent = 'Sin incidencias activas';
+            sec.appendChild(msg);
+        } else {
+            const g = document.createElement('div');
+            g.className = 'incidents-grid';
+            storeInc.forEach(inc => g.appendChild(createCard(inc)));
+            sec.appendChild(g);
+        }
+        cont.appendChild(sec);
+    });
+}
+
+function createCard(inc) {
+    const resolved = inc['Resuelto? Si/N0'] === 'Si';
+    const tipo = inc['Tipo Anomalía'] || '';
+    const cls = getTipoClass(tipo);
+    
+    const card = document.createElement('div');
+    card.className = 'incident-card ' + cls;
+    card.innerHTML = `
+        <div class="incident-header">${inc.Tienda} • Device ${inc.DeviceId}</div>
+        <div class="incident-type">${tipo || 'Sin tipo'}</div>
+        <div class="incident-meta">${inc.PhysicalZoneId || 'N/A'} • ${inc.IP || 'N/A'}</div>
+        <div class="incident-actions">
+            ${resolved ? '<span class="resolved-badge">RESUELTA</span>' : `
+                <button class="btn-resolve" onclick="resolve(${inc.DeviceId},'${inc.Fecha}')">Resolver</button>
+                <button class="btn-delete" onclick="del(${inc.DeviceId},'${inc.Fecha}')">Eliminar</button>
+            `}
+        </div>
+    `;
+    return card;
+}
+
+function getTipoClass(t) {
+    const tl = (t||'').toLowerCase();
+    if (tl.includes('conexión')||tl.includes('conexion')) return 'tipo-conexion';
+    if (tl.includes('obstruida')||tl.includes('obstrucción')||tl.includes('obstruccion')) return 'tipo-obstruida';
+    if (tl.includes('desconectada')) return 'tipo-desconectada';
+    if (tl.includes('offline')) return 'tipo-offline';
+    if (tl.includes('imagen')) return 'tipo-imagen';
+    if (tl.includes('acceso')) return 'tipo-acceso';
+    return 'tipo-otro';
+}
+
+function setupEvents() {
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('filterType').addEventListener('change', applyFilters);
+    document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
+    document.getElementById('filterResolved').addEventListener('change', applyFilters);
+    
+    document.getElementById('tabResumen').addEventListener('click', () => {
+        currentView = 'resumen';
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tabResumen').classList.add('active');
+        document.getElementById('resumenView').style.display = 'block';
+        document.getElementById('agrupadaView').style.display = 'none';
+        applyFilters();
+    });
+    
+    document.getElementById('tabAgrupada').addEventListener('click', () => {
+        currentView = 'agrupada';
+        document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tabAgrupada').classList.add('active');
+        document.getElementById('resumenView').style.display = 'none';
+        document.getElementById('agrupadaView').style.display = 'block';
+        applyFilters();
+    });
+    
+    document.getElementById('addIncidentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const did = document.getElementById('newDeviceId').value;
+        const tipo = document.getElementById('newTipoAnomalia').value;
+        const desc = document.getElementById('newDescripcion').value;
+        
+        if (!did || !tipo) {alert('Completa los campos'); return;}
+        const dev = allDevices.find(d => d.DeviceId == did);
+        if (!dev) {alert('DeviceId no encontrado'); return;}
+        const hasActive = allIncidents.find(i => i.DeviceId == did && i['Resuelto? Si/N0'] === 'No');
+        if (hasActive) {alert('Ya tiene incidencia activa'); return;}
+        
+        const btn = document.getElementById('btnAddIncident');
+        btn.disabled = true;
+        btn.textContent = 'Agregando...';
+        
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'text/plain'},
+                body: JSON.stringify({action: 'agregar_incidencia', deviceId: did, tipoAnomalia: tipo, descripcion: desc, estado: 'Activa'})
+            });
+            alert('Procesando...');
+            setTimeout(() => location.reload(), 2000);
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Agregar';
+        }
+    });
+}
+
+async function resolve(did, fecha) {
+    if (!confirm('Marcar como resuelta?')) return;
+    try {
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({action: 'marcar_resuelta', deviceId: did, fecha: fecha})
+        });
+        alert('Procesando...');
+        setTimeout(() => location.reload(), 2000);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+async function del(did, fecha) {
+    if (!confirm('ELIMINAR permanentemente?')) return;
+    try {
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'text/plain'},
+            body: JSON.stringify({action: 'eliminar_incidencia', deviceId: did, fecha: fecha})
+        });
+        alert('Eliminando...');
+        setTimeout(() => location.reload(), 2000);
+    } catch (err) {
+        alert('Error: ' + err.message);
+    }
+}
+
+loadData();
+    </script>
+</body>
+</html>
