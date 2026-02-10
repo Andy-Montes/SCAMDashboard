@@ -339,7 +339,7 @@ function applyFilters() {
     const resolved = document.getElementById('filterResolved').value;
     
     filteredIncidents = allIncidents.filter(i => {
-        const matchSearch = !search || String(i.DeviceId).includes(search) || (i.Tienda||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search);
+        const matchSearch = !search || String(i.DeviceId).includes(search) || (i.DeviceStoreName||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search) || (i.IP||'').toLowerCase().includes(search) || (i.PhysicalZoneId||'').toLowerCase().includes(search); String(i.DeviceId).includes(search) || (i.Tienda||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search);
         const matchType = !type || i['Tipo Anomalía'] === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i['Resuelto? Si/N0'] === resolved;
