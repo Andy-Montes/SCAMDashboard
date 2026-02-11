@@ -5,30 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cámaras Sodimac</title>
         <script>
-                    // Protección con contraseña
-                    var intentos = 0;
-                    var claveCorrecta = "deploy2026"; // Puedes cambiar esta contraseña
+                    // Protección con contraseña (solo una vez por sesión)
+                    var claveCorrecta = "deploy2026";
 
                     function pedirClave() {
-                                    var password = prompt("🔒 Ingresa la contraseña para acceder:");
+                        // Verificar si ya ingresó la contraseña en esta sesión
+                        if (sessionStorage.getItem('auth') === 'true') {
+                            return; // Ya está autenticado
+                        }
 
-                                    if (password === null) {
-                                                        alert("Acceso denegado");
-                                                        window.location.href = "about:blank";
-                                                        return;
-                                                    }
+                        var intentos = 0;
+                        
+                        function intentarAcceso() {
+                            var password = prompt("🔒 Ingresa la contraseña para acceder:");
 
-                                                    if (password !== claveCorrecta) {
-                                                                        intentos++;
-                                                                        if (intentos >= 3) {
-                                                                                                alert("❌ Demasiados intentos fallidos. Acceso bloqueado.");
-                                                                                                window.location.href = "about:blank";
-                                                                                            } else {
-                                                                                                alert("❌ Contraseña incorrecta. Intento " + intentos + " de 3");
-                                                                                                pedirClave();
-                                                                                            }
-                                                                    }
-                                                                }
+                            if (password === null) {
+                                alert("Acceso denegado");
+                                window.location.href = "about:blank";
+                                return;
+                            }
+
+                            if (password !== claveCorrecta) {
+                                intentos++;
+                                if (intentos >= 3) {
+                                    alert("❌ Demasiados intentos fallidos. Acceso bloqueado.");
+                                    window.location.href = "about:blank";
+                                } else {
+                                    alert("❌ Contraseña incorrecta. Intento " + intentos + " de 3");
+                                    intentarAcceso();
+                                }
+                            } else {
+                                // Contraseña correcta - guardar en sessionStorage
+                                sessionStorage.setItem('auth', 'true');
+                            }
+                        }
+                        
+                        intentarAcceso();
+                    }
 
                     pedirClave();
                 </script>
@@ -56,11 +69,30 @@
         .kpi-blue { color: #3b82f6; }
         .kpi-purple { color: #a78bfa; }
         
-        .add-incident-section { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 20px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
-        .add-incident-section h3 { margin-bottom: 15px; font-size: 1.1rem; color: #2d3748; }
+        .add-incident-section { 
+            background: #FFF9E6; 
+            border-radius: 8px; 
+            border: 3px solid #FFD700; 
+            padding: 20px; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+        .add-incident-section h3 { 
+            margin-bottom: 15px; 
+            font-size: 1.2rem; 
+            color: #2d3748; 
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .add-incident-section h3::before {
+            content: "⚠️";
+            font-size: 1.5rem;
+        }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
         .form-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; }
         .form-group textarea { min-height: 60px; resize: vertical; }
         .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
@@ -160,10 +192,20 @@
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
         .btn-resolve:hover { background: #6a9847; }
         .btn-resolve:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .btn-edit:hover { background: #2563eb; }
         .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
         .btn-delete:hover { background: #dc2626; }
         .btn-delete:disabled { background: #cbd5e0; cursor: not-allowed; }
         .resolved-badge { background: #a78bfa; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        
+        /* Modal para editar */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 8px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h3 { font-size: 1.3rem; color: #2d3748; }
+        .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #000; }
         
         @media (max-width: 768px) {
             .header h1 { font-size: 1.6rem; }
@@ -217,6 +259,14 @@
                             </select>
                     </div>
                     <div class="form-group">
+                        <label>Estado Cámara</label>
+                        <select id="newEstadoCamara" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Activa">Activa</option>
+                            <option value="Inactiva">Inactiva</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label>Descripción</label>
                         <textarea id="newDescripcion" placeholder="Detalles opcionales..."></textarea>
                     </div>
@@ -260,6 +310,45 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal para editar incidencia -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Editar Incidencia</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editIncidentForm" class="form-grid">
+                <input type="hidden" id="editDeviceId">
+                <input type="hidden" id="editFecha">
+                <div class="form-group">
+                    <label>Tipo Anomalía</label>
+                    <select id="editTipoAnomalia" required>
+                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                        <option value="Error de configuración">Error de configuración</option>
+                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Problema de imagen">Problema de imagen</option>
+                        <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Cámara</label>
+                    <select id="editEstadoCamara" required>
+                        <option value="Activa">Activa</option>
+                        <option value="Inactiva">Inactiva</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea id="editDescripcion"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwFHAxkT-5DbhP_d6pdVt3trgjwNh3NIfKA3I8JiNj0PPe7tlT-O02KU0CZC8kPiEhBXg/exec';
 
@@ -286,7 +375,7 @@ async function loadData() {
     } catch (err) {
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('errorDiv').style.display = 'block';
-        document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #047857; color: white; border: none; border-radius: 6px; cursor: pointer;">Reintentar</button>';
+        document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #7AAB51; color: white; border: none; border-radius: 6px; cursor: pointer;">Reintentar</button>';
     }
 }
 
@@ -339,7 +428,7 @@ function applyFilters() {
     const resolved = document.getElementById('filterResolved').value;
     
     filteredIncidents = allIncidents.filter(i => {
-        const matchSearch = !search || String(i.DeviceId).includes(search) || (i.DeviceStoreName||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search) || (i.IP||'').toLowerCase().includes(search) || (i.PhysicalZoneId||'').toLowerCase().includes(search); String(i.DeviceId).includes(search) || (i.Tienda||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search);
+        const matchSearch = !search || String(i.DeviceId).includes(search) || (i.DeviceStoreName||'').toLowerCase().includes(search) || (i['Tipo Anomalía']||'').toLowerCase().includes(search) || (i.IP||'').toLowerCase().includes(search) || (i.PhysicalZoneId||'').toLowerCase().includes(search);
         const matchType = !type || i['Tipo Anomalía'] === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i['Resuelto? Si/N0'] === resolved;
@@ -458,8 +547,9 @@ function createCard(inc) {
         <div class="incident-meta">${inc.PhysicalZoneId || 'N/A'} • ${inc.IP || 'N/A'}</div>
         <div class="incident-actions">
             ${resolved ? '<span class="resolved-badge">RESUELTA</span>' : `
-                <button class="btn-resolve" onclick="resolve(${inc.DeviceId},'${inc.Fecha}')">Resolver</button>
-                <button class="btn-delete" onclick="del(${inc.DeviceId},'${inc.Fecha}')">Eliminar</button>
+                <button class="btn-resolve" onclick="resolveIncident(${inc.DeviceId},'${inc.Fecha}')">Resolver</button>
+                <button class="btn-edit" onclick="editIncident(${inc.DeviceId},'${inc.Fecha}')">Editar</button>
+                <button class="btn-delete" onclick="deleteIncident(${inc.DeviceId},'${inc.Fecha}')">Eliminar</button>
             `}
         </div>
     `;
@@ -525,9 +615,10 @@ function setupEvents() {
         e.preventDefault();
         const did = document.getElementById('newDeviceId').value;
         const tipo = document.getElementById('newTipoAnomalia').value;
+        const estadoCamara = document.getElementById('newEstadoCamara').value;
         const desc = document.getElementById('newDescripcion').value;
         
-        if (!did || !tipo) {alert('Completa los campos'); return;}
+        if (!did || !tipo || !estadoCamara) {alert('Completa los campos'); return;}
         const dev = allDevices.find(d => d.DeviceId == did);
         if (!dev) {alert('DeviceId no encontrado'); return;}
         const hasActive = allIncidents.find(i => i.DeviceId == did && i['Resuelto? Si/N0'] === 'No');
@@ -538,13 +629,25 @@ function setupEvents() {
         btn.textContent = 'Agregando...';
         
         try {
-            await fetch(APPS_SCRIPT_URL, {
+            const response = await fetch(APPS_SCRIPT_URL, {
                 method: 'POST',
                 headers: {'Content-Type': 'text/plain'},
-                body: JSON.stringify({action: 'agregar_incidencia', deviceId: did, tipoAnomalia: tipo, descripcion: desc, estado: 'Activa'})
+                body: JSON.stringify({
+                    action: 'agregar_incidencia', 
+                    deviceId: did, 
+                    tipoAnomalia: tipo, 
+                    estadoCamara: estadoCamara,
+                    descripcion: desc, 
+                    estado: 'Activa'
+                })
             });
-            alert('Procesando...');
-            setTimeout(() => location.reload(), 2000);
+            const result = await response.json();
+            if (result.status === 'success') {
+                alert('Incidencia agregada correctamente');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('Error: ' + (result.error || 'Error desconocido'));
+            }
         } catch (err) {
             alert('Error: ' + err.message);
         } finally {
@@ -552,35 +655,108 @@ function setupEvents() {
             btn.textContent = 'Agregar';
         }
     });
+
+    // Modal edit form
+    document.getElementById('editIncidentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const did = document.getElementById('editDeviceId').value;
+        const fecha = document.getElementById('editFecha').value;
+        const tipo = document.getElementById('editTipoAnomalia').value;
+        const estadoCamara = document.getElementById('editEstadoCamara').value;
+        const desc = document.getElementById('editDescripcion').value;
+        
+        try {
+            const response = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'text/plain'},
+                body: JSON.stringify({
+                    action: 'editar_incidencia',
+                    deviceId: did,
+                    fecha: fecha,
+                    tipoAnomalia: tipo,
+                    estadoCamara: estadoCamara,
+                    descripcion: desc
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                alert('Incidencia editada correctamente');
+                closeEditModal();
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('Error: ' + (result.error || 'Error desconocido'));
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    });
 }
 
-async function resolve(did, fecha) {
-    if (!confirm('Marcar como resuelta?')) return;
+async function resolveIncident(did, fecha) {
+    if (!confirm('¿Marcar como resuelta?')) return;
     try {
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify({action: 'marcar_resuelta', deviceId: did, fecha: fecha})
         });
-        alert('Procesando...');
-        setTimeout(() => location.reload(), 2000);
+        const result = await response.json();
+        if (result.status === 'success') {
+            alert('Incidencia marcada como resuelta');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            alert('Error: ' + (result.error || 'Error desconocido'));
+        }
     } catch (err) {
         alert('Error: ' + err.message);
     }
 }
 
-async function del(did, fecha) {
-    if (!confirm('ELIMINAR permanentemente?')) return;
+function editIncident(did, fecha) {
+    const inc = allIncidents.find(i => i.DeviceId == did && i.Fecha == fecha);
+    if (!inc) {
+        alert('Incidencia no encontrada');
+        return;
+    }
+    
+    document.getElementById('editDeviceId').value = did;
+    document.getElementById('editFecha').value = fecha;
+    document.getElementById('editTipoAnomalia').value = inc['Tipo Anomalía'] || '';
+    document.getElementById('editEstadoCamara').value = inc['Estado'] || '';
+    document.getElementById('editDescripcion').value = inc['Descripción'] || '';
+    
+    document.getElementById('editModal').style.display = 'block';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+async function deleteIncident(did, fecha) {
+    if (!confirm('¿ELIMINAR permanentemente esta incidencia?')) return;
     try {
-        await fetch(APPS_SCRIPT_URL, {
+        const response = await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             headers: {'Content-Type': 'text/plain'},
             body: JSON.stringify({action: 'eliminar_incidencia', deviceId: did, fecha: fecha})
         });
-        alert('Eliminando...');
-        setTimeout(() => location.reload(), 2000);
+        const result = await response.json();
+        if (result.status === 'success') {
+            alert('Incidencia eliminada correctamente');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            alert('Error: ' + (result.error || 'Error desconocido'));
+        }
     } catch (err) {
         alert('Error: ' + err.message);
+    }
+}
+
+// Cerrar modal al hacer clic fuera
+window.onclick = function(event) {
+    const modal = document.getElementById('editModal');
+    if (event.target == modal) {
+        closeEditModal();
     }
 }
 
