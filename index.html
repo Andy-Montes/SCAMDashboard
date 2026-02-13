@@ -4,39 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUMATO | Monitoring Hub</title>
-    <script>
-        var claveCorrecta = "deploy2026";
-        function pedirClave() {
-            if (sessionStorage.getItem('auth') === 'true') return;
-            var intentos = 0;
-            function intentarAcceso() {
-                var password = prompt("🔒 Ingresa la contraseña para acceder:");
-                if (password === null) {
-                    alert("Acceso denegado");
-                    window.location.href = "about:blank";
-                    return;
-                }
-                if (password !== claveCorrecta) {
-                    intentos++;
-                    if (intentos >= 3) {
-                        alert("❌ Demasiados intentos fallidos. Acceso bloqueado.");
-                        window.location.href = "about:blank";
-                    } else {
-                        alert("❌ Contraseña incorrecta. Intento " + intentos + " de 3");
-                        intentarAcceso();
-                    }
-                } else {
-                    sessionStorage.setItem('auth', 'true');
-                }
-            }
-            intentarAcceso();
-        }
-        pedirClave();
-    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #2C3E50; color: #2d3748; min-height: 100vh; padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
+        
+        /* LOGIN MODAL PRO */
+        #loginModal { 
+            position: fixed; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            z-index: 10000;
+        }
+        .login-box {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+        }
+        .login-logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #7AAB51;
+            margin-bottom: 10px;
+        }
+        .login-title {
+            font-size: 1.3rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+        .login-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .login-input:focus {
+            outline: none;
+            border-color: #7AAB51;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #7AAB51;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .login-btn:hover {
+            background: #6a9847;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(122, 171, 81, 0.4);
+        }
+        .login-error {
+            color: #7AAB51;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .login-attempts {
+            color: #718096;
+            font-size: 0.85rem;
+            margin-top: 15px;
+        }
         
         .header { 
             background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
@@ -78,12 +123,12 @@
         .kpi-purple { color: #a78bfa; }
         
         .add-incident-section { 
-            background: #FFF9E6; 
+            background: white; 
             border-radius: 8px; 
-            border: 3px solid #FFD700; 
+            border: 3px solid #7AAB51; 
             padding: 20px; 
             margin-bottom: 25px; 
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(122, 171, 81, 0.2);
         }
         .add-incident-section h3 { 
             margin-bottom: 15px; 
@@ -117,25 +162,99 @@
         .filter-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; cursor: pointer; }
         .filter-group select:focus { outline: none; border-color: #7AAB51; background: white; }
         
+        .criticality-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .criticality-btn {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .criticality-btn:hover {
+            border-color: #7AAB51;
+            transform: translateY(-2px);
+        }
+        .criticality-btn.active {
+            background: #7AAB51;
+            color: white;
+            border-color: #7AAB51;
+        }
+        .btn-export {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        .btn-export:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
         .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .view-tab { padding: 10px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; color: #2d3748; }
         .view-tab.active { background: #7AAB51; color: white; border-color: #7AAB51; }
         .view-tab:hover { border-color: #7AAB51; }
         
-        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 25px; }
-        .store-card { background: white; border-radius: 6px; padding: 12px; transition: all 0.3s ease; cursor: pointer; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; }
+        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .store-card { 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden;
+            transition: all 0.3s ease; 
+            cursor: pointer; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+            border: 2px solid #e2e8f0; 
+        }
         .store-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+        .store-card.test-store {
+            opacity: 0.6;
+            border-color: #cbd5e0;
+        }
+        .store-status-bar {
+            height: 6px;
+            width: 100%;
+        }
+        .status-ok { background: #10b981; }
+        .status-alerta { background: #f59e0b; }
+        .status-critico { background: #ef4444; }
+        .store-content {
+            padding: 12px;
+        }
         .store-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .store-name { font-size: 0.95rem; font-weight: bold; color: #2d3748; }
-        .store-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
-        .badge-ok { background: #10b981; color: white; }
-        .badge-alerta { background: #f59e0b; color: white; }
-        .badge-critico { background: #ef4444; color: white; }
-        .badge-none { background: #10b981; color: white; }
-        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.75rem; margin-top: 8px; }
+        .store-count { 
+            padding: 4px 10px; 
+            border-radius: 4px; 
+            font-size: 0.7rem; 
+            font-weight: bold; 
+            background: #f7fafc;
+            color: #2d3748;
+        }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.7rem; margin-top: 8px; }
         .store-stat { display: flex; justify-content: space-between; padding: 4px 6px; background: #f7fafc; border-radius: 3px; }
         .stat-label { color: #718096; }
         .stat-value { font-weight: bold; color: #2d3748; }
+        .stat-value.green { color: #10b981; }
+        .stat-value.red { color: #ef4444; }
+        .stat-value.purple { color: #a78bfa; }
         
         .store-section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .store-section-header { 
@@ -151,28 +270,53 @@
         .store-section-count { background: rgba(255, 255, 255, 0.9); padding: 4px 12px; border-radius: 4px; color: #7AAB51; font-size: 0.85rem; font-weight: 700; }
         .no-incidents-message { text-align: center; padding: 30px; color: #718096; font-size: 1rem; background: #f7fafc; border-radius: 6px; border: 2px dashed #cbd5e0; }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 280px)); gap: 10px; }
-        .incident-card { border-radius: 6px; padding: 10px; transition: all 0.3s ease; position: relative; }
-        .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 260px)); gap: 10px; }
+        .incident-card { 
+            background: white;
+            border-radius: 6px; 
+            padding: 10px; 
+            transition: all 0.3s ease; 
+            position: relative;
+            border: 3px solid;
+        }
+        .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        .incident-card.old { border-width: 4px; }
         
-        .tipo-desalineada { background: #FFF9C4; border-left: 5px solid #FBC02D; }
-        .tipo-configuracion { background: #FFCDD2; border-left: 5px solid #D32F2F; }
-        .tipo-obstruida { background: #E3F2FD; border-left: 5px solid #1E88E5; }
-        .tipo-imagen { background: #FFE0B2; border-left: 5px solid #FB8C00; }
-        .tipo-acceso { background: #FFEBEE; border-left: 5px solid #B71C1C; }
-        .tipo-red { background: #C8E6C9; border-left: 5px solid #43A047; }
-        .tipo-otro { background: #e5e7eb; border-left: 5px solid #6b7280; }
+        .tipo-desalineada { border-color: #FBC02D; }
+        .tipo-configuracion { border-color: #D32F2F; }
+        .tipo-obstruida { border-color: #1E88E5; }
+        .tipo-imagen { border-color: #FB8C00; }
+        .tipo-acceso { border-color: #B71C1C; }
+        .tipo-red { border-color: #43A047; }
+        .tipo-otro { border-color: #6b7280; }
         
-        .incident-id { font-size: 0.7rem; color: #718096; margin-bottom: 3px; font-family: monospace; font-weight: 600; }
-        .incident-header { font-size: 0.8rem; color: #1a202c; font-weight: 700; margin-bottom: 3px; }
-        .incident-type { font-size: 0.75rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
+        .btn-copy {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #f7fafc;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.3s ease;
+        }
+        .btn-copy:hover {
+            background: #7AAB51;
+            color: white;
+            border-color: #7AAB51;
+        }
+        .incident-id { font-size: 0.65rem; color: #718096; margin-bottom: 4px; font-family: monospace; font-weight: 600; }
+        .incident-header { font-size: 1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
+        .incident-type { font-size: 0.7rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
         .incident-meta { font-size: 0.65rem; color: #718096; margin-bottom: 6px; }
-        .incident-actions { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
-        .btn-resolve { background: #7AAB51; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .incident-actions { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
+        .btn-resolve { background: #7AAB51; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
         .btn-resolve:hover { background: #6a9847; }
-        .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
         .btn-edit:hover { background: #2563eb; }
-        .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
         .btn-delete:hover { background: #dc2626; }
         .resolved-badge { background: #a78bfa; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
         
@@ -194,7 +338,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="loginModal">
+        <div class="login-box">
+            <div class="login-logo">SUMATO</div>
+            <div class="login-title">Dashboard de Incidencias</div>
+            <input type="password" id="loginPassword" class="login-input" placeholder="Ingresa tu contraseña" autocomplete="off">
+            <button onclick="validateLogin()" class="login-btn">Acceder</button>
+            <div id="loginError" class="login-error" style="display:none;"></div>
+            <div id="loginAttempts" class="login-attempts"></div>
+        </div>
+    </div>
+
+    <div class="container" id="mainContent" style="display:none;">
         <div class="header">
             <div>
                 <h1><span>SUMATO</span> | MONITORING HUB</h1>
@@ -258,8 +413,8 @@
             
             <div class="search-filters-container">
                 <div class="search-box">
-                    <h3>🔍 Buscar por ID, Tienda o IP</h3>
-                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por DeviceId, Tienda, Tipo, IP, Zona...">
+                    <h3>🔍 Buscar</h3>
+                    <input type="text" class="search-input" id="searchInput" placeholder="DeviceId, Tipo, IP, Zona...">
                 </div>
                 
                 <div class="filters">
@@ -272,6 +427,15 @@
                 </div>
             </div>
             
+            <div class="criticality-filters">
+                <button class="criticality-btn active" data-crit="all">⚪ Todas</button>
+                <button class="criticality-btn" data-crit="criticas">🔴 Críticas</button>
+                <button class="criticality-btn" data-crit="medias">🟡 Medias</button>
+                <button class="criticality-btn" data-crit="leves">🟢 Leves</button>
+            </div>
+            
+            <button class="btn-export" onclick="exportToExcel()">📊 Exportar a Excel</button>
+            
             <div class="view-tabs">
                 <div class="view-tab active" id="tabResumen">Vista Resumen</div>
                 <div class="view-tab" id="tabAgrupada">Vista por Tienda</div>
@@ -281,6 +445,7 @@
                 <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
                     <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Resumen Tiendas (<span id="storeCountResumen">--</span>)</h2>
                     <div class="stores-grid" id="storesGridResumen"></div>
+                    <div id="testStoreContainer" style="margin-top: 20px;"></div>
                 </div>
                 <div id="incidentsByStoreContainer"></div>
             </div>
@@ -330,11 +495,50 @@
     
     <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec';
+const CORRECT_PASSWORD = 'deploy2026';
+let loginAttempts = 0;
 
 let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
+let currentCriticality = 'all';
+
+function validateLogin() {
+    const pwd = document.getElementById('loginPassword').value;
+    const errDiv = document.getElementById('loginError');
+    const attDiv = document.getElementById('loginAttempts');
+    
+    if (pwd === CORRECT_PASSWORD) {
+        sessionStorage.setItem('auth', 'true');
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        loadData();
+    } else {
+        loginAttempts++;
+        if (loginAttempts >= 3) {
+            errDiv.textContent = '❌ Acceso bloqueado. Demasiados intentos.';
+            errDiv.style.display = 'block';
+            document.getElementById('loginPassword').disabled = true;
+            return;
+        }
+        errDiv.textContent = `Contraseña incorrecta. Intento ${loginAttempts} de 3`;
+        errDiv.style.display = 'block';
+        attDiv.textContent = `${3 - loginAttempts} intentos restantes`;
+        document.getElementById('loginPassword').value = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (sessionStorage.getItem('auth') === 'true') {
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+        loadData();
+    }
+    document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') validateLogin();
+    });
+});
 
 function updateLiveTime() {
     const now = new Date();
@@ -408,6 +612,14 @@ function populateFilters() {
     });
 }
 
+function getCriticality(tipo) {
+    const tl = (tipo || '').toLowerCase();
+    if (tl.includes('sin acceso') || tl.includes('error de configuración') || tl.includes('error de configuracion')) return 'criticas';
+    if (tl.includes('desalineada') || tl.includes('obstrucción') || tl.includes('obstruccion') || tl.includes('imagen')) return 'medias';
+    if (tl.includes('problema de red')) return 'leves';
+    return 'medias';
+}
+
 function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const type = document.getElementById('filterType').value;
@@ -419,17 +631,25 @@ function applyFilters() {
         const matchType = !type || i.Tipo === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i.Resuelto === resolved;
-        return matchSearch && matchType && matchStatus && matchResolved;
+        const matchCrit = currentCriticality === 'all' || getCriticality(i.Tipo) === currentCriticality;
+        return matchSearch && matchType && matchStatus && matchResolved && matchCrit;
     });
+    
+    // Ordenar por Device ID
+    filteredIncidents.sort((a, b) => (a.DeviceId || 0) - (b.DeviceId || 0));
     
     if (currentView === 'resumen') renderResumen();
     else renderAgrupada();
 }
 
 function renderResumen() {
-    const stores = [...new Set(allDevices.map(d => d.StoreName))].sort();
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(s => s !== 'SUMATO TEST'))].sort();
+    const testStore = allDevices.some(d => d.StoreName === 'SUMATO TEST');
+    
     const stats = {};
-    stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, incidents:0});
+    stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, resolved:0});
+    if (testStore) stats['SUMATO TEST'] = {total:0, active:0, inactive:0, pending:0, resolved:0};
+    
     allDevices.forEach(d => {
         if (stats[d.StoreName]) {
             stats[d.StoreName].total++;
@@ -437,39 +657,31 @@ function renderResumen() {
             else stats[d.StoreName].inactive++;
         }
     });
-    filteredIncidents.forEach(i => {
-        if (stats[i.Tienda] && i.Resuelto !== 'Si') stats[i.Tienda].incidents++;
+    
+    allIncidents.forEach(i => {
+        if (stats[i.Tienda]) {
+            if (i.Resuelto === 'Si') stats[i.Tienda].resolved++;
+            else stats[i.Tienda].pending++;
+        }
     });
     
     const grid = document.getElementById('storesGridResumen');
     grid.innerHTML = '';
     document.getElementById('storeCountResumen').textContent = stores.length;
     
-    stores.forEach(s => {
-        const st = stats[s];
-        let badge = 'badge-ok', text = 'SIN INC';
-        if (st.incidents >= 10) {badge = 'badge-critico'; text = 'CRÍTICO';}
-        else if (st.incidents >= 5) {badge = 'badge-alerta'; text = 'ALERTA';}
-        else if (st.incidents > 0) {badge = 'badge-alerta'; text = 'ALERTA';}
-        
-        const card = document.createElement('div');
-        card.className = 'store-card';
-        card.innerHTML = `
-            <div class="store-header">
-                <div class="store-name">${s}</div>
-                <div class="store-badge ${badge}">${text}</div>
-            </div>
-            <div class="store-stats">
-                <div class="store-stat"><span class="stat-label">Cámaras:</span><span class="stat-value">${st.total}</span></div>
-                <div class="store-stat"><span class="stat-label">Pendientes:</span><span class="stat-value" style="color: #ef4444;">${st.incidents}</span></div>
-            </div>
-        `;
-        grid.appendChild(card);
-    });
+    stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
+    
+    if (testStore) {
+        const testCont = document.getElementById('testStoreContainer');
+        testCont.innerHTML = '<h3 style="color: #718096; font-size: 0.9rem; margin-bottom: 10px;">Tienda de Prueba</h3><div class="stores-grid" id="testGrid"></div>';
+        renderStoreCard('SUMATO TEST', stats['SUMATO TEST'], document.getElementById('testGrid'), true);
+    }
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
-    stores.forEach(s => {
+    
+    const allStores = testStore ? [...stores, 'SUMATO TEST'] : stores;
+    allStores.forEach(s => {
         const storeInc = filteredIncidents.filter(i => i.Tienda === s);
         if (storeInc.length === 0) return;
         
@@ -487,6 +699,31 @@ function renderResumen() {
         const g = document.getElementById('grid-' + s.replace(/\s/g,'-'));
         storeInc.forEach(inc => g.appendChild(createCard(inc)));
     });
+}
+
+function renderStoreCard(name, st, container, isTest) {
+    let statusClass = 'status-ok';
+    if (st.pending >= 10) statusClass = 'status-critico';
+    else if (st.pending >= 5) statusClass = 'status-alerta';
+    
+    const card = document.createElement('div');
+    card.className = 'store-card' + (isTest ? ' test-store' : '');
+    card.innerHTML = `
+        <div class="store-status-bar ${statusClass}"></div>
+        <div class="store-content">
+            <div class="store-header">
+                <div class="store-name">${name}</div>
+                <div class="store-count">${st.pending} pend</div>
+            </div>
+            <div class="store-stats">
+                <div class="store-stat"><span class="stat-label">Activas:</span><span class="stat-value green">${st.active}</span></div>
+                <div class="store-stat"><span class="stat-label">Inactivas:</span><span class="stat-value">${st.inactive}</span></div>
+                <div class="store-stat"><span class="stat-label">Pendientes:</span><span class="stat-value red">${st.pending}</span></div>
+                <div class="store-stat"><span class="stat-label">Resueltas:</span><span class="stat-value purple">${st.resolved}</span></div>
+            </div>
+        </div>
+    `;
+    container.appendChild(card);
 }
 
 function renderAgrupada() {
@@ -525,11 +762,16 @@ function createCard(inc) {
     const cls = getTipoClass(tipo);
     const idInc = inc.ID || '';
     
+    const fecha = inc.Fecha ? new Date(inc.Fecha) : null;
+    const daysDiff = fecha ? Math.floor((new Date() - fecha) / (1000*60*60*24)) : 0;
+    const isOld = daysDiff > 7;
+    
     const card = document.createElement('div');
-    card.className = 'incident-card ' + cls;
+    card.className = 'incident-card ' + cls + (isOld ? ' old' : '');
     card.innerHTML = `
+        <button class="btn-copy" onclick="copyCard('${idInc}')">📋</button>
         <div class="incident-id">ID: ${idInc}</div>
-        <div class="incident-header">${inc.Tienda} • Device ${inc.DeviceId}</div>
+        <div class="incident-header">Device ${inc.DeviceId}</div>
         <div class="incident-type">${tipo || 'Sin tipo'}</div>
         <div class="incident-meta">${inc.PhysicalZoneId || 'N/A'} • ${inc.IP || 'N/A'}</div>
         <div class="incident-actions">
@@ -543,6 +785,15 @@ function createCard(inc) {
     return card;
 }
 
+function copyCard(idInc) {
+    const inc = allIncidents.find(i => i.ID == idInc);
+    if (!inc) return;
+    const text = `Device ${inc.DeviceId} - ${inc.Tipo || 'Sin tipo'} - ${inc.PhysicalZoneId || 'N/A'} - ${inc.IP || 'N/A'}`;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Copiado al portapapeles');
+    });
+}
+
 function getTipoClass(t) {
     const tl = (t || '').toLowerCase();
     if (tl.includes('desalineada') || tl.includes('mal posicionada')) return 'tipo-desalineada';
@@ -554,11 +805,34 @@ function getTipoClass(t) {
     return 'tipo-otro';
 }
 
+function exportToExcel() {
+    let csv = 'ID,DeviceId,Tienda,Tipo,Zona,IP,Estado,Resuelto,Fecha\n';
+    filteredIncidents.forEach(i => {
+        csv += `"${i.ID || ''}","${i.DeviceId || ''}","${i.Tienda || ''}","${i.Tipo || ''}","${i.PhysicalZoneId || ''}","${i.IP || ''}","${i.Estado || ''}","${i.Resuelto || ''}","${i.Fecha || ''}"\n`;
+    });
+    
+    const blob = new Blob([csv], {type: 'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'incidencias_' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+}
+
 function setupEvents() {
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('filterType').addEventListener('change', applyFilters);
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
+    
+    document.querySelectorAll('.criticality-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.criticality-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentCriticality = btn.dataset.crit;
+            applyFilters();
+        });
+    });
     
     document.getElementById('tabResumen').addEventListener('click', () => {
         currentView = 'resumen';
@@ -716,8 +990,6 @@ window.onclick = function(event) {
     const modal = document.getElementById('editModal');
     if (event.target == modal) closeEditModal();
 }
-
-loadData();
     </script>
 </body>
 </html>
