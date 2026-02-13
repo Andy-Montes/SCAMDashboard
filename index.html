@@ -297,16 +297,18 @@
             color: #7AAB51;
             transform: scale(1.1);
         }
-        .old-badge {
+        .days-badge {
             position: absolute;
-            top: 6px;
-            right: 30px;
-            background: #e2e8f0;
-            color: #4a5568;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-size: 0.6rem;
-            font-weight: 500;
+            right: 8px;
+            bottom: 8px;
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            border: 1px solid #cbd5e0;
+            line-height: 1;
         }
         .days-badge {
             position: absolute;
@@ -799,30 +801,60 @@ function renderAgrupada() {
     });
 }
 
+function getIncidentCreatedDate(rawDate) {
+    if (rawDate === null || rawDate === undefined || rawDate === '') return null;
+
+    if (typeof rawDate === 'number') {
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const millis = rawDate * 24 * 60 * 60 * 1000;
+        return new Date(excelEpoch.getTime() + millis);
+    }
+
+    const value = String(rawDate).trim();
+
+    const directDate = new Date(value);
+    if (!Number.isNaN(directDate.getTime())) {
+        return directDate;
+    }
+
+    const datePart = value.split(' ')[0];
+    const parts = datePart.split('/');
+    if (parts.length === 3) {
+        const day = Number(parts[0]);
+        const month = Number(parts[1]);
+        const year = Number(parts[2]);
+        if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
+            return new Date(year, month - 1, day);
+        }
+    }
+
+    return null;
+}
+
+function getIncidentDays(rawDate) {
+    const createdAt = getIncidentCreatedDate(rawDate);
+    if (!createdAt || Number.isNaN(createdAt.getTime())) return 0;
+
+    const now = new Date();
+    const utcStartNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const utcStartCreated = Date.UTC(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
+    const diff = Math.floor((utcStartNow - utcStartCreated) / (1000 * 60 * 60 * 24));
+
+    return Math.max(0, diff);
+}
+
 function createCard(inc) {
     const resolved = inc.Resuelto === 'Si';
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
     const idInc = inc.ID || '';
     const cam = inc.Camara || '';
-    
-    let daysDiff = 0;
-    if (inc.Fecha) {
-        try {
-            const fechaParts = String(inc.Fecha).split(' ')[0].split('/');
-            if (fechaParts.length === 3) {
-                const fecha = new Date(fechaParts[2], fechaParts[1] - 1, fechaParts[0]);
-                daysDiff = Math.floor((new Date() - fecha) / (1000*60*60*24));
-            }
-        } catch(e) {
-            daysDiff = 0;
-        }
-    }
+    const daysDiff = getIncidentDays(inc.Fecha);
+
     const card = document.createElement('div');
     card.className = 'incident-card ' + cls;
     card.innerHTML = `
         <button class="btn-copy" onclick="copyCard('${idInc}')" title="Copiar">⧉</button>
-        <span class="days-badge" title="Días desde creación">${daysDiff}d</span>
         <div class="incident-id">ID: ${idInc}</div>
         <div class="incident-header">${inc.DeviceId} ${cam ? '<span class="incident-cam">('+cam+')</span>' : ''}</div>
         <div class="incident-type">${tipo || 'Sin tipo'}</div>
@@ -834,6 +866,7 @@ function createCard(inc) {
                 <button class="btn-delete" onclick="deleteIncident('${idInc}')">Eliminar</button>
             `}
         </div>
+        <span class="days-badge" title="Días desde creación">${daysDiff}d</span>
     `;
     return card;
 }
