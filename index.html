@@ -282,8 +282,55 @@
         .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .modal-body { max-height: 58vh; overflow-y: auto; margin-bottom: 16px; }
         .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-        .detail-row { padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
-        .detail-row strong { color: #4a5568; margin-right: 8px; }
+        .detail-modal-content {
+            width: min(80vw, 1400px);
+            max-height: 88vh;
+            margin: 3vh auto;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .detail-modal-content .modal-header { margin-bottom: 12px; }
+        .detail-modal-content .modal-header h3 { font-size: 1.2rem; }
+        .detail-modal-body {
+            flex: 1;
+            margin-bottom: 10px;
+            max-height: none;
+            overflow-y: auto;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 6px;
+        }
+        .detail-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 6px 8px;
+            background: #f8fafc;
+            min-height: 58px;
+        }
+        .detail-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #4a5568;
+            letter-spacing: 0.01em;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .detail-value {
+            display: block;
+            font-size: 0.84rem;
+            color: #1a202c;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+        .detail-modal-actions {
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+            gap: 6px;
+        }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 5% auto; padding: 24px; border-radius: 8px; max-width: 720px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
@@ -299,6 +346,13 @@
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
             .stores-grid { grid-template-columns: 1fr 1fr; }
             .incidents-grid { grid-template-columns: 1fr; }
+            .detail-modal-content {
+                width: 94vw;
+                margin: 2vh auto;
+                max-height: 92vh;
+                padding: 14px;
+            }
+            .detail-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -458,17 +512,17 @@
 
 
     <div id="detailModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content detail-modal-content">
             <div class="modal-header">
                 <h3>Detalle de Incidencia</h3>
                 <span class="close" onclick="closeDetailModal()">&times;</span>
             </div>
-            <div class="modal-body" id="detailBody"></div>
-            <div class="modal-actions">
+            <div class="modal-body detail-modal-body" id="detailBody"></div>
+            <div class="modal-actions detail-modal-actions">
                 <button class="btn-resolve" id="detailResolveBtn">Resolver</button>
                 <button class="btn-edit" id="detailEditBtn">Editar</button>
                 <button class="btn-delete" id="detailDeleteBtn">Eliminar</button>
-                <button class="btn-primary" id="detailEmailBtn">Email</button>
+                <button class="btn-primary" id="detailEmailBtn">Enviar email</button>
                 <button class="btn-primary" id="detailCopyBtn">Copiar</button>
             </div>
         </div>
@@ -946,7 +1000,10 @@ function openDetailModal(idInc) {
     currentDetailIncidentId = idInc;
     const resolved = inc.Resuelto === 'Si';
     const allFields = { ...inc, Tienda: inc.DeviceStoreName || inc.Tienda || '', Cliente: getIncidentClient(inc), Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '' };
-    document.getElementById('detailBody').innerHTML = Object.entries(allFields).map(([k,v]) => `<div class="detail-row"><strong>${k}:</strong>${v || 'N/A'}</div>`).join('');
+    const detailItems = Object.entries(allFields)
+        .map(([k,v]) => `<div class="detail-item"><span class="detail-label">${k}</span><span class="detail-value">${v || 'N/A'}</span></div>`)
+        .join('');
+    document.getElementById('detailBody').innerHTML = `<div class="detail-grid">${detailItems}</div>`;
     const resolveBtn = document.getElementById('detailResolveBtn');
     resolveBtn.disabled = resolved;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
