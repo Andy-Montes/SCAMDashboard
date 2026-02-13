@@ -571,7 +571,12 @@
     </div>
     
     <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec';
+const APPS_SCRIPT_URLS = [
+    'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec',
+    'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec',
+    'https://script.google.com/macros/s/AKfycbyqO9pHqEBTmjEpXA1OVeSKO8UdxReWsb20X8wT6elaR6-c4vmwjk7NHJ6Krn6t9UYUgQ/exec'
+];
+let activeAppsScriptUrl = APPS_SCRIPT_URLS[0];
 const CORRECT_PASSWORD = 'deploy2026';
 let loginAttempts = 0;
 let loggedUser = '';
@@ -668,26 +673,60 @@ function updateLiveTime() {
     document.getElementById('liveTime').textContent = 'Live: ' + time;
 }
 
+async function fetchDashboardData() {
+    const errors = [];
+
+    for (const url of APPS_SCRIPT_URLS) {
+        try {
+            const resp = await fetch(url, {cache: 'no-store'});
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+            const data = await resp.json();
+            if (data.status === 'error') throw new Error(data.error || 'Error del servicio');
+
+            activeAppsScriptUrl = url;
+            return data;
+        } catch (err) {
+            errors.push(url + ' → ' + err.message);
+        }
+    }
+
+    throw new Error('No se pudo conectar con el servicio. ' + errors.join(' | '));
+}
+
 async function loadData() {
     try {
-        const resp = await fetch(APPS_SCRIPT_URL);
-        const data = await resp.json();
-        
-        if (data.status === 'error') throw new Error(data.error);
-        
+        const data = await fetchDashboardData();
+
         allDevices = data.devices || [];
         allIncidents = data.incidencias || [];
-        
+
         document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('contentDiv').style.display = 'block';
-        
+
         initDashboard();
     } catch (err) {
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('errorDiv').style.display = 'block';
         document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #7AAB51; color: white; border: none; border-radius: 6px; cursor: pointer;">Reintentar</button>';
     }
+}
+
+async function postToAppsScript(payload) {
+    const response = await fetch(activeAppsScriptUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        mode: 'no-cors',
+        body: JSON.stringify(payload)
+    });
+
+    // Con mode no-cors la respuesta suele ser "opaque" y no se puede leer.
+    if (response.type === 'opaque') {
+        return {status: 'success', opaque: true};
+    }
+
+    return await response.json();
 }
 
 function initDashboard() {
@@ -1121,22 +1160,17 @@ function setupEvents() {
         btn.textContent = 'Agregando...';
         
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'text/plain'},
-                body: JSON.stringify({
-                    action: 'agregar_incidencia', 
-                    deviceId: did, 
-                    tipoAnomalia: tipo, 
-                    estadoCamara: estadoCamara,
-                    descripcion: desc,
-                    cliente: cliente,
-                    registradoPor: registradoPor,
-                    responsable: responsable,
-                    emailResponsable: emailResponsable
-                })
+            const result = await postToAppsScript({
+                action: 'agregar_incidencia', 
+                deviceId: did, 
+                tipoAnomalia: tipo, 
+                estadoCamara: estadoCamara,
+                descripcion: desc,
+                cliente: cliente,
+                registradoPor: registradoPor,
+                responsable: responsable,
+                emailResponsable: emailResponsable
             });
-            const result = await response.json();
             if (result.status === 'success') {
                 alert('✅ Incidencia agregada correctamente');
                 setTimeout(() => location.reload(), 1000);
@@ -1159,18 +1193,13 @@ function setupEvents() {
         const desc = document.getElementById('editDescripcion').value;
         
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'text/plain'},
-                body: JSON.stringify({
-                    action: 'editar_incidencia',
-                    idIncidencia: idInc,
-                    tipoAnomalia: tipo,
-                    estadoCamara: estadoCamara,
-                    descripcion: desc
-                })
+            const result = await postToAppsScript({
+                action: 'editar_incidencia',
+                idIncidencia: idInc,
+                tipoAnomalia: tipo,
+                estadoCamara: estadoCamara,
+                descripcion: desc
             });
-            const result = await response.json();
             if (result.status === 'success') {
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
@@ -1187,12 +1216,7 @@ function setupEvents() {
 async function resolveIncident(idInc) {
     if (!confirm('¿Marcar como resuelta?')) return;
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({action: 'marcar_resuelta', idIncidencia: idInc})
-        });
-        const result = await response.json();
+        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: idInc});
         if (result.status === 'success') {
             alert('✅ Incidencia marcada como resuelta');
             setTimeout(() => location.reload(), 1000);
@@ -1226,12 +1250,7 @@ function closeEditModal() {
 async function deleteIncident(idInc) {
     if (!confirm('⚠️ ¿ELIMINAR permanentemente esta incidencia?')) return;
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({action: 'eliminar_incidencia', idIncidencia: idInc})
-        });
-        const result = await response.json();
+        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: idInc});
         if (result.status === 'success') {
             alert('✅ Incidencia eliminada correctamente');
             setTimeout(() => location.reload(), 1000);
