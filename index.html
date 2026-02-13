@@ -300,7 +300,12 @@
         }
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .detail-column {
+            display: flex;
+            flex-direction: column;
             gap: 6px;
         }
         .detail-item {
@@ -999,11 +1004,39 @@ function openDetailModal(idInc) {
     if (!inc) return;
     currentDetailIncidentId = idInc;
     const resolved = inc.Resuelto === 'Si';
-    const allFields = { ...inc, Tienda: inc.DeviceStoreName || inc.Tienda || '', Cliente: getIncidentClient(inc), Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '' };
-    const detailItems = Object.entries(allFields)
-        .map(([k,v]) => `<div class="detail-item"><span class="detail-label">${k}</span><span class="detail-value">${v || 'N/A'}</span></div>`)
+    const hiddenFields = new Set(['devicename', 'devicestorename', 'active']);
+    const normalizeField = field => String(field || '').toLowerCase().replace(/[_\s]/g, '');
+    const formatDetailValue = (key, value) => {
+        if (value === null || value === undefined || value === '') return 'N/A';
+        const normalizedKey = normalizeField(key).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (normalizedKey.includes('diaspasados')) {
+            const numericValue = Number(value);
+            return Number.isNaN(numericValue) ? value : Math.floor(numericValue);
+        }
+        return value;
+    };
+
+    const allFields = {
+        ...inc,
+        Tienda: inc.DeviceStoreName || inc.Tienda || '',
+        Cliente: getIncidentClient(inc),
+        Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || ''
+    };
+
+    const visibleEntries = Object.entries(allFields).filter(([key]) => !hiddenFields.has(normalizeField(key)));
+    const columns = [[], []];
+    visibleEntries.forEach((entry, idx) => columns[idx % 2].push(entry));
+
+    const renderColumn = entries => entries
+        .map(([key, value]) => `<div class="detail-item"><span class="detail-label">${key}</span><span class="detail-value">${formatDetailValue(key, value)}</span></div>`)
         .join('');
-    document.getElementById('detailBody').innerHTML = `<div class="detail-grid">${detailItems}</div>`;
+
+    document.getElementById('detailBody').innerHTML = `
+        <div class="detail-grid">
+            <div class="detail-column">${renderColumn(columns[0])}</div>
+            <div class="detail-column">${renderColumn(columns[1])}</div>
+        </div>
+    `;
     const resolveBtn = document.getElementById('detailResolveBtn');
     resolveBtn.disabled = resolved;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
