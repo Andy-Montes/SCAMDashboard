@@ -161,18 +161,6 @@
         .filter-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
         .filter-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; cursor: pointer; }
         .filter-group select:focus { outline: none; border-color: #7AAB51; background: white; }
-        
-        .test-store-toggle {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            color: #718096;
-        }
-        .test-store-toggle input {
-            cursor: pointer;
-        }
         .btn-export {
             background: #3b82f6;
             color: white;
@@ -292,13 +280,13 @@
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
-        .modal-body { max-height: none; overflow: visible; margin-bottom: 16px; }
+        .modal-body { max-height: 58vh; overflow-y: auto; margin-bottom: 16px; }
         .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
         .detail-row { padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
         .detail-row strong { color: #4a5568; margin-right: 8px; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: white; margin: 3% auto; padding: 24px; border-radius: 8px; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-content { background: white; margin: 5% auto; padding: 24px; border-radius: 8px; max-width: 720px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 1.3rem; color: #2d3748; }
         .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -449,11 +437,6 @@
             
             <button class="btn-export" onclick="exportToExcel()">📊 Exportar a Excel</button>
             
-            <div class="test-store-toggle">
-                <input type="checkbox" id="showTestStore">
-                <label for="showTestStore">Mostrar tienda de prueba (Sumato Test)</label>
-            </div>
-            
             <div class="view-tabs">
                 <div class="view-tab active" id="tabResumen">Vista Resumen</div>
                 <div class="view-tab" id="tabAgrupada">Vista por Tienda</div>
@@ -463,7 +446,6 @@
                 <div class="stores-summary-section">
                     <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Resumen Tiendas (<span id="storeCountResumen">--</span>)</h2>
                     <div class="stores-grid" id="storesGridResumen"></div>
-                    <div id="testStoreContainer" style="margin-top: 20px;"></div>
                 </div>
                 <div class="incidents-section-bg" id="incidentsByStoreContainer"></div>
             </div>
@@ -565,7 +547,6 @@ let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
-let showTestStore = false;
 
 function normalizeStoreName(storeName) {
     return String(storeName || '').trim().replace(/\s+/g, ' ').toUpperCase();
@@ -745,8 +726,7 @@ function applyFilters() {
         const matchResolved = !resolved || i.Resuelto === resolved;
         const matchStore = !store || normalizeStoreName(storeName) === normalizeStoreName(store);
         const matchClient = !client || getIncidentClient(i) === client;
-        const matchTest = client === 'Sumato Test' ? true : (showTestStore || !isTestStore(storeName));
-        return matchSearch && matchType && matchStatus && matchResolved && matchStore && matchClient && matchTest;
+        return matchSearch && matchType && matchStatus && matchResolved && matchStore && matchClient;
     });
     
     // Ordenar por Device ID
@@ -759,16 +739,11 @@ function applyFilters() {
 function renderResumen() {
     const client = document.getElementById('filterClient').value;
     const allStoreNames = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))];
-    const stores = allStoreNames.filter(s => !isTestStore(s)).sort();
-    const testStore = allStoreNames.some(s => isTestStore(s));
+    const stores = allStoreNames.sort();
     
-    // Calcular stats SOLO desde incidencias filtradas (que ya excluyen Test si showTestStore=false)
+    // Calcular stats desde incidencias filtradas
     const stats = {};
     stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, resolved:0});
-    if (testStore && showTestStore) {
-        stats['SUMATO TEST'] = {total:0, active:0, inactive:0, pending:0, resolved:0};
-    }
-    
     allDevices.filter(d => !client || getDeviceClient(d) === client).forEach(d => {
         if (stats[d.StoreName]) {
             stats[d.StoreName].total++;
@@ -777,7 +752,7 @@ function renderResumen() {
         }
     });
     
-    // Usar filteredIncidents (que ya excluye Test cuando showTestStore=false)
+    // Usar filteredIncidents
     filteredIncidents.forEach(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
         if (stats[storeName]) {
@@ -791,14 +766,6 @@ function renderResumen() {
     document.getElementById('storeCountResumen').textContent = stores.length;
     
     stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
-    
-    const testCont = document.getElementById('testStoreContainer');
-    if (testStore && showTestStore) {
-        testCont.innerHTML = '<h3 style="color: #718096; font-size: 0.9rem; margin-bottom: 10px;">Tienda de Prueba</h3><div class="stores-grid" id="testGrid"></div>';
-        renderStoreCard('SUMATO TEST', stats['SUMATO TEST'], document.getElementById('testGrid'), true);
-    } else {
-        testCont.innerHTML = '';
-    }
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
@@ -825,27 +792,6 @@ function renderResumen() {
         storeInc.forEach(inc => g.appendChild(createCard(inc)));
     });
     
-    // AL FINAL: Sumato Test (solo si está visible)
-    if (testStore && showTestStore) {
-        const storeInc = filteredIncidents.filter(i => isTestStore(i.DeviceStoreName || i.Tienda));
-        if (storeInc.length > 0) {
-            const sec = document.createElement('div');
-            sec.className = 'store-section';
-            sec.id = 'section-' + normalizeStoreName('SUMATO TEST').replace(/[^A-Z0-9]+/g, '-');
-            sec.style.background = '#F0F9F4';
-            sec.innerHTML = `
-                <div class="store-section-header">
-                    <h3 class="store-section-title">SUMATO TEST</h3>
-                    <div class="store-section-count">${storeInc.length}</div>
-                </div>
-                <div class="incidents-grid" id="grid-SUMATO-TEST"></div>
-            `;
-            cont.appendChild(sec);
-            
-            const g = document.getElementById('grid-SUMATO-TEST');
-            storeInc.forEach(inc => g.appendChild(createCard(inc)));
-        }
-    }
 }
 
 function renderStoreCard(name, st, container, isTest) {
@@ -879,7 +825,6 @@ function renderStoreCard(name, st, container, isTest) {
 function renderAgrupada() {
     const client = document.getElementById('filterClient').value;
     const stores = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))]
-        .filter(s => showTestStore || !isTestStore(s))
         .sort();
     const cont = document.getElementById('storesSectionsContainer');
     cont.innerHTML = '';
@@ -1047,11 +992,6 @@ function setupEvents() {
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
     document.getElementById('filterStore').addEventListener('change', applyFilters);
     document.getElementById('filterClient').addEventListener('change', () => { renderKPIs(); applyFilters(); });
-    
-    document.getElementById('showTestStore').addEventListener('change', (e) => {
-        showTestStore = e.target.checked;
-        applyFilters();
-    });
     
     document.getElementById('tabResumen').addEventListener('click', () => {
         currentView = 'resumen';
