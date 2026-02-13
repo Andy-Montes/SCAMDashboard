@@ -162,33 +162,16 @@
         .filter-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; cursor: pointer; }
         .filter-group select:focus { outline: none; border-color: #7AAB51; background: white; }
         
-        .criticality-filters {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .criticality-btn {
-            padding: 8px 16px;
-            border: 2px solid #e2e8f0;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
+        .test-store-toggle {
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #718096;
         }
-        .criticality-btn:hover {
-            border-color: #7AAB51;
-            transform: translateY(-2px);
-        }
-        .criticality-btn.active {
-            background: #7AAB51;
-            color: white;
-            border-color: #7AAB51;
+        .test-store-toggle input {
+            cursor: pointer;
         }
         .btn-export {
             background: #3b82f6;
@@ -213,45 +196,41 @@
         .view-tab.active { background: #7AAB51; color: white; border-color: #7AAB51; }
         .view-tab:hover { border-color: #7AAB51; }
         
-        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 25px; }
+        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 25px; }
         .store-card { 
             background: white; 
-            border-radius: 8px; 
+            border-radius: 6px; 
             overflow: hidden;
             transition: all 0.3s ease; 
             cursor: pointer; 
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
-            border: 2px solid #e2e8f0; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
+            border: 2px solid #e2e8f0;
+            border-left: 8px solid;
+            min-height: 110px;
+            max-height: 110px;
         }
-        .store-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); }
+        .store-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
         .store-card.test-store {
-            opacity: 0.6;
+            opacity: 0.7;
             border-color: #cbd5e0;
         }
-        .store-status-bar {
-            height: 6px;
-            width: 100%;
-        }
-        .status-ok { background: #10b981; }
-        .status-alerta { background: #f59e0b; }
-        .status-critico { background: #ef4444; }
+        .store-card.status-ok { border-left-color: #10b981; }
+        .store-card.status-alerta { border-left-color: #f59e0b; }
+        .store-card.status-critico { border-left-color: #ef4444; }
+        
         .store-content {
-            padding: 12px;
+            padding: 10px 12px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .store-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .store-name { font-size: 0.95rem; font-weight: bold; color: #2d3748; }
-        .store-count { 
-            padding: 4px 10px; 
-            border-radius: 4px; 
-            font-size: 0.7rem; 
-            font-weight: bold; 
-            background: #f7fafc;
-            color: #2d3748;
-        }
-        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.7rem; margin-top: 8px; }
-        .store-stat { display: flex; justify-content: space-between; padding: 4px 6px; background: #f7fafc; border-radius: 3px; }
-        .stat-label { color: #718096; }
-        .stat-value { font-weight: bold; color: #2d3748; }
+        .store-header { margin-bottom: 8px; }
+        .store-name { font-size: 1.1rem; font-weight: bold; color: #2d3748; }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; }
+        .store-stat { display: flex; justify-content: space-between; padding: 3px 5px; background: #f7fafc; border-radius: 3px; }
+        .stat-label { color: #718096; font-weight: 500; }
+        .stat-value { font-weight: bold; color: #2d3748; font-size: 0.95rem; }
         .stat-value.green { color: #10b981; }
         .stat-value.red { color: #ef4444; }
         .stat-value.purple { color: #a78bfa; }
@@ -270,45 +249,68 @@
         .store-section-count { background: rgba(255, 255, 255, 0.9); padding: 4px 12px; border-radius: 4px; color: #7AAB51; font-size: 0.85rem; font-weight: 700; }
         .no-incidents-message { text-align: center; padding: 30px; color: #718096; font-size: 1rem; background: #f7fafc; border-radius: 6px; border: 2px dashed #cbd5e0; }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 260px)); gap: 10px; }
+        .stores-summary-section {
+            background: #EBF4FF;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .incidents-section-bg {
+            padding: 0;
+        }
+        
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
         .incident-card { 
             background: white;
             border-radius: 6px; 
-            padding: 10px; 
+            padding: 8px 10px 8px 12px; 
             transition: all 0.3s ease; 
             position: relative;
-            border: 3px solid;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid;
         }
-        .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
-        .incident-card.old { border-width: 4px; }
+        .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
         
-        .tipo-desalineada { border-color: #FBC02D; }
-        .tipo-configuracion { border-color: #D32F2F; }
-        .tipo-obstruida { border-color: #1E88E5; }
-        .tipo-imagen { border-color: #FB8C00; }
-        .tipo-acceso { border-color: #B71C1C; }
-        .tipo-red { border-color: #43A047; }
-        .tipo-otro { border-color: #6b7280; }
+        .tipo-desalineada { border-left-color: #FBC02D; }
+        .tipo-configuracion { border-left-color: #D32F2F; }
+        .tipo-obstruida { border-left-color: #1E88E5; }
+        .tipo-imagen { border-left-color: #FB8C00; }
+        .tipo-acceso { border-left-color: #B71C1C; }
+        .tipo-red { border-left-color: #43A047; }
+        .tipo-otro { border-left-color: #6b7280; }
         
         .btn-copy {
             position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #f7fafc;
-            border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            padding: 4px 8px;
+            top: 6px;
+            right: 6px;
+            background: transparent;
+            border: none;
             cursor: pointer;
-            font-size: 0.7rem;
-            transition: all 0.3s ease;
+            font-size: 1rem;
+            color: #718096;
+            transition: all 0.2s ease;
+            padding: 2px;
         }
         .btn-copy:hover {
-            background: #7AAB51;
-            color: white;
-            border-color: #7AAB51;
+            color: #7AAB51;
+            transform: scale(1.1);
+        }
+        .old-badge {
+            position: absolute;
+            top: 6px;
+            right: 30px;
+            background: #e2e8f0;
+            color: #4a5568;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            font-weight: 500;
         }
         .incident-id { font-size: 0.65rem; color: #718096; margin-bottom: 4px; font-family: monospace; font-weight: 600; }
-        .incident-header { font-size: 1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
+        .incident-header { font-size: 1.1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
+        .incident-cam { font-size: 0.75rem; color: #718096; font-weight: 400; }
         .incident-type { font-size: 0.7rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
         .incident-meta { font-size: 0.65rem; color: #718096; margin-bottom: 6px; }
         .incident-actions { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
@@ -427,14 +429,12 @@
                 </div>
             </div>
             
-            <div class="criticality-filters">
-                <button class="criticality-btn active" data-crit="all">⚪ Todas</button>
-                <button class="criticality-btn" data-crit="criticas">🔴 Críticas</button>
-                <button class="criticality-btn" data-crit="medias">🟡 Medias</button>
-                <button class="criticality-btn" data-crit="leves">🟢 Leves</button>
-            </div>
-            
             <button class="btn-export" onclick="exportToExcel()">📊 Exportar a Excel</button>
+            
+            <div class="test-store-toggle">
+                <input type="checkbox" id="showTestStore">
+                <label for="showTestStore">Mostrar tienda de prueba (Sumato Test)</label>
+            </div>
             
             <div class="view-tabs">
                 <div class="view-tab active" id="tabResumen">Vista Resumen</div>
@@ -442,12 +442,12 @@
             </div>
             
             <div id="resumenView">
-                <div style="background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                <div class="stores-summary-section">
                     <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Resumen Tiendas (<span id="storeCountResumen">--</span>)</h2>
                     <div class="stores-grid" id="storesGridResumen"></div>
                     <div id="testStoreContainer" style="margin-top: 20px;"></div>
                 </div>
-                <div id="incidentsByStoreContainer"></div>
+                <div class="incidents-section-bg" id="incidentsByStoreContainer"></div>
             </div>
             
             <div id="agrupadaView" style="display: none;">
@@ -502,7 +502,7 @@ let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
-let currentCriticality = 'all';
+let showTestStore = false;
 
 function validateLogin() {
     const pwd = document.getElementById('loginPassword').value;
@@ -612,14 +612,6 @@ function populateFilters() {
     });
 }
 
-function getCriticality(tipo) {
-    const tl = (tipo || '').toLowerCase();
-    if (tl.includes('sin acceso') || tl.includes('error de configuración') || tl.includes('error de configuracion')) return 'criticas';
-    if (tl.includes('desalineada') || tl.includes('obstrucción') || tl.includes('obstruccion') || tl.includes('imagen')) return 'medias';
-    if (tl.includes('problema de red')) return 'leves';
-    return 'medias';
-}
-
 function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const type = document.getElementById('filterType').value;
@@ -631,8 +623,8 @@ function applyFilters() {
         const matchType = !type || i.Tipo === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i.Resuelto === resolved;
-        const matchCrit = currentCriticality === 'all' || getCriticality(i.Tipo) === currentCriticality;
-        return matchSearch && matchType && matchStatus && matchResolved && matchCrit;
+        const matchTest = showTestStore || i.Tienda !== 'SUMATO TEST';
+        return matchSearch && matchType && matchStatus && matchResolved && matchTest;
     });
     
     // Ordenar por Device ID
@@ -646,9 +638,12 @@ function renderResumen() {
     const stores = [...new Set(allDevices.map(d => d.StoreName).filter(s => s !== 'SUMATO TEST'))].sort();
     const testStore = allDevices.some(d => d.StoreName === 'SUMATO TEST');
     
+    // Calcular stats SOLO desde incidencias filtradas (que ya excluyen Test si showTestStore=false)
     const stats = {};
     stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, resolved:0});
-    if (testStore) stats['SUMATO TEST'] = {total:0, active:0, inactive:0, pending:0, resolved:0};
+    if (testStore && showTestStore) {
+        stats['SUMATO TEST'] = {total:0, active:0, inactive:0, pending:0, resolved:0};
+    }
     
     allDevices.forEach(d => {
         if (stats[d.StoreName]) {
@@ -658,7 +653,8 @@ function renderResumen() {
         }
     });
     
-    allIncidents.forEach(i => {
+    // Usar filteredIncidents (que ya excluye Test cuando showTestStore=false)
+    filteredIncidents.forEach(i => {
         if (stats[i.Tienda]) {
             if (i.Resuelto === 'Si') stats[i.Tienda].resolved++;
             else stats[i.Tienda].pending++;
@@ -671,22 +667,25 @@ function renderResumen() {
     
     stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
     
-    if (testStore) {
-        const testCont = document.getElementById('testStoreContainer');
+    const testCont = document.getElementById('testStoreContainer');
+    if (testStore && showTestStore) {
         testCont.innerHTML = '<h3 style="color: #718096; font-size: 0.9rem; margin-bottom: 10px;">Tienda de Prueba</h3><div class="stores-grid" id="testGrid"></div>';
         renderStoreCard('SUMATO TEST', stats['SUMATO TEST'], document.getElementById('testGrid'), true);
+    } else {
+        testCont.innerHTML = '';
     }
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
     
-    const allStores = testStore ? [...stores, 'SUMATO TEST'] : stores;
-    allStores.forEach(s => {
+    // Primero tiendas normales
+    stores.forEach(s => {
         const storeInc = filteredIncidents.filter(i => i.Tienda === s);
         if (storeInc.length === 0) return;
         
         const sec = document.createElement('div');
         sec.className = 'store-section';
+        sec.style.background = '#F0F9F4';
         sec.innerHTML = `
             <div class="store-section-header">
                 <h3 class="store-section-title">${s}</h3>
@@ -699,6 +698,27 @@ function renderResumen() {
         const g = document.getElementById('grid-' + s.replace(/\s/g,'-'));
         storeInc.forEach(inc => g.appendChild(createCard(inc)));
     });
+    
+    // AL FINAL: Sumato Test (solo si está visible)
+    if (testStore && showTestStore) {
+        const storeInc = filteredIncidents.filter(i => i.Tienda === 'SUMATO TEST');
+        if (storeInc.length > 0) {
+            const sec = document.createElement('div');
+            sec.className = 'store-section';
+            sec.style.background = '#F0F9F4';
+            sec.innerHTML = `
+                <div class="store-section-header">
+                    <h3 class="store-section-title">SUMATO TEST</h3>
+                    <div class="store-section-count">${storeInc.length}</div>
+                </div>
+                <div class="incidents-grid" id="grid-SUMATO-TEST"></div>
+            `;
+            cont.appendChild(sec);
+            
+            const g = document.getElementById('grid-SUMATO-TEST');
+            storeInc.forEach(inc => g.appendChild(createCard(inc)));
+        }
+    }
 }
 
 function renderStoreCard(name, st, container, isTest) {
@@ -707,18 +727,16 @@ function renderStoreCard(name, st, container, isTest) {
     else if (st.pending >= 5) statusClass = 'status-alerta';
     
     const card = document.createElement('div');
-    card.className = 'store-card' + (isTest ? ' test-store' : '');
+    card.className = 'store-card ' + statusClass + (isTest ? ' test-store' : '');
     card.innerHTML = `
-        <div class="store-status-bar ${statusClass}"></div>
         <div class="store-content">
             <div class="store-header">
                 <div class="store-name">${name}</div>
-                <div class="store-count">${st.pending} pend</div>
             </div>
             <div class="store-stats">
                 <div class="store-stat"><span class="stat-label">Activas:</span><span class="stat-value green">${st.active}</span></div>
-                <div class="store-stat"><span class="stat-label">Inactivas:</span><span class="stat-value">${st.inactive}</span></div>
                 <div class="store-stat"><span class="stat-label">Pendientes:</span><span class="stat-value red">${st.pending}</span></div>
+                <div class="store-stat"><span class="stat-label">Inactivas:</span><span class="stat-value">${st.inactive}</span></div>
                 <div class="store-stat"><span class="stat-label">Resueltas:</span><span class="stat-value purple">${st.resolved}</span></div>
             </div>
         </div>
@@ -761,17 +779,29 @@ function createCard(inc) {
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
     const idInc = inc.ID || '';
+    const cam = inc.Camara || '';
     
-    const fecha = inc.Fecha ? new Date(inc.Fecha) : null;
-    const daysDiff = fecha ? Math.floor((new Date() - fecha) / (1000*60*60*24)) : 0;
+    let daysDiff = 0;
+    if (inc.Fecha) {
+        try {
+            const fechaParts = String(inc.Fecha).split(' ')[0].split('/');
+            if (fechaParts.length === 3) {
+                const fecha = new Date(fechaParts[2], fechaParts[1] - 1, fechaParts[0]);
+                daysDiff = Math.floor((new Date() - fecha) / (1000*60*60*24));
+            }
+        } catch(e) {
+            daysDiff = 0;
+        }
+    }
     const isOld = daysDiff > 7;
     
     const card = document.createElement('div');
-    card.className = 'incident-card ' + cls + (isOld ? ' old' : '');
+    card.className = 'incident-card ' + cls;
     card.innerHTML = `
-        <button class="btn-copy" onclick="copyCard('${idInc}')">📋</button>
+        <button class="btn-copy" onclick="copyCard('${idInc}')" title="Copiar">⧉</button>
+        ${daysDiff > 0 ? `<span class="old-badge">${daysDiff}d</span>` : ''}
         <div class="incident-id">ID: ${idInc}</div>
-        <div class="incident-header">Device ${inc.DeviceId}</div>
+        <div class="incident-header">${inc.DeviceId} ${cam ? '<span class="incident-cam">('+cam+')</span>' : ''}</div>
         <div class="incident-type">${tipo || 'Sin tipo'}</div>
         <div class="incident-meta">${inc.PhysicalZoneId || 'N/A'} • ${inc.IP || 'N/A'}</div>
         <div class="incident-actions">
@@ -825,13 +855,9 @@ function setupEvents() {
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
     
-    document.querySelectorAll('.criticality-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.criticality-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentCriticality = btn.dataset.crit;
-            applyFilters();
-        });
+    document.getElementById('showTestStore').addEventListener('change', (e) => {
+        showTestStore = e.target.checked;
+        applyFilters();
     });
     
     document.getElementById('tabResumen').addEventListener('click', () => {
