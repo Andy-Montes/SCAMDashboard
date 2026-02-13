@@ -690,6 +690,22 @@ async function loadData() {
     }
 }
 
+async function postToAppsScript(payload) {
+    const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        mode: 'no-cors',
+        body: JSON.stringify(payload)
+    });
+
+    // Con mode no-cors la respuesta suele ser "opaque" y no se puede leer.
+    if (response.type === 'opaque') {
+        return {status: 'success', opaque: true};
+    }
+
+    return await response.json();
+}
+
 function initDashboard() {
     const merged = allIncidents.map(inc => {
         const dev = allDevices.find(d => d.DeviceId === inc.DeviceId);
@@ -1121,22 +1137,17 @@ function setupEvents() {
         btn.textContent = 'Agregando...';
         
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'text/plain'},
-                body: JSON.stringify({
-                    action: 'agregar_incidencia', 
-                    deviceId: did, 
-                    tipoAnomalia: tipo, 
-                    estadoCamara: estadoCamara,
-                    descripcion: desc,
-                    cliente: cliente,
-                    registradoPor: registradoPor,
-                    responsable: responsable,
-                    emailResponsable: emailResponsable
-                })
+            const result = await postToAppsScript({
+                action: 'agregar_incidencia', 
+                deviceId: did, 
+                tipoAnomalia: tipo, 
+                estadoCamara: estadoCamara,
+                descripcion: desc,
+                cliente: cliente,
+                registradoPor: registradoPor,
+                responsable: responsable,
+                emailResponsable: emailResponsable
             });
-            const result = await response.json();
             if (result.status === 'success') {
                 alert('✅ Incidencia agregada correctamente');
                 setTimeout(() => location.reload(), 1000);
@@ -1159,18 +1170,13 @@ function setupEvents() {
         const desc = document.getElementById('editDescripcion').value;
         
         try {
-            const response = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: {'Content-Type': 'text/plain'},
-                body: JSON.stringify({
-                    action: 'editar_incidencia',
-                    idIncidencia: idInc,
-                    tipoAnomalia: tipo,
-                    estadoCamara: estadoCamara,
-                    descripcion: desc
-                })
+            const result = await postToAppsScript({
+                action: 'editar_incidencia',
+                idIncidencia: idInc,
+                tipoAnomalia: tipo,
+                estadoCamara: estadoCamara,
+                descripcion: desc
             });
-            const result = await response.json();
             if (result.status === 'success') {
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
@@ -1187,12 +1193,7 @@ function setupEvents() {
 async function resolveIncident(idInc) {
     if (!confirm('¿Marcar como resuelta?')) return;
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({action: 'marcar_resuelta', idIncidencia: idInc})
-        });
-        const result = await response.json();
+        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: idInc});
         if (result.status === 'success') {
             alert('✅ Incidencia marcada como resuelta');
             setTimeout(() => location.reload(), 1000);
@@ -1226,12 +1227,7 @@ function closeEditModal() {
 async function deleteIncident(idInc) {
     if (!confirm('⚠️ ¿ELIMINAR permanentemente esta incidencia?')) return;
     try {
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'text/plain'},
-            body: JSON.stringify({action: 'eliminar_incidencia', idIncidencia: idInc})
-        });
-        const result = await response.json();
+        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: idInc});
         if (result.status === 'success') {
             alert('✅ Incidencia eliminada correctamente');
             setTimeout(() => location.reload(), 1000);
