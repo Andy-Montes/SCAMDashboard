@@ -299,28 +299,12 @@
         }
         .days-badge {
             position: absolute;
-            right: 8px;
+            right: 6px;
             bottom: 8px;
-            background: #edf2f7;
-            color: #2d3748;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.62rem;
+            color: #718096;
+            font-size: 0.8rem;
             font-weight: 700;
-            border: 1px solid #cbd5e0;
             line-height: 1;
-        }
-        .days-badge {
-            position: absolute;
-            top: 6px;
-            right: 30px;
-            background: #edf2f7;
-            color: #2d3748;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.62rem;
-            font-weight: 700;
-            border: 1px solid #cbd5e0;
         }
         .incident-id { font-size: 0.65rem; color: #718096; margin-bottom: 4px; font-family: monospace; font-weight: 600; }
         .incident-header { font-size: 1.1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
@@ -866,7 +850,7 @@ function createCard(inc) {
                 <button class="btn-delete" onclick="deleteIncident('${idInc}')">Eliminar</button>
             `}
         </div>
-        <span class="days-badge" title="Días desde creación">${daysDiff}d</span>
+        <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
     return card;
 }
