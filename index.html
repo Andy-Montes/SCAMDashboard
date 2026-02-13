@@ -5,235 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sumato | Monitoring Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
-    <script>
-        var claveCorrecta = "deploy2026";
-        function pedirClave() {
-            if (sessionStorage.getItem('auth') === 'true') return;
-            var password = prompt("🔒 Acceso Privado Sumato - Ingresa contraseña:");
-            if (password === claveCorrecta) { sessionStorage.setItem('auth', 'true'); }
-            else { alert("Acceso denegado"); window.location.href = "about:blank"; }
-        }
-        pedirClave();
-    </script>
-
     <style>
-        :root {
-            --sumato-blue: #0B2A3B;
-            --sumato-green: #7AAB51;
-            --bg-tech: #0f172a;
-            --danger: #ef4444;
+        :root { 
+            --sumato-blue: #0B2A3B; 
+            --sumato-green: #7AAB51; 
+            --bg-tech: #0f172a; 
+            --danger: #ef4444; 
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-tech); color: #1e293b; padding: 20px; min-height: 100vh; }
-        .container { max-width: 1600px; margin: 0 auto; display: none; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-tech); color: #1e293b; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
         
-        /* HEADER */
-        .header { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 8px solid var(--sumato-green); display: flex; justify-content: space-between; align-items: center; }
+        .header { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; margin-bottom: 25px; border-left: 8px solid var(--sumato-green); }
         .header h1 { color: var(--sumato-green); font-size: 1.8rem; font-weight: 800; }
         .header h1 span { color: white; font-weight: 400; }
 
-        /* KPIs */
-        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        .kpi-label { font-size: 0.7rem; color: #64748b; text-transform: uppercase; font-weight: 700; }
-        .kpi-value { font-size: 2rem; font-weight: 800; color: var(--sumato-blue); }
-
-        /* ZONA DE ACCIÓN - BORDE VERDE SUMATO */
-        .add-section { background: white; border: 4px solid var(--sumato-green); border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(122, 171, 81, 0.2); }
-        .add-section h3 { margin-bottom: 15px; font-size: 1rem; color: var(--sumato-blue); font-weight: 800; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: end; }
-        .btn-report { background: var(--sumato-green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-report:hover { background: var(--sumato-blue); }
-
-        /* BUSCADOR Y TABS */
-        .white-box { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
-        .view-tab { padding: 10px 20px; background: white; border-radius: 8px; cursor: pointer; border: none; font-weight: 700; color: var(--sumato-blue); margin-right: 10px; }
-        .view-tab.active { background: var(--sumato-green); color: white; }
-
-        /* VISTA RESUMEN (TARJETAS DE SALUD) */
-        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-        .store-health-card { background: white; border-radius: 10px; padding: 15px; color: var(--sumato-blue); }
-        .status-badge { float: right; padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; }
-        .bg-ok { background: #d1fae5; color: #065f46; }
-        .bg-alerta { background: #fef3c7; color: #92400e; }
-        .bg-critico { background: #fee2e2; color: #991b1b; }
-
-        /* TARJETAS INDIVIDUALES PEQUEÑAS */
-        .store-section { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-        .store-header { background: var(--sumato-blue); color: white; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-bottom: 15px; font-weight: 700; font-size: 0.85rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        /* TARJETAS DE INCIDENCIA */
+        .incident-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 15px; }
+        .card { background: white; border-radius: 10px; padding: 18px; border-left: 6px solid #ccc; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .card-main-id { font-size: 1.5rem; font-weight: 800; color: var(--sumato-blue); }
+        .card-date { font-size: 0.85rem; color: #64748b; float: right; }
+        .card-sub-id { font-size: 0.8rem; color: #64748b; font-weight: 700; display: block; margin-top: 5px; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; width: fit-content; }
         
-        .card { border-radius: 8px; padding: 12px; border: 1px solid #e2e8f0; border-left: 6px solid #ccc; font-size: 0.8rem; }
-        
-        /* COLORES POR ANOMALÍA */
-        .tipo-desalineada { border-left-color: #FBC02D; background: #FFFDE7; }
-        .tipo-configuracion { border-left-color: #D32F2F; background: #FFEBEE; }
-        .tipo-obstruccion { border-left-color: #1E88E5; background: #E3F2FD; }
-        .tipo-imagen { border-left-color: #FB8C00; background: #FFF3E0; }
-        .tipo-acceso { border-left-color: #7B1FA2; background: #F3E5F5; }
+        /* COLORES POR TIPO */
+        .tipo-red { border-left-color: var(--sumato-green); } /* Problema de Red = Verde Sumato */
+        .tipo-alerta { border-left-color: #f59e0b; }
 
-        .btn-action { background: var(--sumato-green); color: white; border: none; padding: 6px; border-radius: 4px; font-weight: 700; width: 100%; cursor: pointer; margin-top: 8px; font-size: 0.7rem; }
+        .info-row { margin-top: 10px; font-size: 0.9rem; }
+        .info-label { color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; }
+
+        .btn-group { display: flex; gap: 8px; margin-top: 18px; }
+        .btn { border: none; padding: 10px; border-radius: 6px; color: white; cursor: pointer; font-weight: 700; font-size: 0.75rem; flex: 1; transition: 0.2s; }
+        .btn-res { background: var(--sumato-green); }
+        .btn-edi { background: #3b82f6; }
+        .btn-del { background: #94a3b8; }
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        
+        #loading { color: white; text-align: center; font-size: 1.2rem; margin-top: 50px; }
     </style>
 </head>
 <body>
 
-<div class="container" id="app">
+<div class="container">
     <div class="header">
         <h1>SUMATO | <span>MONITORING HUB</span></h1>
-        <p id="clock" style="color: white; font-weight: bold;"></p>
     </div>
 
-    <div class="kpis">
-        <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">671</div></div>
-        <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value" style="color: var(--sumato-green);">515</div></div>
-        <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value" style="color: #f59e0b;">156</div></div>
-        <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value" id="kPend" style="color: var(--danger);">--</div></div>
-        <div class="kpi-card"><div class="kpi-label">Resueltas</div><div class="kpi-value" id="kRes" style="color: #7c3aed;">--</div></div>
-    </div>
-
-    <div class="add-section">
-        <h3>⚠️ REGISTRAR NUEVA ANOMALÍA</h3>
-        <form id="addForm" class="form-grid">
-            <div><label>DeviceID</label><input type="number" id="newId" required></div>
-            <div>
-                <label>Tipo Anomalía</label>
-                <select id="newTipo" required>
-                    <option value="">Seleccione...</option>
-                    <option>Cámara desalineada / mal posicionada</option>
-                    <option>Error de configuración</option>
-                    <option>Obstrucción de cámara</option>
-                    <option>Problema de imagen</option>
-                    <option>Sin acceso a Camara</option>
-                </select>
-            </div>
-            <div><label>Estado</label><select id="newEstado"><option>Activa</option><option>Inactiva</option></select></div>
-            <div><label>Descripción</label><input type="text" id="newDesc" placeholder="Opcional..."></div>
-            <button type="submit" class="btn-report">REPORTAR INCIDENCIA</button>
-        </form>
-    </div>
-
-    <div class="white-box">
-        <input type="text" id="searchInput" placeholder="🔍 Buscar por ID, Tienda o IP..." style="border:none; width:100%; outline:none; font-size:1rem;">
-    </div>
-
-    <div style="margin-bottom:20px;">
-        <button class="view-tab active" id="btnResumen">Vista Resumen</button>
-        <button class="view-tab" id="btnTienda">Vista por Tienda</button>
-    </div>
-
-    <div id="viewResumen" class="stores-grid"></div>
-    <div id="viewTienda" style="display:none;"></div>
+    <div id="loading">Cargando incidencias activas...</div>
+    <div class="incident-grid" id="mainGrid"></div>
 </div>
 
 <script>
-    const API = 'https://script.google.com/macros/s/AKfycbzt8w7qLw7HDXGdCvYgSt50YXJQhG0KHcfbGeWXnk8ttPLVPcMwLrMLpND8J0G3pB_OMw/exec';
-    
-    if(sessionStorage.getItem('auth') === 'true') {
-        document.getElementById('app').style.display = 'block';
-        fetchData();
-    }
+    // URL DE TU SCRIPT YA VINCULADA
+    const API_URL = "https://script.google.com/macros/s/AKfycbwd2gD_2-9fMzD7wMjL9Om2g-sLlarr4OaMGPMO-eVllZqT_0DQbCrDgo5OsBXWluMdIA/exec";
 
-    async function fetchData() {
+    async function loadData() {
         try {
-            const res = await fetch(API);
-            const data = await res.json();
-            const raw = data.incidencias || [];
-            
-            const resueltas = raw.filter(i => String(i['Resuelto? Si/N0'] || "").trim() === "Si").length;
-            document.getElementById('kRes').innerText = resueltas;
-            document.getElementById('kPend').innerText = raw.length - resueltas;
-            document.getElementById('clock').innerText = "Live: " + new Date().toLocaleTimeString();
-            
-            render(raw);
-        } catch (e) { console.error("Error"); }
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            renderIncidencias(data.incidencias);
+            document.getElementById('loading').style.display = 'none';
+        } catch (error) {
+            document.getElementById('loading').innerText = 'Error al cargar datos. Verifica la conexión.';
+        }
     }
 
-    function render(data) {
-        const resView = document.getElementById('viewResumen');
-        const tieView = document.getElementById('viewTienda');
-        resView.innerHTML = ''; tieView.innerHTML = '';
+    function renderIncidencias(incs) {
+        const grid = document.getElementById('mainGrid');
+        grid.innerHTML = '';
+        
+        // Filtramos solo las NO resueltas
+        const pendientes = incs.filter(i => i.Resuelto !== "Si");
 
-        const stores = [...new Set(data.map(i => i.Tienda))].sort();
-
-        stores.forEach(s => {
-            if(!s) return;
-            const incs = data.filter(i => i.Tienda === s);
-            const pend = incs.filter(i => String(i['Resuelto? Si/N0'] || "").trim() !== "Si").length;
-
-            // Render Resumen
-            const badge = pend > 8 ? 'bg-critico' : (pend > 4 ? 'bg-alerta' : 'bg-ok');
-            resView.innerHTML += `
-                <div class="store-health-card">
-                    <span class="status-badge ${badge}">${pend > 0 ? (pend > 8 ? 'CRÍTICO' : 'ALERTA') : 'OK'}</span>
-                    <div style="font-weight:800;">${s}</div>
-                    <div style="font-size:0.7rem; color:#64748b; margin-top:8px;">
-                        Cámaras: <strong>--</strong> | Pendientes: <strong style="color:var(--danger)">${pend}</strong>
-                    </div>
-                </div>`;
-
-            // Render Tienda
-            const sec = document.createElement('div');
-            sec.className = 'store-section';
-            sec.innerHTML = `<div class="store-header">${s} (${incs.length})</div>`;
-            const grid = document.createElement('div');
-            grid.className = 'grid';
+        pendientes.reverse().forEach(inc => {
+            const isRed = inc.TipoAnomalia === "Problema de Red";
+            const card = document.createElement('div');
+            card.className = `card ${isRed ? 'tipo-red' : 'tipo-alerta'}`;
             
-            incs.reverse().forEach(inc => {
-                const esSi = String(inc['Resuelto? Si/N0'] || "").trim() === "Si";
-                const card = document.createElement('div');
-                card.className = `card ${esSi ? '' : getTipoCls(inc['Tipo Anomalía'])}`;
-                card.innerHTML = `
-                    <div style="font-weight:800; color:var(--sumato-blue);">${inc.IdIncidencia || 'PENDIENTE'}</div>
-                    <div style="font-weight:700; margin:4px 0;">${inc['Tipo Anomalía']}</div>
-                    <div style="font-size:0.7rem; color:#64748b;">Device: ${inc.DeviceId} • IP: ${inc.IP || '-'}</div>
-                    ${!esSi ? `<button class="btn-action" onclick="resolver('${inc.DeviceId}','${inc.Fecha}')">RESOLVER</button>` : '<div style="color:var(--sumato-green); font-weight:bold; margin-top:8px; text-align:center;">✓ RESUELTA</div>'}
-                `;
-                grid.appendChild(card);
-            });
-            sec.appendChild(grid);
-            tieView.appendChild(sec);
+            card.innerHTML = `
+                <span class="card-date">${inc.Fecha.split(' ')[0]}</span>
+                <div class="card-main-id">${inc.DeviceId}</div>
+                <span class="card-sub-id">${inc.IdIncidencia}</span>
+                
+                <div class="info-row">
+                    <div class="info-label">Tipo de Anomalía</div>
+                    <div style="font-weight:700;">${inc.TipoAnomalia}</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">Ubicación</div>
+                    <div>${inc.Tienda} - ${inc.Zona}</div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-res" onclick="marcarResuelta('${inc.IdIncidencia}')">Marcar Resuelta</button>
+                    <button class="btn btn-del" onclick="alert('Función en desarrollo')">Eliminar</button>
+                </div>
+            `;
+            grid.appendChild(card);
         });
     }
 
-    function getTipoCls(t) {
-        const tl = (t || "").toLowerCase();
-        if(tl.includes('desalineada')) return 'tipo-desalineada';
-        if(tl.includes('configuración')) return 'tipo-configuracion';
-        if(tl.includes('obstrucción')) return 'tipo-obstruccion';
-        if(tl.includes('imagen')) return 'tipo-imagen';
-        if(tl.includes('acceso')) return 'tipo-acceso';
-        return '';
+    async function marcarResuelta(id) {
+        if(!confirm("¿Confirmas que la incidencia " + id + " ha sido resuelta?")) return;
+        
+        // Efecto visual de carga
+        event.target.innerText = "Procesando...";
+        event.target.disabled = true;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors', // Necesario para Google Script
+                body: JSON.stringify({ 
+                    action: 'marcar_resuelta', 
+                    idIncidencia: id 
+                })
+            });
+            
+            alert("¡Incidencia marcada como resuelta!");
+            loadData(); // Recargar la lista
+        } catch (error) {
+            alert("Error al actualizar. Intenta de nuevo.");
+            loadData();
+        }
     }
 
-    document.getElementById('btnResumen').onclick = () => { switchView('resumen'); };
-    document.getElementById('btnTienda').onclick = () => { switchView('tienda'); };
-
-    function switchView(v) {
-        document.getElementById('viewResumen').style.display = v === 'resumen' ? 'grid' : 'none';
-        document.getElementById('viewTienda').style.display = v === 'tienda' ? 'block' : 'none';
-        document.getElementById('btnResumen').classList.toggle('active', v === 'resumen');
-        document.getElementById('btnTienda').classList.toggle('active', v === 'tienda');
-    }
-
-    async function resolver(id, fecha) {
-        if(!confirm("¿Cerrar incidencia?")) return;
-        await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'marcar_resuelta', deviceId: id, fecha: fecha }) });
-        location.reload();
-    }
-
-    document.getElementById('addForm').onsubmit = async (e) => {
-        e.preventDefault();
-        const payload = {
-            action: 'agregar_incidencia',
-            deviceId: document.getElementById('newId').value,
-            tipoAnomalia: document.getElementById('newTipo').value,
-            descripcion: document.getElementById('newDesc').value
-        };
-        await fetch(API, { method: 'POST', body: JSON.stringify(payload) });
-        location.reload();
-    };
+    // Carga inicial
+    loadData();
+    
+    // Auto-refresco cada 5 minutos
+    setInterval(loadData, 300000);
 </script>
 </body>
 </html>
