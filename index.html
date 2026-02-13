@@ -261,15 +261,15 @@
             padding: 0;
         }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
         .incident-card { 
             background: white;
             border-radius: 6px; 
-            padding: 8px 10px 8px 12px; 
+            padding: 6px 8px 6px 10px; 
             transition: all 0.3s ease; 
             position: relative;
-            border: 1px solid #e2e8f0;
-            border-left: 5px solid;
+            border: 2px solid #cbd5e0;
+            border-left: 8px solid;
         }
         .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
         
@@ -282,23 +282,23 @@
         .tipo-otro { border-left-color: #6b7280; }
         
                 .days-badge { position: absolute; top: 8px; right: 8px; color: #718096; font-size: 0.8rem; font-weight: 700; line-height: 1; }
-        .device-number { font-size: 1.5rem; text-align: center; font-weight: 700; color: #1a202c; }
-        .cam-number { font-size: 0.8rem; color: #718096; text-align: center; }
-        .incident-type { font-size: 0.8rem; color: #4a5568; margin: 6px 0; font-weight: 600; text-align: center; }
-        .status-badge { display: inline-block; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; margin: 0 auto; }
+        .device-number { font-size: 1.35rem; text-align: center; font-weight: 700; color: #1a202c; line-height: 1.1; }
+        .cam-number { font-size: 0.75rem; color: #718096; text-align: center; line-height: 1.1; }
+        .incident-type { font-size: 0.75rem; color: #4a5568; margin: 4px 0; font-weight: 600; text-align: center; line-height: 1.2; }
+        .status-badge { display: inline-block; color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: bold; margin: 0 auto; }
         .status-badge.resuelta { background: #a78bfa; }
         .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
         .incident-card-content { display: flex; flex-direction: column; align-items: center; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
-        .modal-body { max-height: 50vh; overflow-y: auto; margin-bottom: 20px; }
+        .modal-body { max-height: none; overflow: visible; margin-bottom: 16px; }
         .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
         .detail-row { padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
         .detail-row strong { color: #4a5568; margin-right: 8px; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 8px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-content { background: white; margin: 3% auto; padding: 24px; border-radius: 8px; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 1.3rem; color: #2d3748; }
         .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -321,11 +321,11 @@
             <div class="login-title">Dashboard de Incidencias</div>
             <select id="loginUser" class="login-input">
                 <option value="">Selecciona usuario...</option>
-                <option value="Victor Catalán">Victor Catalán</option>
-                <option value="Cael Tarifa">Cael Tarifa</option>
-                <option value="Nacho Idiez">Nacho Idiez</option>
-                <option value="Cami Acuña">Cami Acuña</option>
-                <option value="Andre Montes">Andre Montes</option>
+                <option value="Victor">Victor</option>
+                <option value="Cael">Cael</option>
+                <option value="Nacho">Nacho</option>
+                <option value="Cami">Cami</option>
+                <option value="Andre">Andre</option>
             </select>
             <input type="password" id="loginPassword" class="login-input" placeholder="Ingresa tu contraseña" autocomplete="off">
             <button onclick="validateLogin()" class="login-btn">Acceder</button>
@@ -389,14 +389,14 @@
                         <select id="newResponsable" required>
                             <option value="">Seleccione...</option>
                             <optgroup label="Internos">
-                                <option value="Victor Catalán">Victor Catalán</option>
-                                <option value="Cael Tarifa">Cael Tarifa</option>
-                                <option value="Cami Acuña">Cami Acuña</option>
+                                <option value="Victor">Victor</option>
+                                <option value="Cael">Cael</option>
+                                <option value="Cami">Cami</option>
                             </optgroup>
                             <optgroup label="Externos">
-                                <option value="Mati Gallo">Mati Gallo</option>
-                                <option value="Diego Descotte">Diego Descotte</option>
-                                <option value="Andy Montes">Andy Montes</option>
+                                <option value="Mati">Mati</option>
+                                <option value="Diego">Diego</option>
+                                <option value="Andy">Andy</option>
                             </optgroup>
                         </select>
                     </div>
@@ -537,28 +537,28 @@ let loggedUser = '';
 let currentDetailIncidentId = '';
 
 const loginUsers = [
-    'Victor Catalán',
-    'Cael Tarifa',
-    'Nacho Idiez',
-    'Cami Acuña',
-    'Andre Montes'
+    'Victor',
+    'Cael',
+    'Nacho',
+    'Cami',
+    'Andre'
 ];
 
 const userEmails = {
-    'Victor Catalán': 'vcatalan@sumatoid.com',
-    'Cael Tarifa': 'ctarifa@sumatoid.com',
-    'Nacho Idiez': 'jidiez@sumatoid.com',
-    'Cami Acuña': 'cacuna@sumatoid.com',
-    'Andre Montes': 'amontes@sumatoid.com'
+    'Victor': 'vcatalan@sumatoid.com',
+    'Cael': 'ctarifa@sumatoid.com',
+    'Nacho': 'jidiez@sumatoid.com',
+    'Cami': 'cacuna@sumatoid.com',
+    'Andre': 'amontes@sumatoid.com'
 };
 
 const emailsResponsables = {
-    'Victor Catalán': 'vcatalan@sumatoid.com',
-    'Cael Tarifa': 'ctarifa@sumatoid.com',
-    'Cami Acuña': 'cacuna@sumatoid.com',
-    'Mati Gallo': 'mgallo@sumatoid.com',
-    'Diego Descotte': 'ddescotte@sumatoid.com',
-    'Andy Montes': 'andy@andymontes.com'
+    'Victor': 'vcatalan@sumatoid.com',
+    'Cael': 'ctarifa@sumatoid.com',
+    'Cami': 'cacuna@sumatoid.com',
+    'Mati': 'mgallo@sumatoid.com',
+    'Diego': 'ddescotte@sumatoid.com',
+    'Andy': 'andy@andymontes.com'
 };
 
 let allDevices = [];
@@ -719,6 +719,16 @@ function getDeviceClient(device) {
     return device.Cliente || getClientFromStoreName(device.StoreName);
 }
 
+function getIncidentDetailsText(inc) {
+    const fullData = { ...inc };
+    fullData.Tienda = inc.DeviceStoreName || inc.Tienda || '';
+    fullData.Cliente = getIncidentClient(inc);
+    fullData.Email_Responsable = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '';
+    return Object.entries(fullData)
+        .map(([k, v]) => `${k}: ${v ?? ''}`)
+        .join('\n');
+}
+
 function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const type = document.getElementById('filterType').value;
@@ -800,6 +810,7 @@ function renderResumen() {
         
         const sec = document.createElement('div');
         sec.className = 'store-section';
+        sec.id = 'section-' + normalizeStoreName(s).replace(/[^A-Z0-9]+/g, '-');
         sec.style.background = '#F0F9F4';
         sec.innerHTML = `
             <div class="store-section-header">
@@ -820,6 +831,7 @@ function renderResumen() {
         if (storeInc.length > 0) {
             const sec = document.createElement('div');
             sec.className = 'store-section';
+            sec.id = 'section-' + normalizeStoreName('SUMATO TEST').replace(/[^A-Z0-9]+/g, '-');
             sec.style.background = '#F0F9F4';
             sec.innerHTML = `
                 <div class="store-section-header">
@@ -857,7 +869,8 @@ function renderStoreCard(name, st, container, isTest) {
         </div>
     `;
     card.addEventListener('click', () => {
-        const target = document.getElementById('incidentsByStoreContainer');
+        const sectionId = 'section-' + normalizeStoreName(name).replace(/[^A-Z0-9]+/g, '-');
+        const target = document.getElementById(sectionId);
         if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
     container.appendChild(card);
@@ -964,7 +977,7 @@ function createCard(inc) {
 function copyCard(idInc) {
     const inc = allIncidents.find(i => i.ID == idInc);
     if (!inc) return;
-    const text = `ID: ${inc.ID || ''}\nDevice: ${inc.DeviceId || ''}\nCAM: ${inc.Camara || ''}\nTienda: ${inc.DeviceStoreName || inc.Tienda || ''}\nTipo: ${inc.Tipo || ''}\nZona: ${inc.PhysicalZoneId || ''}\nIP: ${inc.IP || ''}\nEstado: ${inc.Estado || ''}\nResuelto: ${inc.Resuelto || ''}\nDescripción: ${inc.Descripcion || ''}`;
+    const text = getIncidentDetailsText(inc);
     navigator.clipboard.writeText(text).then(() => {
         alert('✅ Copiado al portapapeles');
     });
@@ -987,12 +1000,8 @@ function openDetailModal(idInc) {
     if (!inc) return;
     currentDetailIncidentId = idInc;
     const resolved = inc.Resuelto === 'Si';
-    const rows = [
-        ['ID', inc.ID], ['Device', inc.DeviceId], ['CAM', inc.Camara], ['Tienda', inc.DeviceStoreName || inc.Tienda], ['Cliente', getIncidentClient(inc)],
-        ['Tipo', inc.Tipo], ['Zona', inc.PhysicalZoneId], ['IP', inc.IP], ['Estado', inc.Estado], ['Resuelto', inc.Resuelto], ['Fecha', inc.Fecha],
-        ['Descripción', inc.Descripcion], ['Registrado Por', inc.Registrado_Por || ''], ['Responsable', inc.Responsable_Asignado || ''], ['Email Responsable', inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '']
-    ];
-    document.getElementById('detailBody').innerHTML = rows.map(([k,v]) => `<div class="detail-row"><strong>${k}:</strong>${v || 'N/A'}</div>`).join('');
+    const allFields = { ...inc, Tienda: inc.DeviceStoreName || inc.Tienda || '', Cliente: getIncidentClient(inc), Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '' };
+    document.getElementById('detailBody').innerHTML = Object.entries(allFields).map(([k,v]) => `<div class="detail-row"><strong>${k}:</strong>${v || 'N/A'}</div>`).join('');
     const resolveBtn = document.getElementById('detailResolveBtn');
     resolveBtn.disabled = resolved;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
@@ -1013,11 +1022,7 @@ function sendIncidentEmail(idInc) {
     if (!inc) return;
     const recipient = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || userEmails[loggedUser] || '';
     const subject = encodeURIComponent(`Incidencia Device ${inc.DeviceId}`);
-    const body = encodeURIComponent(`Detalle:
-Tipo: ${inc.Tipo || 'N/A'}
-Tienda: ${inc.DeviceStoreName || inc.Tienda || 'N/A'}
-Estado: ${inc.Estado || 'N/A'}
-Descripción: ${inc.Descripcion || 'N/A'}`);
+    const body = encodeURIComponent(`Detalle completo de incidencia\n\n${getIncidentDetailsText(inc)}`);
     window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
