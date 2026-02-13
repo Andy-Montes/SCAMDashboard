@@ -308,6 +308,18 @@
             font-size: 0.6rem;
             font-weight: 500;
         }
+        .days-badge {
+            position: absolute;
+            top: 6px;
+            right: 30px;
+            background: #edf2f7;
+            color: #2d3748;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            border: 1px solid #cbd5e0;
+        }
         .incident-id { font-size: 0.65rem; color: #718096; margin-bottom: 4px; font-family: monospace; font-weight: 600; }
         .incident-header { font-size: 1.1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
         .incident-cam { font-size: 0.75rem; color: #718096; font-weight: 400; }
@@ -504,6 +516,14 @@ let filteredIncidents = [];
 let currentView = 'resumen';
 let showTestStore = false;
 
+function normalizeStoreName(storeName) {
+    return String(storeName || '').trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function isTestStore(storeName) {
+    return normalizeStoreName(storeName) === 'SUMATO TEST';
+}
+
 function validateLogin() {
     const pwd = document.getElementById('loginPassword').value;
     const errDiv = document.getElementById('loginError');
@@ -619,11 +639,12 @@ function applyFilters() {
     const resolved = document.getElementById('filterResolved').value;
     
     filteredIncidents = allIncidents.filter(i => {
+        const storeName = i.DeviceStoreName || i.Tienda;
         const matchSearch = !search || String(i.DeviceId).includes(search) || (i.DeviceStoreName||'').toLowerCase().includes(search) || (i.Tipo||'').toLowerCase().includes(search) || (i.IP||'').toLowerCase().includes(search) || (i.PhysicalZoneId||'').toLowerCase().includes(search);
         const matchType = !type || i.Tipo === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i.Resuelto === resolved;
-        const matchTest = showTestStore || i.Tienda !== 'SUMATO TEST';
+        const matchTest = showTestStore || !isTestStore(storeName);
         return matchSearch && matchType && matchStatus && matchResolved && matchTest;
     });
     
@@ -635,8 +656,9 @@ function applyFilters() {
 }
 
 function renderResumen() {
-    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(s => s !== 'SUMATO TEST'))].sort();
-    const testStore = allDevices.some(d => d.StoreName === 'SUMATO TEST');
+    const allStoreNames = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))];
+    const stores = allStoreNames.filter(s => !isTestStore(s)).sort();
+    const testStore = allStoreNames.some(s => isTestStore(s));
     
     // Calcular stats SOLO desde incidencias filtradas (que ya excluyen Test si showTestStore=false)
     const stats = {};
@@ -655,9 +677,10 @@ function renderResumen() {
     
     // Usar filteredIncidents (que ya excluye Test cuando showTestStore=false)
     filteredIncidents.forEach(i => {
-        if (stats[i.Tienda]) {
-            if (i.Resuelto === 'Si') stats[i.Tienda].resolved++;
-            else stats[i.Tienda].pending++;
+        const storeName = i.DeviceStoreName || i.Tienda;
+        if (stats[storeName]) {
+            if (i.Resuelto === 'Si') stats[storeName].resolved++;
+            else stats[storeName].pending++;
         }
     });
     
@@ -680,7 +703,7 @@ function renderResumen() {
     
     // Primero tiendas normales
     stores.forEach(s => {
-        const storeInc = filteredIncidents.filter(i => i.Tienda === s);
+        const storeInc = filteredIncidents.filter(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s));
         if (storeInc.length === 0) return;
         
         const sec = document.createElement('div');
@@ -701,7 +724,7 @@ function renderResumen() {
     
     // AL FINAL: Sumato Test (solo si está visible)
     if (testStore && showTestStore) {
-        const storeInc = filteredIncidents.filter(i => i.Tienda === 'SUMATO TEST');
+        const storeInc = filteredIncidents.filter(i => isTestStore(i.DeviceStoreName || i.Tienda));
         if (storeInc.length > 0) {
             const sec = document.createElement('div');
             sec.className = 'store-section';
@@ -745,12 +768,14 @@ function renderStoreCard(name, st, container, isTest) {
 }
 
 function renderAgrupada() {
-    const stores = [...new Set(allDevices.map(d => d.StoreName))].sort();
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))]
+        .filter(s => showTestStore || !isTestStore(s))
+        .sort();
     const cont = document.getElementById('storesSectionsContainer');
     cont.innerHTML = '';
     
     stores.forEach(s => {
-        const storeInc = filteredIncidents.filter(i => i.Tienda === s);
+        const storeInc = filteredIncidents.filter(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s));
         const sec = document.createElement('div');
         sec.className = 'store-section';
         
@@ -793,13 +818,11 @@ function createCard(inc) {
             daysDiff = 0;
         }
     }
-    const isOld = daysDiff > 7;
-    
     const card = document.createElement('div');
     card.className = 'incident-card ' + cls;
     card.innerHTML = `
         <button class="btn-copy" onclick="copyCard('${idInc}')" title="Copiar">⧉</button>
-        ${daysDiff > 0 ? `<span class="old-badge">${daysDiff}d</span>` : ''}
+        <span class="days-badge" title="Días desde creación">${daysDiff}d</span>
         <div class="incident-id">ID: ${idInc}</div>
         <div class="incident-header">${inc.DeviceId} ${cam ? '<span class="incident-cam">('+cam+')</span>' : ''}</div>
         <div class="incident-type">${tipo || 'Sin tipo'}</div>
