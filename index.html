@@ -571,7 +571,12 @@
     </div>
     
     <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec';
+const APPS_SCRIPT_URLS = [
+    'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec',
+    'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec',
+    'https://script.google.com/macros/s/AKfycbyqO9pHqEBTmjEpXA1OVeSKO8UdxReWsb20X8wT6elaR6-c4vmwjk7NHJ6Krn6t9UYUgQ/exec'
+];
+let activeAppsScriptUrl = APPS_SCRIPT_URLS[0];
 const CORRECT_PASSWORD = 'deploy2026';
 let loginAttempts = 0;
 let loggedUser = '';
@@ -668,20 +673,38 @@ function updateLiveTime() {
     document.getElementById('liveTime').textContent = 'Live: ' + time;
 }
 
+async function fetchDashboardData() {
+    const errors = [];
+
+    for (const url of APPS_SCRIPT_URLS) {
+        try {
+            const resp = await fetch(url, {cache: 'no-store'});
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+
+            const data = await resp.json();
+            if (data.status === 'error') throw new Error(data.error || 'Error del servicio');
+
+            activeAppsScriptUrl = url;
+            return data;
+        } catch (err) {
+            errors.push(url + ' → ' + err.message);
+        }
+    }
+
+    throw new Error('No se pudo conectar con el servicio. ' + errors.join(' | '));
+}
+
 async function loadData() {
     try {
-        const resp = await fetch(APPS_SCRIPT_URL);
-        const data = await resp.json();
-        
-        if (data.status === 'error') throw new Error(data.error);
-        
+        const data = await fetchDashboardData();
+
         allDevices = data.devices || [];
         allIncidents = data.incidencias || [];
-        
+
         document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('contentDiv').style.display = 'block';
-        
+
         initDashboard();
     } catch (err) {
         document.getElementById('loadingDiv').style.display = 'none';
@@ -691,7 +714,7 @@ async function loadData() {
 }
 
 async function postToAppsScript(payload) {
-    const response = await fetch(APPS_SCRIPT_URL, {
+    const response = await fetch(activeAppsScriptUrl, {
         method: 'POST',
         headers: {'Content-Type': 'text/plain;charset=utf-8'},
         mode: 'no-cors',
