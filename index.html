@@ -261,15 +261,15 @@
             padding: 0;
         }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
         .incident-card { 
             background: white;
             border-radius: 6px; 
-            padding: 8px 10px 8px 12px; 
+            padding: 6px 8px 6px 10px; 
             transition: all 0.3s ease; 
             position: relative;
-            border: 1px solid #e2e8f0;
-            border-left: 5px solid;
+            border: 2px solid #cbd5e0;
+            border-left: 8px solid;
         }
         .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
         
@@ -281,47 +281,24 @@
         .tipo-red { border-left-color: #43A047; }
         .tipo-otro { border-left-color: #6b7280; }
         
-        .btn-copy {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #718096;
-            transition: all 0.2s ease;
-            padding: 2px;
-        }
-        .btn-copy:hover {
-            color: #7AAB51;
-            transform: scale(1.1);
-        }
-        .days-badge {
-            position: absolute;
-            right: 6px;
-            bottom: 8px;
-            color: #718096;
-            font-size: 0.8rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .incident-id { font-size: 0.65rem; color: #718096; margin-bottom: 4px; font-family: monospace; font-weight: 600; }
-        .incident-header { font-size: 1.1rem; color: #1a202c; font-weight: 700; margin-bottom: 2px; }
-        .incident-cam { font-size: 0.75rem; color: #718096; font-weight: 400; }
-        .incident-type { font-size: 0.7rem; color: #4a5568; margin-bottom: 4px; font-weight: 600; }
-        .incident-meta { font-size: 0.65rem; color: #718096; margin-bottom: 6px; }
-        .incident-actions { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; }
-        .btn-resolve { background: #7AAB51; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
-        .btn-resolve:hover { background: #6a9847; }
-        .btn-edit { background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
-        .btn-edit:hover { background: #2563eb; }
-        .btn-delete { background: #ef4444; color: white; border: none; padding: 4px 10px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; font-weight: 600; }
-        .btn-delete:hover { background: #dc2626; }
-        .resolved-badge { background: #a78bfa; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+                .days-badge { position: absolute; top: 8px; right: 8px; color: #718096; font-size: 0.8rem; font-weight: 700; line-height: 1; }
+        .device-number { font-size: 1.35rem; text-align: center; font-weight: 700; color: #1a202c; line-height: 1.1; }
+        .cam-number { font-size: 0.75rem; color: #718096; text-align: center; line-height: 1.1; }
+        .incident-type { font-size: 0.75rem; color: #4a5568; margin: 4px 0; font-weight: 600; text-align: center; line-height: 1.2; }
+        .status-badge { display: inline-block; color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: bold; margin: 0 auto; }
+        .status-badge.resuelta { background: #a78bfa; }
+        .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
+        .incident-card-content { display: flex; flex-direction: column; align-items: center; }
+        .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
+        .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
+        .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
+        .modal-body { max-height: none; overflow: visible; margin-bottom: 16px; }
+        .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .detail-row { padding: 8px 0; border-bottom: 1px solid #edf2f7; font-size: 0.9rem; }
+        .detail-row strong { color: #4a5568; margin-right: 8px; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
-        .modal-content { background: white; margin: 5% auto; padding: 30px; border-radius: 8px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal-content { background: white; margin: 3% auto; padding: 24px; border-radius: 8px; max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 1.3rem; color: #2d3748; }
         .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -342,6 +319,14 @@
         <div class="login-box">
             <div class="login-logo">SUMATO</div>
             <div class="login-title">Dashboard de Incidencias</div>
+            <select id="loginUser" class="login-input">
+                <option value="">Selecciona usuario...</option>
+                <option value="Victor">Victor</option>
+                <option value="Cael">Cael</option>
+                <option value="Nacho">Nacho</option>
+                <option value="Cami">Cami</option>
+                <option value="Andre">Andre</option>
+            </select>
             <input type="password" id="loginPassword" class="login-input" placeholder="Ingresa tu contraseña" autocomplete="off">
             <button onclick="validateLogin()" class="login-btn">Acceder</button>
             <div id="loginError" class="login-error" style="display:none;"></div>
@@ -366,6 +351,12 @@
         <div id="errorDiv" class="error" style="display: none;"></div>
         
         <div id="contentDiv" style="display: none;">
+            <div class="filters" style="margin-bottom: 20px;">
+                <h3>Cliente</h3>
+                <div class="filters-grid">
+                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="Sodimac">Sodimac</option><option value="Sumato Test">Sumato Test</option></select></div>
+                </div>
+            </div>
             <div class="kpis">
                 <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Cámaras</div></div>
                 <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
@@ -380,6 +371,34 @@
                     <div class="form-group">
                         <label>DeviceID</label>
                         <input type="number" id="newDeviceId" required placeholder="Ej: 23">
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select id="newCliente" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Sodimac">Sodimac</option>
+                            <option value="Sumato Test">Sumato Test</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Registrado Por</label>
+                        <input type="text" id="newRegistradoPor" readonly required>
+                    </div>
+                    <div class="form-group">
+                        <label>Responsable Asignado</label>
+                        <select id="newResponsable" required>
+                            <option value="">Seleccione...</option>
+                            <optgroup label="Internos">
+                                <option value="Victor">Victor</option>
+                                <option value="Cael">Cael</option>
+                                <option value="Cami">Cami</option>
+                            </optgroup>
+                            <optgroup label="Externos">
+                                <option value="Mati">Mati</option>
+                                <option value="Diego">Diego</option>
+                                <option value="Andy">Andy</option>
+                            </optgroup>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Tipo Anomalía</label>
@@ -403,7 +422,7 @@
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
-                        <textarea id="newDescripcion" placeholder="Opcional..."></textarea>
+                        <textarea id="newDescripcion" placeholder="Descripción" required></textarea>
                     </div>
                     <div class="form-group">
                         <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
@@ -423,6 +442,7 @@
                         <div class="filter-group"><label>Tipo</label><select id="filterType"><option value="">Todos</option></select></div>
                         <div class="filter-group"><label>Estado Cámara</label><select id="filterCameraStatus"><option value="">Todas</option><option value="1">Activas</option><option value="0">Inactivas</option></select></div>
                         <div class="filter-group"><label>Resolución</label><select id="filterResolved"><option value="">Todas</option><option value="No">Pendientes</option><option value="Si">Resueltas</option></select></div>
+                        <div class="filter-group"><label>Tienda</label><select id="filterStore"><option value="">Todas</option></select></div>
                     </div>
                 </div>
             </div>
@@ -450,6 +470,24 @@
             
             <div id="agrupadaView" style="display: none;">
                 <div id="storesSectionsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalle de Incidencia</h3>
+                <span class="close" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="detailBody"></div>
+            <div class="modal-actions">
+                <button class="btn-resolve" id="detailResolveBtn">Resolver</button>
+                <button class="btn-edit" id="detailEditBtn">Editar</button>
+                <button class="btn-delete" id="detailDeleteBtn">Eliminar</button>
+                <button class="btn-primary" id="detailEmailBtn">Email</button>
+                <button class="btn-primary" id="detailCopyBtn">Copiar</button>
             </div>
         </div>
     </div>
@@ -492,9 +530,36 @@
     </div>
     
     <script>
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec';
 const CORRECT_PASSWORD = 'deploy2026';
 let loginAttempts = 0;
+let loggedUser = '';
+let currentDetailIncidentId = '';
+
+const loginUsers = [
+    'Victor',
+    'Cael',
+    'Nacho',
+    'Cami',
+    'Andre'
+];
+
+const userEmails = {
+    'Victor': 'vcatalan@sumatoid.com',
+    'Cael': 'ctarifa@sumatoid.com',
+    'Nacho': 'jidiez@sumatoid.com',
+    'Cami': 'cacuna@sumatoid.com',
+    'Andre': 'amontes@sumatoid.com'
+};
+
+const emailsResponsables = {
+    'Victor': 'vcatalan@sumatoid.com',
+    'Cael': 'ctarifa@sumatoid.com',
+    'Cami': 'cacuna@sumatoid.com',
+    'Mati': 'mgallo@sumatoid.com',
+    'Diego': 'ddescotte@sumatoid.com',
+    'Andy': 'andy@andymontes.com'
+};
 
 let allDevices = [];
 let allIncidents = [];
@@ -511,12 +576,21 @@ function isTestStore(storeName) {
 }
 
 function validateLogin() {
+    const selectedUser = document.getElementById('loginUser').value;
     const pwd = document.getElementById('loginPassword').value;
     const errDiv = document.getElementById('loginError');
     const attDiv = document.getElementById('loginAttempts');
     
+    if (!loginUsers.includes(selectedUser)) {
+        errDiv.textContent = 'Selecciona un usuario válido';
+        errDiv.style.display = 'block';
+        return;
+    }
+
     if (pwd === CORRECT_PASSWORD) {
         sessionStorage.setItem('auth', 'true');
+        sessionStorage.setItem('user', selectedUser);
+        loggedUser = selectedUser;
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         loadData();
@@ -537,10 +611,12 @@ function validateLogin() {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('auth') === 'true') {
+        loggedUser = sessionStorage.getItem('user') || '';
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         loadData();
     }
+    document.getElementById('newRegistradoPor').value = loggedUser;
     document.getElementById('loginPassword').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') validateLogin();
     });
@@ -581,6 +657,7 @@ function initDashboard() {
     });
     
     allIncidents = merged;
+    document.getElementById('newRegistradoPor').value = loggedUser;
     renderKPIs();
     populateFilters();
     applyFilters();
@@ -590,18 +667,21 @@ function initDashboard() {
 }
 
 function renderKPIs() {
-    const total = allDevices.length;
-    const active = allDevices.filter(d => d.Active === 1).length;
+    const client = document.getElementById('filterClient')?.value || 'Sodimac';
+    const clientDevices = allDevices.filter(d => !client || getDeviceClient(d) === client);
+    const clientIncidents = allIncidents.filter(i => !client || getIncidentClient(i) === client);
+    const total = clientDevices.length;
+    const active = clientDevices.filter(d => d.Active === 1).length;
     const inactive = total - active;
-    const totalInc = allIncidents.length;
-    const resolved = allIncidents.filter(i => i.Resuelto === 'Si').length;
+    const totalInc = clientIncidents.length;
+    const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
     const activeInc = totalInc - resolved;
     
     document.getElementById('kpiTotal').textContent = total;
     document.getElementById('kpiActive').textContent = active;
-    document.getElementById('kpiActivePercent').textContent = ((active/total)*100).toFixed(1) + '%';
+    document.getElementById('kpiActivePercent').textContent = total ? ((active/total)*100).toFixed(1) + '%' : '0%';
     document.getElementById('kpiInactive').textContent = inactive;
-    document.getElementById('kpiInactivePercent').textContent = ((inactive/total)*100).toFixed(1) + '%';
+    document.getElementById('kpiInactivePercent').textContent = total ? ((inactive/total)*100).toFixed(1) + '%' : '0%';
     document.getElementById('kpiIncidentsActive').textContent = activeInc;
     document.getElementById('kpiIncidentsResolved').textContent = resolved;
     document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
@@ -609,6 +689,8 @@ function renderKPIs() {
 
 function populateFilters() {
     const types = [...new Set(allIncidents.map(i => i.Tipo).filter(Boolean))].sort();
+    const client = document.getElementById('filterClient').value;
+    const stores = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))].sort();
     const sel = document.getElementById('filterType');
     types.forEach(t => {
         const opt = document.createElement('option');
@@ -616,6 +698,35 @@ function populateFilters() {
         opt.textContent = t;
         sel.appendChild(opt);
     });
+    const storeSel = document.getElementById('filterStore');
+    stores.forEach(st => {
+        const opt = document.createElement('option');
+        opt.value = st;
+        opt.textContent = st;
+        storeSel.appendChild(opt);
+    });
+}
+
+function getClientFromStoreName(storeName) {
+    return isTestStore(storeName) ? 'Sumato Test' : 'Sodimac';
+}
+
+function getIncidentClient(incident) {
+    return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda);
+}
+
+function getDeviceClient(device) {
+    return device.Cliente || getClientFromStoreName(device.StoreName);
+}
+
+function getIncidentDetailsText(inc) {
+    const fullData = { ...inc };
+    fullData.Tienda = inc.DeviceStoreName || inc.Tienda || '';
+    fullData.Cliente = getIncidentClient(inc);
+    fullData.Email_Responsable = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '';
+    return Object.entries(fullData)
+        .map(([k, v]) => `${k}: ${v ?? ''}`)
+        .join('\n');
 }
 
 function applyFilters() {
@@ -623,6 +734,8 @@ function applyFilters() {
     const type = document.getElementById('filterType').value;
     const status = document.getElementById('filterCameraStatus').value;
     const resolved = document.getElementById('filterResolved').value;
+    const store = document.getElementById('filterStore').value;
+    const client = document.getElementById('filterClient').value;
     
     filteredIncidents = allIncidents.filter(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
@@ -630,8 +743,10 @@ function applyFilters() {
         const matchType = !type || i.Tipo === type;
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i.Resuelto === resolved;
-        const matchTest = showTestStore || !isTestStore(storeName);
-        return matchSearch && matchType && matchStatus && matchResolved && matchTest;
+        const matchStore = !store || normalizeStoreName(storeName) === normalizeStoreName(store);
+        const matchClient = !client || getIncidentClient(i) === client;
+        const matchTest = client === 'Sumato Test' ? true : (showTestStore || !isTestStore(storeName));
+        return matchSearch && matchType && matchStatus && matchResolved && matchStore && matchClient && matchTest;
     });
     
     // Ordenar por Device ID
@@ -642,7 +757,8 @@ function applyFilters() {
 }
 
 function renderResumen() {
-    const allStoreNames = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))];
+    const client = document.getElementById('filterClient').value;
+    const allStoreNames = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))];
     const stores = allStoreNames.filter(s => !isTestStore(s)).sort();
     const testStore = allStoreNames.some(s => isTestStore(s));
     
@@ -653,7 +769,7 @@ function renderResumen() {
         stats['SUMATO TEST'] = {total:0, active:0, inactive:0, pending:0, resolved:0};
     }
     
-    allDevices.forEach(d => {
+    allDevices.filter(d => !client || getDeviceClient(d) === client).forEach(d => {
         if (stats[d.StoreName]) {
             stats[d.StoreName].total++;
             if (d.Active === 1) stats[d.StoreName].active++;
@@ -694,6 +810,7 @@ function renderResumen() {
         
         const sec = document.createElement('div');
         sec.className = 'store-section';
+        sec.id = 'section-' + normalizeStoreName(s).replace(/[^A-Z0-9]+/g, '-');
         sec.style.background = '#F0F9F4';
         sec.innerHTML = `
             <div class="store-section-header">
@@ -714,6 +831,7 @@ function renderResumen() {
         if (storeInc.length > 0) {
             const sec = document.createElement('div');
             sec.className = 'store-section';
+            sec.id = 'section-' + normalizeStoreName('SUMATO TEST').replace(/[^A-Z0-9]+/g, '-');
             sec.style.background = '#F0F9F4';
             sec.innerHTML = `
                 <div class="store-section-header">
@@ -750,11 +868,17 @@ function renderStoreCard(name, st, container, isTest) {
             </div>
         </div>
     `;
+    card.addEventListener('click', () => {
+        const sectionId = 'section-' + normalizeStoreName(name).replace(/[^A-Z0-9]+/g, '-');
+        const target = document.getElementById(sectionId);
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
     container.appendChild(card);
 }
 
 function renderAgrupada() {
-    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))]
+    const client = document.getElementById('filterClient').value;
+    const stores = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))]
         .filter(s => showTestStore || !isTestStore(s))
         .sort();
     const cont = document.getElementById('storesSectionsContainer');
@@ -838,27 +962,22 @@ function createCard(inc) {
     const card = document.createElement('div');
     card.className = 'incident-card ' + cls;
     card.innerHTML = `
-        <button class="btn-copy" onclick="copyCard('${idInc}')" title="Copiar">⧉</button>
-        <div class="incident-id">ID: ${idInc}</div>
-        <div class="incident-header">${inc.DeviceId} ${cam ? '<span class="incident-cam">('+cam+')</span>' : ''}</div>
-        <div class="incident-type">${tipo || 'Sin tipo'}</div>
-        <div class="incident-meta">${inc.PhysicalZoneId || 'N/A'} • ${inc.IP || 'N/A'}</div>
-        <div class="incident-actions">
-            ${resolved ? '<span class="resolved-badge">✅ RESUELTA</span>' : `
-                <button class="btn-resolve" onclick="resolveIncident('${idInc}')">Resolver</button>
-                <button class="btn-edit" onclick="editIncident('${idInc}')">Editar</button>
-                <button class="btn-delete" onclick="deleteIncident('${idInc}')">Eliminar</button>
-            `}
+        <div class="incident-card-content">
+            <div class="device-number">${inc.DeviceId || 'N/A'}</div>
+            <div class="cam-number">${cam || 'Sin CAM'}</div>
+            <div class="incident-type">${tipo || 'Sin tipo'}</div>
+            <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
+    card.addEventListener('click', () => openDetailModal(idInc));
     return card;
 }
 
 function copyCard(idInc) {
     const inc = allIncidents.find(i => i.ID == idInc);
     if (!inc) return;
-    const text = `Device ${inc.DeviceId} - ${inc.Tipo || 'Sin tipo'} - ${inc.PhysicalZoneId || 'N/A'} - ${inc.IP || 'N/A'}`;
+    const text = getIncidentDetailsText(inc);
     navigator.clipboard.writeText(text).then(() => {
         alert('✅ Copiado al portapapeles');
     });
@@ -873,6 +992,38 @@ function getTipoClass(t) {
     if (tl.includes('sin acceso a camara') || tl.includes('sin acceso a cámara')) return 'tipo-acceso';
     if (tl.includes('problema de red')) return 'tipo-red';
     return 'tipo-otro';
+}
+
+
+function openDetailModal(idInc) {
+    const inc = allIncidents.find(i => i.ID == idInc);
+    if (!inc) return;
+    currentDetailIncidentId = idInc;
+    const resolved = inc.Resuelto === 'Si';
+    const allFields = { ...inc, Tienda: inc.DeviceStoreName || inc.Tienda || '', Cliente: getIncidentClient(inc), Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '' };
+    document.getElementById('detailBody').innerHTML = Object.entries(allFields).map(([k,v]) => `<div class="detail-row"><strong>${k}:</strong>${v || 'N/A'}</div>`).join('');
+    const resolveBtn = document.getElementById('detailResolveBtn');
+    resolveBtn.disabled = resolved;
+    resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
+    document.getElementById('detailResolveBtn').onclick = () => resolveIncident(idInc);
+    document.getElementById('detailEditBtn').onclick = () => { closeDetailModal(); editIncident(idInc); };
+    document.getElementById('detailDeleteBtn').onclick = () => deleteIncident(idInc);
+    document.getElementById('detailEmailBtn').onclick = () => sendIncidentEmail(idInc);
+    document.getElementById('detailCopyBtn').onclick = () => copyCard(idInc);
+    document.getElementById('detailModal').style.display = 'block';
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').style.display = 'none';
+}
+
+function sendIncidentEmail(idInc) {
+    const inc = allIncidents.find(i => i.ID == idInc);
+    if (!inc) return;
+    const recipient = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || userEmails[loggedUser] || '';
+    const subject = encodeURIComponent(`Incidencia Device ${inc.DeviceId}`);
+    const body = encodeURIComponent(`Detalle completo de incidencia\n\n${getIncidentDetailsText(inc)}`);
+    window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
 function exportToExcel() {
@@ -894,6 +1045,8 @@ function setupEvents() {
     document.getElementById('filterType').addEventListener('change', applyFilters);
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
+    document.getElementById('filterStore').addEventListener('change', applyFilters);
+    document.getElementById('filterClient').addEventListener('change', () => { renderKPIs(); applyFilters(); });
     
     document.getElementById('showTestStore').addEventListener('change', (e) => {
         showTestStore = e.target.checked;
@@ -924,8 +1077,12 @@ function setupEvents() {
         const tipo = document.getElementById('newTipoAnomalia').value;
         const estadoCamara = document.getElementById('newEstadoCamara').value;
         const desc = document.getElementById('newDescripcion').value;
+        const cliente = document.getElementById('newCliente').value;
+        const registradoPor = document.getElementById('newRegistradoPor').value;
+        const responsable = document.getElementById('newResponsable').value;
+        const emailResponsable = emailsResponsables[responsable] || '';
         
-        if (!did || !tipo || !estadoCamara) {alert('Completa los campos'); return;}
+        if (!did || !tipo || !estadoCamara || !desc || !cliente || !registradoPor || !responsable) {alert('Completa los campos'); return;}
         const dev = allDevices.find(d => d.DeviceId == did);
         if (!dev) {alert('DeviceId no encontrado'); return;}
         
@@ -942,7 +1099,11 @@ function setupEvents() {
                     deviceId: did, 
                     tipoAnomalia: tipo, 
                     estadoCamara: estadoCamara,
-                    descripcion: desc
+                    descripcion: desc,
+                    cliente: cliente,
+                    registradoPor: registradoPor,
+                    responsable: responsable,
+                    emailResponsable: emailResponsable
                 })
             });
             const result = await response.json();
@@ -1053,8 +1214,10 @@ async function deleteIncident(idInc) {
 }
 
 window.onclick = function(event) {
-    const modal = document.getElementById('editModal');
-    if (event.target == modal) closeEditModal();
+    const editModal = document.getElementById('editModal');
+    const detailModal = document.getElementById('detailModal');
+    if (event.target == editModal) closeEditModal();
+    if (event.target == detailModal) closeDetailModal();
 }
     </script>
 </body>
