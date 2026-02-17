@@ -706,19 +706,48 @@ async function loadData() {
 }
 
 async function postToAppsScript(payload) {
-    const response = await fetch(activeAppsScriptUrl, {
-        method: 'POST',
-        headers: {'Content-Type': 'text/plain;charset=utf-8'},
-        mode: 'no-cors',
-        body: JSON.stringify(payload)
-    });
+    const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS.filter(url => url !== activeAppsScriptUrl)];
+    const errors = [];
 
-    // Con mode no-cors la respuesta suele ser "opaque" y no se puede leer.
-    if (response.type === 'opaque') {
-        return {status: 'success', opaque: true};
+    for (const url of urlsToTry) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {'Content-Type': 'text/plain;charset=utf-8'},
+                body: JSON.stringify(payload)
+            });
+
+            const rawText = await response.text();
+            let result = null;
+            if (rawText) {
+                try {
+                    result = JSON.parse(rawText);
+                } catch (parseErr) {
+                    throw new Error('Respuesta no JSON del servidor');
+                }
+            }
+
+            if (!response.ok) {
+                const message = (result && (result.error || result.message)) || ('HTTP ' + response.status);
+                throw new Error(message);
+            }
+
+            if (!result) {
+                throw new Error('Respuesta vacía del servidor');
+            }
+
+            if (result.status === 'error') {
+                throw new Error(result.error || 'Error de Apps Script');
+            }
+
+            activeAppsScriptUrl = url;
+            return result;
+        } catch (err) {
+            errors.push(url + ' → ' + err.message);
+        }
     }
 
-    return await response.json();
+    throw new Error('No se pudo completar la solicitud: ' + errors.join(' | '));
 }
 
 function initDashboard() {
