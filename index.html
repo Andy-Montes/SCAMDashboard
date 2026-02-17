@@ -580,10 +580,7 @@
     
     <script>
 const APPS_SCRIPT_URLS = [
-    'https://script.google.com/macros/s/AKfycbxABZiCJnMf7v07Zt7cIt7-Xe1rdhx_3QV81H7LS3hjeqX3nurbVRcv3sxnwCj3bLJXiA/exec',
-    'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec',
-    'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec',
-    'https://script.google.com/macros/s/AKfycbyqO9pHqEBTmjEpXA1OVeSKO8UdxReWsb20X8wT6elaR6-c4vmwjk7NHJ6Krn6t9UYUgQ/exec'
+    'https://script.google.com/macros/s/AKfycbxABZiCJnMf7v07Zt7cIt7-Xe1rdhx_3QV81H7LS3hjeqX3nurbVRcv3sxnwCj3bLJXiA/exec'
 ];
 let activeAppsScriptUrl = APPS_SCRIPT_URLS[0];
 const CORRECT_PASSWORD = 'deploy2026';
@@ -761,13 +758,38 @@ async function postToAppsScript(payload) {
             activeAppsScriptUrl = url;
             return result;
         } catch (err) {
-            console.error('[AppsScript POST FAIL]', {url, action: payload?.action, error: err.message});
-            errors.push(url + ' → ' + err.message);
+            const errMsg = (err && err.message) ? err.message : String(err);
+            console.error('[AppsScript POST FAIL]', {url, action: payload?.action, error: errMsg});
+            errors.push(url + ' → ' + errMsg);
+
+            const looksLikeCors = /failed to fetch|networkerror|load failed|cors/i.test(errMsg);
+            if (looksLikeCors) {
+                try {
+                    await fetch(url, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+                        body: JSON.stringify(payload)
+                    });
+
+                    console.info('[AppsScript POST NO-CORS FALLBACK]', {url, action: payload?.action});
+                    activeAppsScriptUrl = url;
+                    return {
+                        status: 'success',
+                        message: 'Solicitud enviada (modo compatibilidad CORS). Revisa la hoja para confirmar.'
+                    };
+                } catch (fallbackErr) {
+                    const fallbackMsg = (fallbackErr && fallbackErr.message) ? fallbackErr.message : String(fallbackErr);
+                    console.error('[AppsScript POST NO-CORS FAIL]', {url, action: payload?.action, error: fallbackMsg});
+                    errors.push(url + ' (no-cors) → ' + fallbackMsg);
+                }
+            }
         }
     }
 
     throw new Error('No se pudo completar la solicitud: ' + errors.join(' | '));
 }
+
 
 function initDashboard() {
     const merged = allIncidents.map(inc => {
