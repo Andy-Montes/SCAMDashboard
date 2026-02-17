@@ -401,7 +401,7 @@
             <div class="filters" style="margin-bottom: 20px;">
                 <h3>Cliente</h3>
                 <div class="filters-grid">
-                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="Sodimac">Sodimac</option><option value="Sumato Test">Sumato Test</option></select></div>
+                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="">Seleccione cliente...</option><option value="Sodimac">Sodimac</option><option value="Sumato Test">Sumato Test</option></select></div>
                 </div>
             </div>
             <div class="kpis">
@@ -418,14 +418,6 @@
                     <div class="form-group">
                         <label>DeviceID</label>
                         <input type="number" id="newDeviceId" required placeholder="Ej: 23">
-                    </div>
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <select id="newCliente" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Sodimac">Sodimac</option>
-                            <option value="Sumato Test">Sumato Test</option>
-                        </select>
                     </div>
                     <div class="form-group">
                         <label>Registrado Por</label>
@@ -746,7 +738,7 @@ function initDashboard() {
 }
 
 function renderKPIs() {
-    const client = document.getElementById('filterClient')?.value || 'Sodimac';
+    const client = document.getElementById('filterClient')?.value || '';
     const clientDevices = allDevices.filter(d => !client || getDeviceClient(d) === client);
     const clientIncidents = allIncidents.filter(i => !client || getIncidentClient(i) === client);
     const total = clientDevices.length;
@@ -755,6 +747,18 @@ function renderKPIs() {
     const totalInc = clientIncidents.length;
     const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
     const activeInc = totalInc - resolved;
+
+    if (!client) {
+        document.getElementById('kpiTotal').textContent = '--';
+        document.getElementById('kpiActive').textContent = '--';
+        document.getElementById('kpiActivePercent').textContent = '--';
+        document.getElementById('kpiInactive').textContent = '--';
+        document.getElementById('kpiInactivePercent').textContent = '--';
+        document.getElementById('kpiIncidentsActive').textContent = '--';
+        document.getElementById('kpiIncidentsResolved').textContent = '--';
+        document.getElementById('kpiIncidentsTotal').textContent = '--';
+        return;
+    }
     
     document.getElementById('kpiTotal').textContent = total;
     document.getElementById('kpiActive').textContent = active;
@@ -808,6 +812,13 @@ function getIncidentDetailsText(inc) {
         .join('\n');
 }
 
+function renderClientSelectionMessage() {
+    document.getElementById('storeCountResumen').textContent = '0';
+    document.getElementById('storesGridResumen').innerHTML = '';
+    document.getElementById('incidentsByStoreContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
+    document.getElementById('storesSectionsContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
+}
+
 function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const type = document.getElementById('filterType').value;
@@ -815,6 +826,12 @@ function applyFilters() {
     const resolved = document.getElementById('filterResolved').value;
     const store = document.getElementById('filterStore').value;
     const client = document.getElementById('filterClient').value;
+
+    if (!client) {
+        filteredIncidents = [];
+        renderClientSelectionMessage();
+        return;
+    }
     
     filteredIncidents = allIncidents.filter(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
@@ -1059,8 +1076,12 @@ function openDetailModal(idInc) {
         ...inc,
         Tienda: inc.DeviceStoreName || inc.Tienda || '',
         Cliente: getIncidentClient(inc),
-        Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || ''
+        Responsable_Asignado: inc.Responsable_Asignado || inc.Responsable || '',
+        Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado || inc.Responsable] || ''
     };
+
+    hiddenFields.add('cameraactive');
+    hiddenFields.add('responsable');
 
     const visibleEntries = Object.entries(allFields).filter(([key]) => !hiddenFields.has(normalizeField(key)));
     const columns = [[], []];
@@ -1146,12 +1167,13 @@ function setupEvents() {
         const tipo = document.getElementById('newTipoAnomalia').value;
         const estadoCamara = document.getElementById('newEstadoCamara').value;
         const desc = document.getElementById('newDescripcion').value;
-        const cliente = document.getElementById('newCliente').value;
+        const cliente = document.getElementById('filterClient').value;
         const registradoPor = document.getElementById('newRegistradoPor').value;
         const responsable = document.getElementById('newResponsable').value;
         const emailResponsable = emailsResponsables[responsable] || '';
         
-        if (!did || !tipo || !estadoCamara || !desc || !cliente || !registradoPor || !responsable) {alert('Completa los campos'); return;}
+        if (!cliente) {alert('Selecciona un cliente antes de reportar incidencia'); return;}
+        if (!did || !tipo || !estadoCamara || !desc || !registradoPor || !responsable) {alert('Completa los campos'); return;}
         const dev = allDevices.find(d => d.DeviceId == did);
         if (!dev) {alert('DeviceId no encontrado'); return;}
         
