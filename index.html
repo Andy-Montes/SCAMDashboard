@@ -580,6 +580,7 @@
     
     <script>
 const APPS_SCRIPT_URLS = [
+    'https://script.google.com/macros/s/AKfycbxABZiCJnMf7v07Zt7cIt7-Xe1rdhx_3QV81H7LS3hjeqX3nurbVRcv3sxnwCj3bLJXiA/exec',
     'https://script.google.com/macros/s/AKfycbxCjJWIq5ObwhZmvS-OMIbPzbQKJTe3felng1lonRYKmen6M4ST1vgtI5WBmrMFBV-5Mw/exec',
     'https://script.google.com/macros/s/AKfycbwd6Nr66tEVACjzliQbQGVCM2AZzCNxuPWBFqB_pdskDNzSlO-Qnw1qlbLYE96EitO35g/exec',
     'https://script.google.com/macros/s/AKfycbyqO9pHqEBTmjEpXA1OVeSKO8UdxReWsb20X8wT6elaR6-c4vmwjk7NHJ6Krn6t9UYUgQ/exec'
@@ -1200,6 +1201,14 @@ function sendIncidentEmail(idInc) {
     window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
+function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion}) {
+    if (!email) return;
+
+    const subject = `✅ Incidencia ${id} - ${tipo}`;
+    const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\n🆔 ID: ${id}\n📷 Device: ${deviceId}\n🏢 Cliente: ${cliente}\n⚠️ Tipo: ${tipo}\n👤 Reportado por: ${registradoPor}\n📝 Descripción: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
+    window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+}
+
 function exportToExcel() {
     let csv = 'ID,DeviceId,Tienda,Tipo,Zona,IP,Estado,Resuelto,Fecha\n';
     filteredIncidents.forEach(i => {
@@ -1274,9 +1283,18 @@ function setupEvents() {
                 emailResponsable: emailResponsable
             });
             if (result.status === 'success') {
-                const backendMessage = result.message ? ` (${result.message})` : '';
-                const backendId = result.id ? `\nID: ${result.id}` : '';
-                alert(`✅ Incidencia agregada correctamente${backendMessage}${backendId}`);
+                const idIncidencia = result.id || 'N/A';
+                alert('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.');
+                openResponsibleMailto({
+                    email: emailResponsable,
+                    responsable: responsable,
+                    id: idIncidencia,
+                    tipo: tipo,
+                    deviceId: did,
+                    cliente: cliente,
+                    registradoPor: registradoPor,
+                    descripcion: desc
+                });
                 setTimeout(() => location.reload(), 1000);
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
