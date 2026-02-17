@@ -301,35 +301,49 @@
         }
         .detail-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+        .detail-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            padding: 8px;
+        }
+        .detail-section-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #2d3748;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            margin-bottom: 6px;
         }
         .detail-column {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
         }
         .detail-item {
             border: 1px solid #e2e8f0;
             border-radius: 6px;
-            padding: 6px 8px;
-            background: #f8fafc;
-            min-height: 58px;
+            padding: 5px 7px;
+            background: #ffffff;
+            min-height: 48px;
         }
         .detail-label {
             display: block;
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: #4a5568;
             letter-spacing: 0.01em;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
             text-transform: uppercase;
         }
         .detail-value {
             display: block;
-            font-size: 0.84rem;
+            font-size: 0.8rem;
             color: #1a202c;
-            line-height: 1.25;
+            line-height: 1.2;
             word-break: break-word;
         }
         .detail-modal-actions {
@@ -359,6 +373,7 @@
                 padding: 14px;
             }
             .detail-grid { grid-template-columns: 1fr; }
+            .detail-section { padding: 7px; }
         }
     </style>
 </head>
@@ -1092,7 +1107,6 @@ function openDetailModal(idInc) {
     if (!inc) return;
     currentDetailIncidentId = idInc;
     const resolved = inc.Resuelto === 'Si';
-    const hiddenFields = new Set(['devicename', 'devicestorename', 'active']);
     const normalizeField = field => String(field || '').toLowerCase().replace(/[_\s]/g, '');
     const formatDetailValue = (key, value) => {
         if (value === null || value === undefined || value === '') return 'N/A';
@@ -1104,29 +1118,62 @@ function openDetailModal(idInc) {
         return value;
     };
 
-    const allFields = {
-        ...inc,
-        Tienda: inc.DeviceStoreName || inc.Tienda || '',
-        Cliente: getIncidentClient(inc),
-        Responsable_Asignado: inc.Responsable_Asignado || inc.Responsable || '',
-        Email_Responsable: inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado || inc.Responsable] || ''
+    const responsableAsignado = inc.Responsable_Asignado || inc.Responsable || '';
+    const emailResponsable = inc.Email_Responsable || emailsResponsables[responsableAsignado] || '';
+
+    const buildEntries = entries => entries
+        .map(([label, value]) => [label, formatDetailValue(label, value)])
+        .filter(([, value]) => value !== 'N/A');
+
+    const cameraEntries = buildEntries([
+        ['Device ID', inc.DeviceId],
+        ['Código test', inc.Codigo],
+        ['Cámara', inc.DeviceName || inc.Camara],
+        ['Physical Zone ID', inc.PhysicalZoneId],
+        ['IP', inc.IP],
+        ['Estado', inc.Estado]
+    ]);
+
+    const incidentEntries = buildEntries([
+        ['ID Incidencia', inc.ID],
+        ['Tipo de problema', inc.Tipo || inc.TipoAnomalia],
+        ['Descripción', inc.Descripcion],
+        ['Tienda', inc.DeviceStoreName || inc.Tienda],
+        ['Cliente', getIncidentClient(inc)],
+        ['Fecha', inc.Fecha],
+        ['Resuelta', inc.Resuelto],
+        ['Fecha resolución', inc.FechaResolucion],
+        ['Días pasados', inc.DiasPasados]
+    ]);
+
+    const ownerEntries = buildEntries([
+        ['Reportado por', inc.Registrado_Por],
+        ['Responsable asignado', responsableAsignado],
+        ['Email responsable', emailResponsable],
+        ['Observaciones', inc.Observaciones]
+    ]);
+
+    const renderEntries = entries => {
+        if (!entries.length) return '<div class="detail-item"><span class="detail-label">Info</span><span class="detail-value">N/A</span></div>';
+        return entries
+            .map(([key, value]) => `<div class="detail-item"><span class="detail-label">${key}</span><span class="detail-value">${value}</span></div>`)
+            .join('');
     };
-
-    hiddenFields.add('cameraactive');
-    hiddenFields.add('responsable');
-
-    const visibleEntries = Object.entries(allFields).filter(([key]) => !hiddenFields.has(normalizeField(key)));
-    const columns = [[], []];
-    visibleEntries.forEach((entry, idx) => columns[idx % 2].push(entry));
-
-    const renderColumn = entries => entries
-        .map(([key, value]) => `<div class="detail-item"><span class="detail-label">${key}</span><span class="detail-value">${formatDetailValue(key, value)}</span></div>`)
-        .join('');
 
     document.getElementById('detailBody').innerHTML = `
         <div class="detail-grid">
-            <div class="detail-column">${renderColumn(columns[0])}</div>
-            <div class="detail-column">${renderColumn(columns[1])}</div>
+            <section class="detail-section">
+                <h4 class="detail-section-title">Datos de cámara</h4>
+                <div class="detail-column">${renderEntries(cameraEntries)}</div>
+            </section>
+            <section class="detail-section">
+                <h4 class="detail-section-title">Datos de incidencia</h4>
+                <div class="detail-column">${renderEntries(incidentEntries)}</div>
+            </section>
+            <section class="detail-section">
+                <h4 class="detail-section-title">Resolución y responsables</h4>
+                <div class="detail-column">${renderEntries(ownerEntries)}</div>
+            </section>
         </div>
     `;
     const resolveBtn = document.getElementById('detailResolveBtn');
