@@ -1223,12 +1223,23 @@ function sendIncidentEmail(idInc) {
     window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
-function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion}) {
-    if (!email) return;
+function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion, preopenedWindow}) {
+    if (!email) {
+        if (preopenedWindow && !preopenedWindow.closed) preopenedWindow.close();
+        return false;
+    }
 
     const subject = `✅ Incidencia ${id} - ${tipo}`;
     const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\n🆔 ID: ${id}\n📷 Device: ${deviceId}\n🏢 Cliente: ${cliente}\n⚠️ Tipo: ${tipo}\n👤 Reportado por: ${registradoPor}\n📝 Descripción: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
-    window.open(`mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    if (preopenedWindow && !preopenedWindow.closed) {
+        preopenedWindow.location.href = mailtoUrl;
+        return true;
+    }
+
+    const opened = window.open(mailtoUrl, '_blank');
+    return !!opened;
 }
 
 function exportToExcel() {
@@ -1273,21 +1284,35 @@ function setupEvents() {
     
     document.getElementById('addIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const did = document.getElementById('newDeviceId').value;
-        const tipo = document.getElementById('newTipoAnomalia').value;
-        const estadoCamara = document.getElementById('newEstadoCamara').value;
-        const desc = document.getElementById('newDescripcion').value;
-        const cliente = document.getElementById('filterClient').value;
-        const registradoPor = document.getElementById('newRegistradoPor').value;
-        const responsable = document.getElementById('newResponsable').value;
-        const emailResponsable = emailsResponsables[responsable] || '';
-        
-        if (!cliente) {alert('Selecciona un cliente antes de reportar incidencia'); return;}
-        if (!did || !tipo || !estadoCamara || !desc || !registradoPor || !responsable) {alert('Completa los campos'); return;}
-        const dev = allDevices.find(d => d.DeviceId == did);
-        if (!dev) {alert('DeviceId no encontrado'); return;}
+        const did = document.getElementById('newDeviceId').value.trim();
+        const tipo = document.getElementById('newTipoAnomalia').value.trim();
+        const estadoCamara = document.getElementById('newEstadoCamara').value.trim();
+        const desc = document.getElementById('newDescripcion').value.trim();
+        const cliente = document.getElementById('filterClient').value.trim();
+        const registradoPor = document.getElementById('newRegistradoPor').value.trim();
+        const responsable = document.getElementById('newResponsable').value.trim();
+        const emailResponsable = (emailsResponsables[responsable] || '').trim();
+
+        const missingFields = [];
+        if (!cliente) missingFields.push('Cliente');
+        if (!did) missingFields.push('DeviceID');
+        if (!tipo) missingFields.push('Tipo Anomalía');
+        if (!estadoCamara) missingFields.push('Estado');
+        if (!desc) missingFields.push('Descripción');
+        if (!registradoPor) missingFields.push('Registrado Por');
+        if (!responsable) missingFields.push('Responsable Asignado');
+
+        if (missingFields.length) {
+            alert('Debes completar todos los campos obligatorios:\n- ' + missingFields.join('\n- '));
+            return;
+        }
+
+        const dev = allDevices.find(d => String(d.DeviceId) === String(did));
+        if (!dev) {alert('DeviceID no encontrado'); return;}
         
         const btn = document.getElementById('btnAddIncident');
+        const preopenedMailWindow = emailResponsable ? window.open('about:blank', '_blank') : null;
+        let mailWindowUsed = false;
         btn.disabled = true;
         btn.textContent = 'Agregando...';
         
@@ -1307,7 +1332,7 @@ function setupEvents() {
             if (result.status === 'success') {
                 const idIncidencia = result.id || 'N/A';
                 alert('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.');
-                openResponsibleMailto({
+                mailWindowUsed = openResponsibleMailto({
                     email: emailResponsable,
                     responsable: responsable,
                     id: idIncidencia,
@@ -1315,8 +1340,12 @@ function setupEvents() {
                     deviceId: did,
                     cliente: cliente,
                     registradoPor: registradoPor,
-                    descripcion: desc
+                    descripcion: desc,
+                    preopenedWindow: preopenedMailWindow
                 });
+                if (!mailWindowUsed) {
+                    alert('⚠️ Tu navegador bloqueó la ventana de correo. Habilita popups para este sitio e inténtalo de nuevo.');
+                }
                 setTimeout(() => location.reload(), 1000);
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
@@ -1324,6 +1353,9 @@ function setupEvents() {
         } catch (err) {
             alert('❌ Error: ' + err.message);
         } finally {
+            if (preopenedMailWindow && !mailWindowUsed && !preopenedMailWindow.closed) {
+                preopenedMailWindow.close();
+            }
             btn.disabled = false;
             btn.textContent = 'Reportar Incidencia';
         }
