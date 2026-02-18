@@ -482,11 +482,9 @@
                     </div>
                     <div class="form-group">
                         <label>RESPONSABLE</label>
-                        <input type="text" id="newResponsableTipo" placeholder="Ej: Sumato, MTS..." required>
-                    </div>
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <input type="text" id="newClienteView" readonly placeholder="Seleccione cliente arriba">
+                        <select id="newResponsableTipo" required>
+                            <option value="">Seleccione cliente primero...</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -663,11 +661,11 @@ function normalizeIncidentRecord(raw = {}) {
     normalized.Camara = raw.Camara ?? raw.Cámara ?? raw.Camera ?? raw.DeviceName ?? '';
     normalized.PhysicalZoneId = raw.PhysicalZoneId ?? raw.PhysicalZoneID ?? raw.ZoneId ?? raw.Zona ?? '';
     normalized.IP = raw.IP ?? raw.Ip ?? '';
-    normalized.Estado = raw.Estado ?? raw.EstadoCamara ?? raw['Estado Cámara'] ?? raw['Estado Camara'] ?? raw.CameraStatus ?? '';
+    normalized.Estado = raw.Estado ?? raw.estado ?? raw.EstadoCamara ?? raw['Estado Cámara'] ?? raw['Estado Camara'] ?? raw.CameraStatus ?? '';
     normalized.ID = raw.ID ?? raw.Id ?? raw.id ?? raw.IdIncidencia ?? raw.idIncidencia ?? raw.ID_Incidencia ?? raw['ID Incidencia'] ?? raw['Id Incidencia'] ?? '';
-    normalized.Tipo = raw.Tipo ?? raw.TipoAnomalia ?? raw.tipoAnomalia ?? raw['Tipo Anomalía'] ?? raw['Tipo Anomalia'] ?? '';
+    normalized.Tipo = raw.Tipo ?? raw.tipo ?? raw.TipoAnomalia ?? raw.tipoAnomalia ?? raw['Tipo Anomalía'] ?? raw['Tipo Anomalia'] ?? raw['Tipo de problema'] ?? '';
     normalized.TipoAnomalia = normalized.Tipo;
-    normalized.Descripcion = raw.Descripcion ?? raw.Descripción ?? raw.descripcion ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
+    normalized.Descripcion = raw.Descripcion ?? raw.Descripción ?? raw.descripcion ?? raw['Descripción problema'] ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
     normalized.Tienda = raw.Tienda ?? raw.StoreName ?? raw.tienda ?? '';
     normalized.Fecha = raw.Fecha ?? raw.Timestamp ?? raw.fecha ?? '';
     normalized.Resuelto = raw.Resuelto ?? raw.resuelto ?? '';
@@ -849,7 +847,12 @@ async function postToAppsScript(payload) {
             const looksLikeCors = /failed to fetch|networkerror|load failed|cors/i.test(errMsg);
             if (looksLikeCors) {
                 console.warn('[AppsScript POST CORS-LIKELY]', {url, action: payload?.action, error: errMsg});
-                throw new Error('El navegador bloqueó la respuesta del servidor (CORS). Verifica en Network si el POST fue enviado para evitar duplicados.');
+                activeAppsScriptUrl = url;
+                return {
+                    status: 'success',
+                    message: 'Solicitud enviada (respuesta bloqueada por CORS)',
+                    corsBlockedResponse: true
+                };
             }
         }
     }
@@ -867,7 +870,7 @@ function initDashboard() {
     
     allIncidents = merged;
     document.getElementById('newRegistradoPor').value = loggedUser;
-    syncNewIncidentClientField();
+    syncResponsableTipoOptions();
     renderKPIs();
     populateFilters();
     applyFilters();
@@ -1156,12 +1159,37 @@ function findIncidentByRef(ref) {
     return allIncidents.find(i => i.__uiKey === ref) || allIncidents.find(i => i.ID == ref) || null;
 }
 
-function syncNewIncidentClientField() {
-    const input = document.getElementById('newClienteView');
-    const selectedClient = document.getElementById('filterClient')?.value || '';
-    if (!input) return;
-    input.value = selectedClient || '';
-    input.placeholder = selectedClient ? '' : 'Seleccione cliente arriba';
+function syncResponsableTipoOptions() {
+    const select = document.getElementById('newResponsableTipo');
+    if (!select) return;
+
+    const client = (document.getElementById('filterClient')?.value || '').trim();
+    const optionsByClient = {
+        'Sodimac': ['Sodimac', 'Sumato'],
+        'Sumato Test': ['Sumato Test', 'Sumato']
+    };
+
+    const selectedBefore = select.value;
+    const options = optionsByClient[client] || [];
+    select.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = options.length ? 'Seleccione...' : 'Seleccione cliente primero...';
+    select.appendChild(placeholder);
+
+    options.forEach(optVal => {
+        const opt = document.createElement('option');
+        opt.value = optVal;
+        opt.textContent = optVal;
+        select.appendChild(opt);
+    });
+
+    if (options.includes(selectedBefore)) {
+        select.value = selectedBefore;
+    } else {
+        select.value = '';
+    }
 }
 
 function createCard(inc) {
@@ -1370,7 +1398,7 @@ function setupEvents() {
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
     document.getElementById('filterStore').addEventListener('change', applyFilters);
-    document.getElementById('filterClient').addEventListener('change', () => { syncNewIncidentClientField(); renderKPIs(); applyFilters(); });
+    document.getElementById('filterClient').addEventListener('change', () => { syncResponsableTipoOptions(); renderKPIs(); applyFilters(); });
     
     document.getElementById('tabResumen').addEventListener('click', () => {
         currentView = 'resumen';
@@ -1436,13 +1464,21 @@ function setupEvents() {
             const result = await postToAppsScript({
                 action: 'agregar_incidencia', 
                 deviceId: did, 
+                DeviceId: did,
                 tipoAnomalia: tipo, 
+                tipo: tipo,
+                Tipo: tipo,
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
+                Estado: estadoCamara,
                 descripcion: desc,
+                Descripcion: desc,
+                observacion: desc,
+                Observacion: desc,
                 responsableTipo: responsableTipo,
                 ResponsableTipo: responsableTipo,
                 cliente: cliente,
+                Cliente: cliente,
                 registradoPor: registradoPor,
                 responsable: responsable,
                 emailResponsable: emailResponsable
