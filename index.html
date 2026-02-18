@@ -1284,19 +1284,31 @@ function setupEvents() {
     
     document.getElementById('addIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const did = document.getElementById('newDeviceId').value;
-        const tipo = document.getElementById('newTipoAnomalia').value;
-        const estadoCamara = document.getElementById('newEstadoCamara').value;
-        const desc = document.getElementById('newDescripcion').value;
-        const cliente = document.getElementById('filterClient').value;
-        const registradoPor = document.getElementById('newRegistradoPor').value;
-        const responsable = document.getElementById('newResponsable').value;
-        const emailResponsable = emailsResponsables[responsable] || '';
-        
-        if (!cliente) {alert('Selecciona un cliente antes de reportar incidencia'); return;}
-        if (!did || !tipo || !estadoCamara || !desc || !registradoPor || !responsable) {alert('Completa los campos'); return;}
-        const dev = allDevices.find(d => d.DeviceId == did);
-        if (!dev) {alert('DeviceId no encontrado'); return;}
+        const did = document.getElementById('newDeviceId').value.trim();
+        const tipo = document.getElementById('newTipoAnomalia').value.trim();
+        const estadoCamara = document.getElementById('newEstadoCamara').value.trim();
+        const desc = document.getElementById('newDescripcion').value.trim();
+        const cliente = document.getElementById('filterClient').value.trim();
+        const registradoPor = document.getElementById('newRegistradoPor').value.trim();
+        const responsable = document.getElementById('newResponsable').value.trim();
+        const emailResponsable = (emailsResponsables[responsable] || '').trim();
+
+        const missingFields = [];
+        if (!cliente) missingFields.push('Cliente');
+        if (!did) missingFields.push('DeviceID');
+        if (!tipo) missingFields.push('Tipo Anomalía');
+        if (!estadoCamara) missingFields.push('Estado');
+        if (!desc) missingFields.push('Descripción');
+        if (!registradoPor) missingFields.push('Registrado Por');
+        if (!responsable) missingFields.push('Responsable Asignado');
+
+        if (missingFields.length) {
+            alert('Debes completar todos los campos obligatorios:\n- ' + missingFields.join('\n- '));
+            return;
+        }
+
+        const dev = allDevices.find(d => String(d.DeviceId) === String(did));
+        if (!dev) {alert('DeviceID no encontrado'); return;}
         
         const btn = document.getElementById('btnAddIncident');
         const preopenedMailWindow = emailResponsable ? window.open('about:blank', '_blank') : null;
