@@ -632,9 +632,31 @@ let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
 
+function hasValidDeviceId(value) {
+    const normalized = String(value ?? '').trim();
+    if (!normalized) return false;
+    const lowered = normalized.toLowerCase();
+    return lowered !== 'n/a' && lowered !== 'sin info' && lowered !== 'null' && lowered !== 'undefined';
+}
+
+function inferResponsableTipo(raw) {
+    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
+    if (String(explicit).trim()) return String(explicit).trim();
+
+    const fromColumnK = raw.Responsable ?? raw.responsable ?? '';
+    const val = String(fromColumnK).trim();
+    if (!val) return '';
+
+    const lower = val.toLowerCase();
+    if (lower.includes('sodimac') || lower.includes('sumato') || lower.includes('mts')) return val;
+
+    return '';
+}
+
 
 function normalizeIncidentRecord(raw = {}) {
     const normalized = {...raw};
+    const rawResponsable = raw.Responsable ?? raw.responsable ?? '';
 
     normalized.DeviceId = raw.DeviceId ?? raw.deviceId ?? raw.DeviceID ?? raw['Device ID'] ?? '';
     normalized.Codigo = raw.Codigo ?? raw.Código ?? raw.CodigoTest ?? raw['Código Test'] ?? raw.CodTest ?? '';
@@ -652,9 +674,12 @@ function normalizeIncidentRecord(raw = {}) {
     normalized.FechaResolucion = raw.FechaResolucion ?? raw['Fecha Resolución'] ?? raw.FechaResolución ?? raw.fechaResolucion ?? '';
     normalized.DiasPasados = raw.DiasPasados ?? raw['Días pasados'] ?? raw.Dias ?? '';
     normalized.Registrado_Por = raw.Registrado_Por ?? raw.RegistradoPor ?? raw['Registrado Por'] ?? raw.registradoPor ?? '';
-    normalized.Responsable_Asignado = raw.Responsable_Asignado ?? raw.ResponsableAsignado ?? raw['Responsable Asignado'] ?? raw.Responsable ?? raw.responsable ?? '';
+    normalized.Responsable_Asignado = raw.Responsable_Asignado ?? raw.ResponsableAsignado ?? raw['Responsable Asignado'] ?? '';
+    if (!normalized.Responsable_Asignado && emailsResponsables[String(rawResponsable).trim()]) {
+        normalized.Responsable_Asignado = String(rawResponsable).trim();
+    }
     normalized.Responsable = normalized.Responsable_Asignado;
-    normalized.ResponsableTipo = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
+    normalized.ResponsableTipo = inferResponsableTipo(raw);
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
     normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
 
@@ -762,7 +787,9 @@ async function loadData() {
         const data = await fetchDashboardData();
 
         allDevices = data.devices || [];
-        allIncidents = (data.incidencias || []).map(normalizeIncidentRecord);
+        allIncidents = (data.incidencias || [])
+            .map(normalizeIncidentRecord)
+            .filter(inc => hasValidDeviceId(inc.DeviceId));
 
         document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
         document.getElementById('loadingDiv').style.display = 'none';
