@@ -587,6 +587,7 @@ const CORRECT_PASSWORD = 'deploy2026';
 let loginAttempts = 0;
 let loggedUser = '';
 let currentDetailIncidentId = '';
+let currentDetailIncidentKey = '';
 
 const loginUsers = [
     'Victor',
@@ -764,25 +765,8 @@ async function postToAppsScript(payload) {
 
             const looksLikeCors = /failed to fetch|networkerror|load failed|cors/i.test(errMsg);
             if (looksLikeCors) {
-                try {
-                    await fetch(url, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {'Content-Type': 'text/plain;charset=utf-8'},
-                        body: JSON.stringify(payload)
-                    });
-
-                    console.info('[AppsScript POST NO-CORS FALLBACK]', {url, action: payload?.action});
-                    activeAppsScriptUrl = url;
-                    return {
-                        status: 'success',
-                        message: 'Solicitud enviada (modo compatibilidad CORS). Revisa la hoja para confirmar.'
-                    };
-                } catch (fallbackErr) {
-                    const fallbackMsg = (fallbackErr && fallbackErr.message) ? fallbackErr.message : String(fallbackErr);
-                    console.error('[AppsScript POST NO-CORS FAIL]', {url, action: payload?.action, error: fallbackMsg});
-                    errors.push(url + ' (no-cors) → ' + fallbackMsg);
-                }
+                console.warn('[AppsScript POST CORS-LIKELY]', {url, action: payload?.action, error: errMsg});
+                throw new Error('El navegador bloqueó la respuesta del servidor (CORS). Verifica en Network si el POST fue enviado para evitar duplicados.');
             }
         }
     }
@@ -792,9 +776,9 @@ async function postToAppsScript(payload) {
 
 
 function initDashboard() {
-    const merged = allIncidents.map(inc => {
+    const merged = allIncidents.map((inc, idx) => {
         const dev = allDevices.find(d => d.DeviceId === inc.DeviceId);
-        return {...inc, CameraActive: dev ? String(dev.Active) : '0', DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
+        return {...inc, __uiKey: `${inc.ID || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`, CameraActive: dev ? String(dev.Active) : '0', DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
     });
     
     allIncidents = merged;
@@ -1081,11 +1065,17 @@ function getIncidentDays(rawDate) {
     return Math.max(0, diff);
 }
 
+
+function findIncidentByRef(ref) {
+    if (!ref && ref !== 0) return null;
+    return allIncidents.find(i => i.__uiKey === ref) || allIncidents.find(i => i.ID == ref) || null;
+}
+
 function createCard(inc) {
     const resolved = inc.Resuelto === 'Si';
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
-    const idInc = inc.ID || '';
+    const incidentRef = inc.__uiKey || inc.ID || '';
     const cam = inc.Camara || '';
     const daysDiff = getIncidentDays(inc.Fecha);
 
@@ -1100,12 +1090,12 @@ function createCard(inc) {
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
-    card.addEventListener('click', () => openDetailModal(idInc));
+    card.addEventListener('click', () => openDetailModal(incidentRef));
     return card;
 }
 
 function copyCard(idInc) {
-    const inc = allIncidents.find(i => i.ID == idInc);
+    const inc = findIncidentByRef(idInc);
     if (!inc) return;
     const text = getIncidentDetailsText(inc);
     navigator.clipboard.writeText(text).then(() => {
@@ -1126,9 +1116,10 @@ function getTipoClass(t) {
 
 
 function openDetailModal(idInc) {
-    const inc = allIncidents.find(i => i.ID == idInc);
+    const inc = findIncidentByRef(idInc);
     if (!inc) return;
-    currentDetailIncidentId = idInc;
+    currentDetailIncidentKey = inc.__uiKey || idInc;
+    currentDetailIncidentId = inc.ID || '';
     const resolved = inc.Resuelto === 'Si';
     const normalizeField = field => String(field || '').toLowerCase().replace(/[_\s]/g, '');
     const formatDetailValue = (key, value) => {
@@ -1202,11 +1193,11 @@ function openDetailModal(idInc) {
     const resolveBtn = document.getElementById('detailResolveBtn');
     resolveBtn.disabled = resolved;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
-    document.getElementById('detailResolveBtn').onclick = () => resolveIncident(idInc);
-    document.getElementById('detailEditBtn').onclick = () => { closeDetailModal(); editIncident(idInc); };
-    document.getElementById('detailDeleteBtn').onclick = () => deleteIncident(idInc);
-    document.getElementById('detailEmailBtn').onclick = () => sendIncidentEmail(idInc);
-    document.getElementById('detailCopyBtn').onclick = () => copyCard(idInc);
+    document.getElementById('detailResolveBtn').onclick = () => resolveIncident(currentDetailIncidentKey);
+    document.getElementById('detailEditBtn').onclick = () => { closeDetailModal(); editIncident(currentDetailIncidentKey); };
+    document.getElementById('detailDeleteBtn').onclick = () => deleteIncident(currentDetailIncidentKey);
+    document.getElementById('detailEmailBtn').onclick = () => sendIncidentEmail(currentDetailIncidentKey);
+    document.getElementById('detailCopyBtn').onclick = () => copyCard(currentDetailIncidentKey);
     document.getElementById('detailModal').style.display = 'block';
 }
 
@@ -1215,7 +1206,7 @@ function closeDetailModal() {
 }
 
 function sendIncidentEmail(idInc) {
-    const inc = allIncidents.find(i => i.ID == idInc);
+    const inc = findIncidentByRef(idInc);
     if (!inc) return;
     const recipient = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || userEmails[loggedUser] || '';
     const subject = encodeURIComponent(`Incidencia Device ${inc.DeviceId}`);
@@ -1309,6 +1300,12 @@ function setupEvents() {
 
         const dev = allDevices.find(d => String(d.DeviceId) === String(did));
         if (!dev) {alert('DeviceID no encontrado'); return;}
+
+        const deviceClient = getDeviceClient(dev);
+        if (deviceClient !== cliente) {
+            alert(`El DeviceID ${did} pertenece a ${deviceClient}, no a ${cliente}. Verifica cliente o DeviceID.`);
+            return;
+        }
         
         const btn = document.getElementById('btnAddIncident');
         const preopenedMailWindow = emailResponsable ? window.open('about:blank', '_blank') : null;
@@ -1369,6 +1366,7 @@ function setupEvents() {
         const desc = document.getElementById('editDescripcion').value;
         
         try {
+            if (!idInc) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
             const result = await postToAppsScript({
                 action: 'editar_incidencia',
                 idIncidencia: idInc,
@@ -1393,7 +1391,9 @@ function setupEvents() {
 async function resolveIncident(idInc) {
     if (!confirm('¿Marcar como resuelta?')) return;
     try {
-        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: idInc});
+        const inc = findIncidentByRef(idInc);
+        if (!inc || !inc.ID) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: inc.ID});
         if (result.status === 'success') {
             alert('✅ Incidencia marcada como resuelta');
             setTimeout(() => location.reload(), 1000);
@@ -1406,13 +1406,18 @@ async function resolveIncident(idInc) {
 }
 
 function editIncident(idInc) {
-    const inc = allIncidents.find(i => i.ID == idInc);
+    const inc = findIncidentByRef(idInc);
     if (!inc) {
         alert('❌ Incidencia no encontrada');
         return;
     }
     
-    document.getElementById('editIdIncidencia').value = idInc;
+    document.getElementById('editIdIncidencia').value = inc.ID || '';
+    if (!inc.ID) {
+        alert('Esta incidencia no tiene ID único en la hoja.');
+        return;
+    }
+
     document.getElementById('editTipoAnomalia').value = inc.Tipo || '';
     document.getElementById('editEstadoCamara').value = inc.Estado || '';
     document.getElementById('editDescripcion').value = inc.Descripcion || '';
@@ -1427,7 +1432,9 @@ function closeEditModal() {
 async function deleteIncident(idInc) {
     if (!confirm('⚠️ ¿ELIMINAR permanentemente esta incidencia?')) return;
     try {
-        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: idInc});
+        const inc = findIncidentByRef(idInc);
+        if (!inc || !inc.ID) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: inc.ID});
         if (result.status === 'success') {
             alert('✅ Incidencia eliminada correctamente');
             setTimeout(() => location.reload(), 1000);
