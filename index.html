@@ -277,6 +277,11 @@
         .status-badge { display: inline-block; color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: bold; margin: 0 auto; }
         .status-badge.resuelta { background: #a78bfa; }
         .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
+        .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; }
+        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #7c3aed; }
+        .client-badge { display: inline-block; margin-top: 4px; font-size: 0.64rem; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+        .client-badge.sodimac { background: #dbeafe; color: #1e40af; }
+        .client-badge.sumato { background: #ede9fe; color: #5b21b6; }
         .incident-card-content { display: flex; flex-direction: column; align-items: center; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
@@ -476,6 +481,14 @@
                         </select>
                     </div>
                     <div class="form-group">
+                        <label>RESPONSABLE</label>
+                        <input type="text" id="newResponsableTipo" placeholder="Ej: Sumato, MTS..." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="newClienteView" readonly placeholder="Seleccione cliente arriba">
+                    </div>
+                    <div class="form-group">
                         <label>Descripción</label>
                         <textarea id="newDescripcion" placeholder="Descripción" required></textarea>
                     </div>
@@ -619,6 +632,49 @@ let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
 
+
+function normalizeIncidentRecord(raw = {}) {
+    const normalized = {...raw};
+
+    normalized.DeviceId = raw.DeviceId ?? raw.deviceId ?? raw.DeviceID ?? raw['Device ID'] ?? '';
+    normalized.Codigo = raw.Codigo ?? raw.Código ?? raw.CodigoTest ?? raw['Código Test'] ?? raw.CodTest ?? '';
+    normalized.Camara = raw.Camara ?? raw.Cámara ?? raw.Camera ?? raw.DeviceName ?? '';
+    normalized.PhysicalZoneId = raw.PhysicalZoneId ?? raw.PhysicalZoneID ?? raw.ZoneId ?? raw.Zona ?? '';
+    normalized.IP = raw.IP ?? raw.Ip ?? '';
+    normalized.Estado = raw.Estado ?? raw.EstadoCamara ?? raw['Estado Cámara'] ?? raw['Estado Camara'] ?? raw.CameraStatus ?? '';
+    normalized.ID = raw.ID ?? raw.Id ?? raw.id ?? raw.IdIncidencia ?? raw.idIncidencia ?? raw.ID_Incidencia ?? raw['ID Incidencia'] ?? raw['Id Incidencia'] ?? '';
+    normalized.Tipo = raw.Tipo ?? raw.TipoAnomalia ?? raw.tipoAnomalia ?? raw['Tipo Anomalía'] ?? raw['Tipo Anomalia'] ?? '';
+    normalized.TipoAnomalia = normalized.Tipo;
+    normalized.Descripcion = raw.Descripcion ?? raw.Descripción ?? raw.descripcion ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
+    normalized.Tienda = raw.Tienda ?? raw.StoreName ?? raw.tienda ?? '';
+    normalized.Fecha = raw.Fecha ?? raw.Timestamp ?? raw.fecha ?? '';
+    normalized.Resuelto = raw.Resuelto ?? raw.resuelto ?? '';
+    normalized.FechaResolucion = raw.FechaResolucion ?? raw['Fecha Resolución'] ?? raw.FechaResolución ?? raw.fechaResolucion ?? '';
+    normalized.DiasPasados = raw.DiasPasados ?? raw['Días pasados'] ?? raw.Dias ?? '';
+    normalized.Registrado_Por = raw.Registrado_Por ?? raw.RegistradoPor ?? raw['Registrado Por'] ?? raw.registradoPor ?? '';
+    normalized.Responsable_Asignado = raw.Responsable_Asignado ?? raw.ResponsableAsignado ?? raw['Responsable Asignado'] ?? raw.Responsable ?? raw.responsable ?? '';
+    normalized.Responsable = normalized.Responsable_Asignado;
+    normalized.ResponsableTipo = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
+    normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
+    normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
+
+    return normalized;
+}
+
+function getIncidentId(inc) {
+    if (!inc) return '';
+    return String(
+        inc.ID ??
+        inc.Id ??
+        inc.id ??
+        inc.IdIncidencia ??
+        inc.idIncidencia ??
+        inc.ID_Incidencia ??
+        inc['ID Incidencia'] ??
+        ''
+    ).trim();
+}
+
 function normalizeStoreName(storeName) {
     return String(storeName || '').trim().replace(/\s+/g, ' ').toUpperCase();
 }
@@ -706,7 +762,7 @@ async function loadData() {
         const data = await fetchDashboardData();
 
         allDevices = data.devices || [];
-        allIncidents = data.incidencias || [];
+        allIncidents = (data.incidencias || []).map(normalizeIncidentRecord);
 
         document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
         document.getElementById('loadingDiv').style.display = 'none';
@@ -777,12 +833,14 @@ async function postToAppsScript(payload) {
 
 function initDashboard() {
     const merged = allIncidents.map((inc, idx) => {
-        const dev = allDevices.find(d => d.DeviceId === inc.DeviceId);
-        return {...inc, __uiKey: `${inc.ID || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`, CameraActive: dev ? String(dev.Active) : '0', DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
+        const dev = allDevices.find(d => String(d.DeviceId) === String(inc.DeviceId));
+        const incidentId = getIncidentId(inc);
+        return {...inc, ID: incidentId, __uiKey: `${incidentId || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`, CameraActive: dev ? String(dev.Active) : (String(inc.Estado).toLowerCase() === 'activa' ? '1' : '0'), DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
     });
     
     allIncidents = merged;
     document.getElementById('newRegistradoPor').value = loggedUser;
+    syncNewIncidentClientField();
     renderKPIs();
     populateFilters();
     applyFilters();
@@ -1071,22 +1129,35 @@ function findIncidentByRef(ref) {
     return allIncidents.find(i => i.__uiKey === ref) || allIncidents.find(i => i.ID == ref) || null;
 }
 
+function syncNewIncidentClientField() {
+    const input = document.getElementById('newClienteView');
+    const selectedClient = document.getElementById('filterClient')?.value || '';
+    if (!input) return;
+    input.value = selectedClient || '';
+    input.placeholder = selectedClient ? '' : 'Seleccione cliente arriba';
+}
+
 function createCard(inc) {
     const resolved = inc.Resuelto === 'Si';
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
+    const client = getIncidentClient(inc);
+    const isSumato = client === 'Sumato Test';
+    const pendingClientClass = !resolved ? (isSumato ? ' pendiente-sumato' : ' pendiente-sodimac') : '';
+    const clientBadgeClass = isSumato ? 'sumato' : 'sodimac';
     const incidentRef = inc.__uiKey || inc.ID || '';
     const cam = inc.Camara || '';
     const daysDiff = getIncidentDays(inc.Fecha);
 
     const card = document.createElement('div');
-    card.className = 'incident-card ' + cls;
+    card.className = 'incident-card ' + cls + pendingClientClass;
     card.innerHTML = `
         <div class="incident-card-content">
             <div class="device-number">${inc.DeviceId || 'N/A'}</div>
             <div class="cam-number">${cam || 'Sin CAM'}</div>
             <div class="incident-type">${tipo || 'Sin tipo'}</div>
             <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
+            <span class="client-badge ${clientBadgeClass}">${client}</span>
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
@@ -1119,7 +1190,8 @@ function openDetailModal(idInc) {
     const inc = findIncidentByRef(idInc);
     if (!inc) return;
     currentDetailIncidentKey = inc.__uiKey || idInc;
-    currentDetailIncidentId = inc.ID || '';
+    const incidentId = getIncidentId(inc);
+    currentDetailIncidentId = incidentId;
     const resolved = inc.Resuelto === 'Si';
     const normalizeField = field => String(field || '').toLowerCase().replace(/[_\s]/g, '');
     const formatDetailValue = (key, value) => {
@@ -1149,7 +1221,7 @@ function openDetailModal(idInc) {
     ]);
 
     const incidentEntries = buildEntries([
-        ['ID Incidencia', inc.ID],
+        ['ID Incidencia', incidentId],
         ['Tipo de problema', inc.Tipo || inc.TipoAnomalia],
         ['Descripción', inc.Descripcion],
         ['Tienda', inc.DeviceStoreName || inc.Tienda],
@@ -1161,6 +1233,7 @@ function openDetailModal(idInc) {
     ]);
 
     const ownerEntries = buildEntries([
+        ['Responsable (tipo)', inc.ResponsableTipo],
         ['Reportado por', inc.Registrado_Por],
         ['Responsable asignado', responsableAsignado],
         ['Email responsable', emailResponsable],
@@ -1191,11 +1264,28 @@ function openDetailModal(idInc) {
         </div>
     `;
     const resolveBtn = document.getElementById('detailResolveBtn');
-    resolveBtn.disabled = resolved;
+    const editBtn = document.getElementById('detailEditBtn');
+    const deleteBtn = document.getElementById('detailDeleteBtn');
+    const hasIncidentId = Boolean(incidentId);
+
+    resolveBtn.disabled = resolved || !hasIncidentId;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
+    editBtn.disabled = !hasIncidentId;
+    deleteBtn.disabled = !hasIncidentId;
+
+    if (!hasIncidentId) {
+        resolveBtn.title = 'Esta incidencia no tiene ID en la hoja';
+        editBtn.title = 'Esta incidencia no tiene ID en la hoja';
+        deleteBtn.title = 'Esta incidencia no tiene ID en la hoja';
+    } else {
+        resolveBtn.title = '';
+        editBtn.title = '';
+        deleteBtn.title = '';
+    }
+
     document.getElementById('detailResolveBtn').onclick = () => resolveIncident(currentDetailIncidentKey);
-    document.getElementById('detailEditBtn').onclick = () => { closeDetailModal(); editIncident(currentDetailIncidentKey); };
-    document.getElementById('detailDeleteBtn').onclick = () => deleteIncident(currentDetailIncidentKey);
+    editBtn.onclick = () => { closeDetailModal(); editIncident(currentDetailIncidentKey); };
+    deleteBtn.onclick = () => deleteIncident(currentDetailIncidentKey);
     document.getElementById('detailEmailBtn').onclick = () => sendIncidentEmail(currentDetailIncidentKey);
     document.getElementById('detailCopyBtn').onclick = () => copyCard(currentDetailIncidentKey);
     document.getElementById('detailModal').style.display = 'block';
@@ -1253,7 +1343,7 @@ function setupEvents() {
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
     document.getElementById('filterStore').addEventListener('change', applyFilters);
-    document.getElementById('filterClient').addEventListener('change', () => { renderKPIs(); applyFilters(); });
+    document.getElementById('filterClient').addEventListener('change', () => { syncNewIncidentClientField(); renderKPIs(); applyFilters(); });
     
     document.getElementById('tabResumen').addEventListener('click', () => {
         currentView = 'resumen';
@@ -1278,6 +1368,7 @@ function setupEvents() {
         const did = document.getElementById('newDeviceId').value.trim();
         const tipo = document.getElementById('newTipoAnomalia').value.trim();
         const estadoCamara = document.getElementById('newEstadoCamara').value.trim();
+        const responsableTipo = document.getElementById('newResponsableTipo').value.trim();
         const desc = document.getElementById('newDescripcion').value.trim();
         const cliente = document.getElementById('filterClient').value.trim();
         const registradoPor = document.getElementById('newRegistradoPor').value.trim();
@@ -1289,6 +1380,7 @@ function setupEvents() {
         if (!did) missingFields.push('DeviceID');
         if (!tipo) missingFields.push('Tipo Anomalía');
         if (!estadoCamara) missingFields.push('Estado');
+        if (!responsableTipo) missingFields.push('Responsable');
         if (!desc) missingFields.push('Descripción');
         if (!registradoPor) missingFields.push('Registrado Por');
         if (!responsable) missingFields.push('Responsable Asignado');
@@ -1321,13 +1413,15 @@ function setupEvents() {
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
                 descripcion: desc,
+                responsableTipo: responsableTipo,
+                ResponsableTipo: responsableTipo,
                 cliente: cliente,
                 registradoPor: registradoPor,
                 responsable: responsable,
                 emailResponsable: emailResponsable
             });
             if (result.status === 'success') {
-                const idIncidencia = result.id || 'N/A';
+                const idIncidencia = result.id || result.ID || result.idIncidencia || 'N/A';
                 alert('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.');
                 mailWindowUsed = openResponsibleMailto({
                     email: emailResponsable,
@@ -1392,8 +1486,9 @@ async function resolveIncident(idInc) {
     if (!confirm('¿Marcar como resuelta?')) return;
     try {
         const inc = findIncidentByRef(idInc);
-        if (!inc || !inc.ID) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
-        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: inc.ID});
+        const incidentId = getIncidentId(inc);
+        if (!inc || !incidentId) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+        const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: incidentId});
         if (result.status === 'success') {
             alert('✅ Incidencia marcada como resuelta');
             setTimeout(() => location.reload(), 1000);
@@ -1412,8 +1507,9 @@ function editIncident(idInc) {
         return;
     }
     
-    document.getElementById('editIdIncidencia').value = inc.ID || '';
-    if (!inc.ID) {
+    const incidentId = getIncidentId(inc);
+    document.getElementById('editIdIncidencia').value = incidentId;
+    if (!incidentId) {
         alert('Esta incidencia no tiene ID único en la hoja.');
         return;
     }
@@ -1433,8 +1529,9 @@ async function deleteIncident(idInc) {
     if (!confirm('⚠️ ¿ELIMINAR permanentemente esta incidencia?')) return;
     try {
         const inc = findIncidentByRef(idInc);
-        if (!inc || !inc.ID) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
-        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: inc.ID});
+        const incidentId = getIncidentId(inc);
+        if (!inc || !incidentId) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+        const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: incidentId});
         if (result.status === 'success') {
             alert('✅ Incidencia eliminada correctamente');
             setTimeout(() => location.reload(), 1000);
