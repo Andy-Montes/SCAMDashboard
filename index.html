@@ -193,20 +193,18 @@
         .view-tab.active { background: #7AAB51; color: white; border-color: #7AAB51; }
         .view-tab:hover { border-color: #7AAB51; }
         
-        .stores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 220px)); justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .stores-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
         .store-card { 
-            background: white; 
-            border-radius: 8px; 
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); 
+            border-radius: 10px; 
             overflow: hidden;
-            transition: all 0.3s ease; 
+            transition: all 0.25s ease; 
             cursor: pointer; 
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-            border: 1px solid #cbd5e1;
-            min-height: 118px;
-            max-height: 118px;
-            width: 220px;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08); 
+            border: 1px solid #dbe2ea;
+            min-height: 126px;
         }
-        .store-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
+        .store-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14); border-color: #c5d1df; }
         .store-card.test-store {
             opacity: 0.7;
             border-color: #cbd5e0;
@@ -214,16 +212,16 @@
         
         
         .store-content {
-            padding: 10px 12px;
+            padding: 0;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        .store-header { margin: 0; padding: 7px 10px; background: #1e3a8a; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .store-header { margin: 0; padding: 8px 11px; background: #1e3a8a; display:flex; align-items:center; justify-content:space-between; gap:8px; }
         .store-name { font-size: 0.92rem; font-weight: 700; color: white; }
         .store-active-total { font-size: 0.9rem; font-weight: 800; color: #dbeafe; }
-        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem; padding: 6px 8px; }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; padding: 9px 10px 10px; }
         .store-stat { display: flex; justify-content: space-between; padding: 2px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; }
         .stat-label { color: #64748b; font-weight: 600; font-size: 0.72rem; }
         .stat-value { font-weight: 800; color: #1f2937; font-size: 0.8rem; }
@@ -258,18 +256,18 @@
             padding: 0;
         }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; }
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 10px; }
         .incidents-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .incidents-owner-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
         .incidents-owner-header { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
         .incidents-owner-header.sumato { color: #166534; }
         .incidents-owner-header.sodimac { color: #1e40af; }
-        .owner-incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+        .owner-incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 9px; }
         .owner-empty { font-size: 0.78rem; color: #94a3b8; font-style: italic; }
         .incident-card { 
             background: #ffffff;
             border-radius: 6px; 
-            padding: 10px 10px 10px 12px; 
+            padding: 9px 9px 9px 11px; 
             transition: all 0.3s ease; 
             position: relative;
             border: 1px solid #cbd5e0;
@@ -378,6 +376,11 @@
         .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close:hover { color: #000; }
         
+
+        @media (max-width: 1300px) {
+            .stores-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        }
+
         @media (max-width: 768px) {
             .header h1 { font-size: 1.4rem; }
             .header { flex-direction: column; text-align: center; }
@@ -385,7 +388,7 @@
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
             .kpis { grid-template-columns: 1fr 1fr; }
             .field-device, .field-tipo, .field-estado, .field-descripcion, .field-registrado, .field-resp-tipo, .field-resp-asignado, .field-submit { grid-column: auto; }
-            .stores-grid { grid-template-columns: 1fr 1fr; justify-content: unset; }
+            .stores-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .incidents-grid { grid-template-columns: 1fr; }
             .incidents-split { grid-template-columns: 1fr; }
             .owner-incidents-grid { grid-template-columns: 1fr; }
@@ -581,15 +584,12 @@
             <form id="editIncidentForm" class="form-grid">
                 <input type="hidden" id="editIdIncidencia">
                 <div class="form-group">
+                    <label>DeviceID</label>
+                    <input type="number" id="editDeviceId" required>
+                </div>
+                <div class="form-group">
                     <label>Tipo Anomalía</label>
-                    <select id="editTipoAnomalia" required>
-                        <option value="Sin acceso a cámara">Sin acceso a cámara</option>
-                        <option value="Problema de imagen">Problema de imagen</option>
-                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
-                        <option value="Error de configuración">Error de configuración</option>
-                        <option value="Problema de Red">Problema de Red</option>
-                    </select>
+                    <select id="editTipoAnomalia" required></select>
                 </div>
                 <div class="form-group">
                     <label>Estado Cámara</label>
@@ -603,6 +603,25 @@
                     <textarea id="editDescripcion"></textarea>
                 </div>
                 <div class="form-group">
+                    <label>Registrado por</label>
+                    <input type="text" id="editRegistradoPor" required>
+                </div>
+                <div class="form-group">
+                    <label>Responsable (Cliente/Sumato)</label>
+                    <select id="editResponsableTipo" required>
+                        <option value="Sodimac">Sodimac</option>
+                        <option value="Sumato">Sumato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Responsable Asignado</label>
+                    <select id="editResponsable" required>
+                        <option value="Andy">Andy</option>
+                        <option value="Diego">Diego</option>
+                        <option value="Mati">Mati</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display:flex; align-items:flex-end;">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
                 </div>
             </form>
@@ -1708,19 +1727,38 @@ function setupEvents() {
     document.getElementById('editIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const idInc = document.getElementById('editIdIncidencia').value;
+        const deviceId = document.getElementById('editDeviceId').value;
         const tipo = document.getElementById('editTipoAnomalia').value;
         const estadoCamara = document.getElementById('editEstadoCamara').value;
         const desc = document.getElementById('editDescripcion').value;
+        const registradoPor = document.getElementById('editRegistradoPor').value;
+        const responsableTipo = document.getElementById('editResponsableTipo').value;
+        const responsable = document.getElementById('editResponsable').value;
+        const emailResponsable = (emailsResponsables[responsable] || '').trim();
         
         try {
             if (!idInc) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
             const result = await postToAppsScript({
                 action: 'editar_incidencia',
                 idIncidencia: idInc,
+                deviceId,
+                DeviceId: deviceId,
+                columnaA_DeviceId: deviceId,
                 tipoAnomalia: tipo,
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
-                descripcion: desc
+                descripcion: desc,
+                columnaH_Descripcion: desc,
+                registradoPor,
+                Registrado_Por: registradoPor,
+                columnaR_RegistradoPor: registradoPor,
+                responsableTipo,
+                ResponsableTipo: responsableTipo,
+                columnaK_Responsable: responsableTipo,
+                responsable,
+                Responsable_Asignado: responsable,
+                columnaS_ResponsableAsignado: responsable,
+                emailResponsable
             });
             if (result.status === 'success') {
                 alert('✅ Incidencia editada correctamente');
@@ -1767,9 +1805,31 @@ function editIncident(idInc) {
         return;
     }
 
-    document.getElementById('editTipoAnomalia').value = inc.Tipo || '';
-    document.getElementById('editEstadoCamara').value = inc.Estado || '';
+    const tipoEdit = document.getElementById('editTipoAnomalia');
+    const tipoValue = inc.Tipo || '';
+    if (tipoValue && ![...tipoEdit.options].some(o => o.value === tipoValue)) {
+        const opt = document.createElement('option');
+        opt.value = tipoValue;
+        opt.textContent = tipoValue;
+        tipoEdit.appendChild(opt);
+    }
+
+    document.getElementById('editDeviceId').value = inc.DeviceId || '';
+    document.getElementById('editTipoAnomalia').value = tipoValue;
+    document.getElementById('editEstadoCamara').value = inc.Estado || 'Activa';
     document.getElementById('editDescripcion').value = inc.Descripcion || '';
+    document.getElementById('editRegistradoPor').value = inc.Registrado_Por || '';
+    document.getElementById('editResponsableTipo').value = getIncidentResponsableTipoLabel(inc) || 'Sodimac';
+
+    const editResp = document.getElementById('editResponsable');
+    const assignedValue = inc.Responsable_Asignado || inc.Responsable || '';
+    if (assignedValue && ![...editResp.options].some(o => o.value === assignedValue)) {
+        const opt = document.createElement('option');
+        opt.value = assignedValue;
+        opt.textContent = assignedValue;
+        editResp.appendChild(opt);
+    }
+    editResp.value = assignedValue || 'Andy';
     
     document.getElementById('editModal').style.display = 'block';
 }
