@@ -371,6 +371,7 @@
             .header { flex-direction: column; text-align: center; }
             .search-filters-container { grid-template-columns: 1fr; }
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
+            .descripcion-group, .form-actions-under-desc { grid-column: 1 / -1; }
             .stores-grid { grid-template-columns: 1fr 1fr; }
             .incidents-grid { grid-template-columns: 1fr; }
             .detail-modal-content {
@@ -438,6 +439,7 @@
             <div class="add-incident-section">
                 <h3>Registrar Nueva Anomalía</h3>
                 <form id="addIncidentForm" class="form-grid">
+                    <div class="form-group-title">Datos de incidencia</div>
                     <div class="form-group">
                         <label>DeviceID</label>
                         <input type="number" id="newDeviceId" required placeholder="Ej: 23">
@@ -461,6 +463,19 @@
                             <option value="Activa">Activa</option>
                             <option value="Inactiva">Inactiva</option>
                         </select>
+                    </div>
+                    <div class="form-group descripcion-group">
+                        <label>Descripción</label>
+                        <textarea id="newDescripcion" placeholder="Descripción" required></textarea>
+                    </div>
+                    <div class="form-group form-actions form-actions-under-desc">
+                        <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
+                    </div>
+
+                    <div class="form-group-title">Datos de responsables</div>
+                    <div class="form-group">
+                        <label>Registrado Por</label>
+                        <input type="text" id="newRegistradoPor" readonly required>
                     </div>
                     <div class="form-group">
                         <label>Descripción</label>
@@ -496,6 +511,7 @@
                     <div class="form-group form-actions">
                         <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
                     </div>
+
                 </form>
             </div>
             
