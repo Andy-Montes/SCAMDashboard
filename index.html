@@ -110,42 +110,50 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 8px; margin: 20px 0; }
         
-        .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .kpi-card { background: white; border-radius: 8px; padding: 20px; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
+        .kpi-card { background: white; border-radius: 8px; padding: 12px; min-height: 114px; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
         .kpi-label { font-size: 0.75rem; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .kpi-value { font-size: 2.5rem; font-weight: bold; margin-bottom: 4px; }
-        .kpi-subtitle { font-size: 0.8rem; color: #a0aec0; }
-        .kpi-green { color: #7AAB51; }
+        .kpi-value { font-size: 2.25rem; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+        .kpi-subtitle { font-size: 0.8rem; color: #8b98ab; }
+        .kpi-subtitle-strong { font-size: 1rem; font-weight: 800; color: #334155; margin-top: 2px; }
+        .kpi-green { color: #16a34a; }
         .kpi-yellow { color: #f59e0b; }
-        .kpi-red { color: #ef4444; }
-        .kpi-blue { color: #3b82f6; }
-        .kpi-purple { color: #a78bfa; }
+        .kpi-red { color: #dc2626; }
+        .kpi-blue { color: #2563eb; }
+        .kpi-purple { color: #7c3aed; }
         
         .add-incident-section { 
             background: white; 
             border-radius: 8px; 
-            border: 3px solid #7AAB51; 
+            border: 4px solid #5f9b3a; 
             padding: 20px; 
             margin-bottom: 25px; 
-            box-shadow: 0 4px 20px rgba(122, 171, 81, 0.2);
+            box-shadow: 0 6px 24px rgba(95, 155, 58, 0.28);
         }
         .add-incident-section h3 { 
             margin-bottom: 15px; 
             font-size: 1.2rem; 
-            color: #2d3748; 
+            color: #111827; 
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        .add-incident-section h3::before { content: "⚠️"; font-size: 1.5rem; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
-        .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+        .form-actions { grid-column: auto; display: flex; justify-content: flex-end; margin-top: 0; }
+        .field-device { grid-column: 1; }
+        .field-tipo { grid-column: 2; }
+        .field-estado { grid-column: 3; }
+        .field-descripcion { grid-column: 4; }
+        .field-registrado { grid-column: 1; }
+        .field-resp-tipo { grid-column: 2; }
+        .field-resp-asignado { grid-column: 3; }
+        .field-submit { grid-column: 4; align-self: end; }
+        .field-submit.form-actions { flex-direction: column; }
+        .field-submit.form-actions::before { content: ""; display: block; height: 22px; }
         .form-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; box-sizing: border-box; }
         .form-group textarea { min-height: 60px; resize: vertical; }
+        #newDescripcion { height: 38px; min-height: 38px; }
         .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
         .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
@@ -185,27 +193,25 @@
         .view-tab.active { background: #7AAB51; color: white; border-color: #7AAB51; }
         .view-tab:hover { border-color: #7AAB51; }
         
-        .stores-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 25px; }
+        .stores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 220px)); justify-content: center; gap: 10px; margin-bottom: 20px; }
         .store-card { 
             background: white; 
-            border-radius: 6px; 
+            border-radius: 8px; 
             overflow: hidden;
             transition: all 0.3s ease; 
             cursor: pointer; 
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); 
-            border: 2px solid #e2e8f0;
-            border-left: 8px solid;
-            min-height: 110px;
-            max-height: 110px;
+            border: 1px solid #cbd5e1;
+            min-height: 118px;
+            max-height: 118px;
+            width: 220px;
         }
         .store-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
         .store-card.test-store {
             opacity: 0.7;
             border-color: #cbd5e0;
         }
-        .store-card.status-ok { border-left-color: #10b981; }
-        .store-card.status-alerta { border-left-color: #f59e0b; }
-        .store-card.status-critico { border-left-color: #ef4444; }
+        
         
         .store-content {
             padding: 10px 12px;
@@ -214,15 +220,17 @@
             flex-direction: column;
             justify-content: space-between;
         }
-        .store-header { margin-bottom: 8px; }
-        .store-name { font-size: 1.1rem; font-weight: bold; color: #2d3748; }
-        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.85rem; }
-        .store-stat { display: flex; justify-content: space-between; padding: 3px 5px; background: #f7fafc; border-radius: 3px; }
-        .stat-label { color: #718096; font-weight: 500; }
-        .stat-value { font-weight: bold; color: #2d3748; font-size: 0.95rem; }
+        .store-header { margin: 0; padding: 7px 10px; background: #1e3a8a; display:flex; align-items:center; justify-content:space-between; gap:8px; }
+        .store-name { font-size: 0.92rem; font-weight: 700; color: white; }
+        .store-active-total { font-size: 0.9rem; font-weight: 800; color: #dbeafe; }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 0.75rem; padding: 6px 8px; }
+        .store-stat { display: flex; justify-content: space-between; padding: 2px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .stat-label { color: #64748b; font-weight: 600; font-size: 0.72rem; }
+        .stat-value { font-weight: 800; color: #1f2937; font-size: 0.8rem; }
         .stat-value.green { color: #10b981; }
         .stat-value.red { color: #ef4444; }
-        .stat-value.purple { color: #a78bfa; }
+        .stat-value.purple { color: #8b5cf6; }
+        .stat-value.blue { color: #1d4ed8; }
         
         .store-section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .store-section-header { 
@@ -250,38 +258,39 @@
             padding: 0;
         }
         
-        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+        .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 7px; }
         .incident-card { 
             background: white;
             border-radius: 6px; 
-            padding: 6px 8px 6px 10px; 
+            padding: 6px 7px 6px 8px; 
             transition: all 0.3s ease; 
             position: relative;
-            border: 2px solid #cbd5e0;
-            border-left: 8px solid;
+            border: 1px solid #cbd5e0;
+            border-left: 12px solid var(--tipo-color, #6b7280);
         }
         .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+        .incident-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--tipo-color, #6b7280); border-top-right-radius: 6px; }
         
-        .tipo-desalineada { border-left-color: #FBC02D; }
-        .tipo-configuracion { border-left-color: #D32F2F; }
-        .tipo-obstruida { border-left-color: #1E88E5; }
-        .tipo-imagen { border-left-color: #FB8C00; }
-        .tipo-acceso { border-left-color: #B71C1C; }
-        .tipo-red { border-left-color: #43A047; }
-        .tipo-otro { border-left-color: #6b7280; }
+        .tipo-desalineada { --tipo-color: #FBC02D; }
+        .tipo-configuracion { --tipo-color: #D32F2F; }
+        .tipo-obstruida { --tipo-color: #1E88E5; }
+        .tipo-imagen { --tipo-color: #FB8C00; }
+        .tipo-acceso { --tipo-color: #B71C1C; }
+        .tipo-red { --tipo-color: #43A047; }
+        .tipo-otro { --tipo-color: #6b7280; }
         
                 .days-badge { position: absolute; top: 8px; right: 8px; color: #718096; font-size: 0.8rem; font-weight: 700; line-height: 1; }
-        .device-number { font-size: 1.35rem; text-align: center; font-weight: 700; color: #1a202c; line-height: 1.1; }
+        .device-number { font-size: 1.18rem; text-align: center; font-weight: 800; color: #1a202c; line-height: 1.1; }
         .cam-number { font-size: 0.75rem; color: #718096; text-align: center; line-height: 1.1; }
-        .incident-type { font-size: 0.75rem; color: #4a5568; margin: 4px 0; font-weight: 600; text-align: center; line-height: 1.2; }
+        .incident-type { font-size: 0.7rem; color: #4a5568; margin: 3px 0; font-weight: 700; text-align: center; line-height: 1.2; }
         .status-badge { display: inline-block; color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: bold; margin: 0 auto; }
         .status-badge.resuelta { background: #a78bfa; }
         .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
-        .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; }
-        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #7c3aed; }
+        .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; background: #eff6ff; }
+        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #16a34a; background: #ecfdf5; }
         .client-badge { display: inline-block; margin-top: 4px; font-size: 0.64rem; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
         .client-badge.sodimac { background: #dbeafe; color: #1e40af; }
-        .client-badge.sumato { background: #ede9fe; color: #5b21b6; }
+        .client-badge.sumato { background: #dcfce7; color: #166534; }
         .incident-card-content { display: flex; flex-direction: column; align-items: center; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
@@ -369,7 +378,9 @@
             .header { flex-direction: column; text-align: center; }
             .search-filters-container { grid-template-columns: 1fr; }
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
-            .stores-grid { grid-template-columns: 1fr 1fr; }
+            .kpis { grid-template-columns: 1fr 1fr; }
+            .field-device, .field-tipo, .field-estado, .field-descripcion, .field-registrado, .field-resp-tipo, .field-resp-asignado, .field-submit { grid-column: auto; }
+            .stores-grid { grid-template-columns: 1fr 1fr; justify-content: unset; }
             .incidents-grid { grid-template-columns: 1fr; }
             .detail-modal-content {
                 width: 94vw;
@@ -428,51 +439,31 @@
             <div class="kpis">
                 <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Cámaras</div></div>
                 <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
-                <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div></div>
-                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div></div>
+                <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div><div class="kpi-subtitle" id="kpiInactiveByIncidents">Por incidencias: --</div><div class="kpi-subtitle" id="kpiInactiveIncTotal">Total incidencias: --</div></div>
+                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div><div class="kpi-subtitle" id="kpiPendingSodimac" class="kpi-subtitle-strong">Sodimac: --</div><div class="kpi-subtitle-strong" id="kpiPendingSumato">Sumato: --</div></div>
                 <div class="kpi-card"><div class="kpi-label">Resueltas</div><div class="kpi-value kpi-purple" id="kpiIncidentsResolved">--</div><div class="kpi-subtitle" id="kpiIncidentsTotal">--</div></div>
             </div>
             
             <div class="add-incident-section">
                 <h3>Registrar Nueva Anomalía</h3>
                 <form id="addIncidentForm" class="form-grid">
-                    <div class="form-group">
+                    <div class="form-group field-device">
                         <label>DeviceID</label>
                         <input type="number" id="newDeviceId" required placeholder="Ej: 23">
                     </div>
-                    <div class="form-group">
-                        <label>Registrado Por</label>
-                        <input type="text" id="newRegistradoPor" readonly required>
-                    </div>
-                    <div class="form-group">
-                        <label>Responsable Asignado</label>
-                        <select id="newResponsable" required>
-                            <option value="">Seleccione...</option>
-                            <optgroup label="Internos">
-                                <option value="Victor">Victor</option>
-                                <option value="Cael">Cael</option>
-                                <option value="Cami">Cami</option>
-                            </optgroup>
-                            <optgroup label="Externos">
-                                <option value="Mati">Mati</option>
-                                <option value="Diego">Diego</option>
-                                <option value="Andy">Andy</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group field-tipo">
                         <label>Tipo Anomalía</label>
                         <select id="newTipoAnomalia" required>
                             <option value="">Seleccione...</option>
-                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                            <option value="Error de configuración">Error de configuración</option>
-                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                            <option value="Sin acceso a cámara">Sin acceso a cámara</option>
                             <option value="Problema de imagen">Problema de imagen</option>
-                            <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                            <option value="Error de configuración">Error de configuración</option>
                             <option value="Problema de Red">Problema de Red</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group field-estado">
                         <label>Estado</label>
                         <select id="newEstadoCamara" required>
                             <option value="">Seleccione...</option>
@@ -480,17 +471,38 @@
                             <option value="Inactiva">Inactiva</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>RESPONSABLE</label>
+                    <div class="form-group field-descripcion">
+                        <label>Descripción</label>
+                        <input type="text" id="newDescripcion" placeholder="Descripción" required>
+                    </div>
+
+                    <div class="form-group field-registrado">
+                        <label>Registrado Por</label>
+                        <input type="text" id="newRegistradoPor" readonly required>
+                    </div>
+                    <div class="form-group field-resp-tipo">
+                        <label>Responsable (Cliente/Sumato)</label>
                         <select id="newResponsableTipo" required>
                             <option value="">Seleccione cliente primero...</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea id="newDescripcion" placeholder="Descripción" required></textarea>
+                    <div class="form-group field-resp-asignado">
+                        <label>Responsable Asignado</label>
+                        <select id="newResponsable" required>
+                            <option value="">Seleccione...</option>
+                            <optgroup label="Internos">
+                                <option value="Victor">Victor</option>
+                                <option value="Cael">Cael</option>
+                                <option value="Cami">Cami</option>
+                                <option value="Diego">Diego</option>
+                                <option value="Mati">Mati</option>
+                            </optgroup>
+                            <optgroup label="Externos">
+                                <option value="Andy">Andy</option>
+                            </optgroup>
+                        </select>
                     </div>
-                    <div class="form-group form-actions">
+                    <div class="form-group form-actions field-submit">
                         <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
                     </div>
                 </form>
@@ -563,11 +575,11 @@
                 <div class="form-group">
                     <label>Tipo Anomalía</label>
                     <select id="editTipoAnomalia" required>
-                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                        <option value="Error de configuración">Error de configuración</option>
-                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Sin acceso a cámara">Sin acceso a cámara</option>
                         <option value="Problema de imagen">Problema de imagen</option>
-                        <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Error de configuración">Error de configuración</option>
                         <option value="Problema de Red">Problema de Red</option>
                     </select>
                 </div>
@@ -625,10 +637,40 @@ const emailsResponsables = {
     'Andy': 'andy@andymontes.com'
 };
 
+const TIPOS_ANOMALIA = [
+    'Sin acceso a cámara',
+    'Problema de imagen',
+    'Cámara desalineada / mal posicionada',
+    'Obstrucción de cámara',
+    'Error de configuración',
+    'Problema de Red'
+];
+
+const MAP_TIPOS = {
+    'Cámara desalineada / mal posicionada': 'CD',
+    'Error de configuración': 'EC',
+    'Obstrucción de cámara': 'OB',
+    'Problema de imagen': 'PI',
+    'Sin acceso a Camara': 'SA',
+    'Problema de Red': 'PR'
+};
+
 let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
+
+function getTipoForIdMap(tipo) {
+    const value = String(tipo || '').trim();
+    if (!value) return '';
+    if (value === 'Sin acceso a cámara') return 'Sin acceso a Camara';
+    return value;
+}
+
+function getTipoCode(tipo) {
+    const key = getTipoForIdMap(tipo);
+    return MAP_TIPOS[key] || '';
+}
 
 function hasValidDeviceId(value) {
     const normalized = String(value ?? '').trim();
@@ -637,18 +679,21 @@ function hasValidDeviceId(value) {
     return lowered !== 'n/a' && lowered !== 'sin info' && lowered !== 'null' && lowered !== 'undefined';
 }
 
+function normalizeResponsableTipo(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const lower = raw.toLowerCase();
+
+    if (lower.includes('sumato')) return 'Sumato';
+    if (lower.includes('sodimac')) return 'Sodimac';
+    if (lower.includes('mts')) return raw;
+
+    return raw;
+}
+
 function inferResponsableTipo(raw) {
-    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
-    if (String(explicit).trim()) return String(explicit).trim();
-
-    const fromColumnK = raw.Responsable ?? raw.responsable ?? '';
-    const val = String(fromColumnK).trim();
-    if (!val) return '';
-
-    const lower = val.toLowerCase();
-    if (lower.includes('sodimac') || lower.includes('sumato') || lower.includes('mts')) return val;
-
-    return '';
+    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? raw['Responsable'] ?? raw.responsable ?? '';
+    return normalizeResponsableTipo(explicit);
 }
 
 
@@ -677,7 +722,7 @@ function normalizeIncidentRecord(raw = {}) {
         normalized.Responsable_Asignado = String(rawResponsable).trim();
     }
     normalized.Responsable = normalized.Responsable_Asignado;
-    normalized.ResponsableTipo = inferResponsableTipo(raw);
+    normalized.ResponsableTipo = inferResponsableTipo(raw) || normalizeResponsableTipo(raw.Responsable ?? raw.responsable ?? '');
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
     normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
 
@@ -704,6 +749,36 @@ function normalizeStoreName(storeName) {
 
 function isTestStore(storeName) {
     return normalizeStoreName(storeName) === 'SUMATO TEST';
+}
+
+function populateTipoAnomaliaOptions() {
+    const selects = [
+        document.getElementById('newTipoAnomalia'),
+        document.getElementById('editTipoAnomalia')
+    ].filter(Boolean);
+
+    selects.forEach((select, index) => {
+        const selectedBefore = select.value;
+        select.innerHTML = '';
+
+        if (index === 0) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Seleccione...';
+            select.appendChild(placeholder);
+        }
+
+        TIPOS_ANOMALIA.forEach(tipo => {
+            const option = document.createElement('option');
+            option.value = tipo;
+            option.textContent = tipo;
+            select.appendChild(option);
+        });
+
+        if (TIPOS_ANOMALIA.includes(selectedBefore)) {
+            select.value = selectedBefore;
+        }
+    });
 }
 
 function validateLogin() {
@@ -741,6 +816,7 @@ function validateLogin() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    populateTipoAnomaliaOptions();
     if (sessionStorage.getItem('auth') === 'true') {
         loggedUser = sessionStorage.getItem('user') || '';
         document.getElementById('loginModal').style.display = 'none';
@@ -916,6 +992,9 @@ function renderKPIs() {
     const totalInc = clientIncidents.length;
     const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
     const activeInc = totalInc - resolved;
+    const inactiveByIncidents = clientIncidents.filter(i => String(i.Estado || '').toLowerCase() === 'inactiva').length;
+    const pendingBySodimac = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
+    const pendingBySumato = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sumato').length;
 
     if (!client) {
         document.getElementById('kpiTotal').textContent = '--';
@@ -923,7 +1002,11 @@ function renderKPIs() {
         document.getElementById('kpiActivePercent').textContent = '--';
         document.getElementById('kpiInactive').textContent = '--';
         document.getElementById('kpiInactivePercent').textContent = '--';
+        document.getElementById('kpiInactiveByIncidents').textContent = 'Por incidencias: --';
+        document.getElementById('kpiInactiveIncTotal').textContent = 'Total incidencias: --';
         document.getElementById('kpiIncidentsActive').textContent = '--';
+        document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: --';
+        document.getElementById('kpiPendingSumato').textContent = 'Sumato: --';
         document.getElementById('kpiIncidentsResolved').textContent = '--';
         document.getElementById('kpiIncidentsTotal').textContent = '--';
         return;
@@ -934,7 +1017,11 @@ function renderKPIs() {
     document.getElementById('kpiActivePercent').textContent = total ? ((active/total)*100).toFixed(1) + '%' : '0%';
     document.getElementById('kpiInactive').textContent = inactive;
     document.getElementById('kpiInactivePercent').textContent = total ? ((inactive/total)*100).toFixed(1) + '%' : '0%';
+    document.getElementById('kpiInactiveByIncidents').textContent = 'Por incidencias: ' + inactiveByIncidents;
+    document.getElementById('kpiInactiveIncTotal').textContent = 'Total incidencias: ' + totalInc;
     document.getElementById('kpiIncidentsActive').textContent = activeInc;
+    document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: ' + pendingBySodimac;
+    document.getElementById('kpiPendingSumato').textContent = 'Sumato: ' + pendingBySumato;
     document.getElementById('kpiIncidentsResolved').textContent = resolved;
     document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
 }
@@ -967,6 +1054,14 @@ function getIncidentClient(incident) {
     return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda);
 }
 
+function getIncidentResponsableTipoLabel(incident) {
+    const val = normalizeResponsableTipo(incident.ResponsableTipo || incident.Responsable_Cliente || incident.ResponsableTipoCliente || incident.Responsable || '');
+    if (val === 'Sumato' || val === 'Sodimac') return val;
+
+    const fallback = normalizeResponsableTipo(getIncidentClient(incident));
+    return fallback || 'Sodimac';
+}
+
 function getDeviceClient(device) {
     return device.Cliente || getClientFromStoreName(device.StoreName);
 }
@@ -986,6 +1081,11 @@ function renderClientSelectionMessage() {
     document.getElementById('storesGridResumen').innerHTML = '';
     document.getElementById('incidentsByStoreContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
     document.getElementById('storesSectionsContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
+}
+
+function hasActiveIncidentFilter() {
+    const search = document.getElementById('searchInput')?.value.trim();
+    return Boolean(search);
 }
 
 function applyFilters() {
@@ -1027,7 +1127,7 @@ function renderResumen() {
     
     // Calcular stats desde incidencias filtradas
     const stats = {};
-    stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, resolved:0});
+    stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, pendingSodimac:0, pendingSumato:0, resolved:0});
     allDevices.filter(d => !client || getDeviceClient(d) === client).forEach(d => {
         if (stats[d.StoreName]) {
             stats[d.StoreName].total++;
@@ -1040,16 +1140,27 @@ function renderResumen() {
     filteredIncidents.forEach(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
         if (stats[storeName]) {
-            if (i.Resuelto === 'Si') stats[storeName].resolved++;
-            else stats[storeName].pending++;
+            if (i.Resuelto === 'Si') {
+                stats[storeName].resolved++;
+            } else {
+                stats[storeName].pending++;
+                const owner = getIncidentResponsableTipoLabel(i);
+                if (owner === 'Sumato') stats[storeName].pendingSumato++;
+                else stats[storeName].pendingSodimac++;
+            }
         }
     });
     
     const grid = document.getElementById('storesGridResumen');
     grid.innerHTML = '';
-    document.getElementById('storeCountResumen').textContent = stores.length;
-    
-    stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
+
+    const summarySection = document.querySelector('.stores-summary-section');
+    if (summarySection) summarySection.style.display = 'block';
+
+    const storesToRender = stores.filter(s => filteredIncidents.some(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s)));
+
+    document.getElementById('storeCountResumen').textContent = storesToRender.length;
+    storesToRender.forEach(s => renderStoreCard(s, stats[s], grid, false));
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
@@ -1062,7 +1173,7 @@ function renderResumen() {
         const sec = document.createElement('div');
         sec.className = 'store-section';
         sec.id = 'section-' + normalizeStoreName(s).replace(/[^A-Z0-9]+/g, '-');
-        sec.style.background = '#F0F9F4';
+        sec.style.background = '#FFFFFF';
         sec.innerHTML = `
             <div class="store-section-header">
                 <h3 class="store-section-title">${s}</h3>
@@ -1079,22 +1190,19 @@ function renderResumen() {
 }
 
 function renderStoreCard(name, st, container, isTest) {
-    let statusClass = 'status-ok';
-    if (st.pending >= 10) statusClass = 'status-critico';
-    else if (st.pending >= 5) statusClass = 'status-alerta';
-    
     const card = document.createElement('div');
-    card.className = 'store-card ' + statusClass + (isTest ? ' test-store' : '');
+    card.className = 'store-card' + (isTest ? ' test-store' : '');
     card.innerHTML = `
         <div class="store-content">
             <div class="store-header">
                 <div class="store-name">${name}</div>
+                <div class="store-active-total">${st.active}</div>
             </div>
             <div class="store-stats">
-                <div class="store-stat"><span class="stat-label">Activas:</span><span class="stat-value green">${st.active}</span></div>
-                <div class="store-stat"><span class="stat-label">Pendientes:</span><span class="stat-value red">${st.pending}</span></div>
-                <div class="store-stat"><span class="stat-label">Inactivas:</span><span class="stat-value">${st.inactive}</span></div>
-                <div class="store-stat"><span class="stat-label">Resueltas:</span><span class="stat-value purple">${st.resolved}</span></div>
+                <div class="store-stat"><span class="stat-label">Inactivas</span><span class="stat-value">${st.inactive}</span></div>
+                <div class="store-stat"><span class="stat-label">Pend. Sod.</span><span class="stat-value blue">${st.pendingSodimac}</span></div>
+                <div class="store-stat"><span class="stat-label">Pend. Sum.</span><span class="stat-value green">${st.pendingSumato}</span></div>
+                <div class="store-stat"><span class="stat-label">Resueltas</span><span class="stat-value purple">${st.resolved}</span></div>
             </div>
         </div>
     `;
@@ -1193,7 +1301,7 @@ function syncResponsableTipoOptions() {
     const client = (document.getElementById('filterClient')?.value || '').trim();
     const optionsByClient = {
         'Sodimac': ['Sodimac', 'Sumato'],
-        'Sumato Test': ['Sumato Test', 'Sumato']
+        'Sumato Test': ['Sumato', 'Sodimac']
     };
 
     const selectedBefore = select.value;
@@ -1224,7 +1332,8 @@ function createCard(inc) {
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
     const client = getIncidentClient(inc);
-    const isSumato = client === 'Sumato Test';
+    const responsableTipoLabel = getIncidentResponsableTipoLabel(inc);
+    const isSumato = String(responsableTipoLabel).toLowerCase().includes('sumato');
     const pendingClientClass = !resolved ? (isSumato ? ' pendiente-sumato' : ' pendiente-sodimac') : '';
     const clientBadgeClass = isSumato ? 'sumato' : 'sodimac';
     const incidentRef = inc.__uiKey || inc.ID || '';
@@ -1239,7 +1348,7 @@ function createCard(inc) {
             <div class="cam-number">${cam || 'Sin CAM'}</div>
             <div class="incident-type">${tipo || 'Sin tipo'}</div>
             <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
-            <span class="client-badge ${clientBadgeClass}">${client}</span>
+            <span class="client-badge ${clientBadgeClass}">${responsableTipoLabel}</span>
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
@@ -1484,22 +1593,35 @@ function setupEvents() {
                 action: 'agregar_incidencia', 
                 deviceId: did, 
                 DeviceId: did,
+                columnaA_DeviceId: did,
                 tipoAnomalia: tipo, 
                 tipo: tipo,
                 Tipo: tipo,
+                columnaG_TipoAnomalia: tipo,
+                tipoDeProblema: tipo,
+                'Tipo de problema': tipo,
+                tipoAnomaliaLegacy: getTipoForIdMap(tipo),
+                codigoTipo: getTipoCode(tipo),
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
                 Estado: estadoCamara,
+                columnaI_Estado: estadoCamara,
                 descripcion: desc,
                 Descripcion: desc,
                 observacion: desc,
                 Observacion: desc,
+                columnaH_Descripcion: desc,
                 responsableTipo: responsableTipo,
                 ResponsableTipo: responsableTipo,
+                columnaK_Responsable: responsableTipo,
                 cliente: cliente,
                 Cliente: cliente,
                 registradoPor: registradoPor,
+                Registrado_Por: registradoPor,
+                columnaR_RegistradoPor: registradoPor,
                 responsable: responsable,
+                Responsable_Asignado: responsable,
+                columnaS_ResponsableAsignado: responsable,
                 emailResponsable: emailResponsable
             });
             if (result.status === 'success') {
