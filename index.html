@@ -1537,6 +1537,9 @@ function setupEvents() {
         } catch (err) {
             alert('❌ Error: ' + err.message);
         } finally {
+            if (preopenedMailWindow && !mailWindowUsed && !preopenedMailWindow.closed) {
+                preopenedMailWindow.close();
+            }
             btn.disabled = false;
             btn.textContent = 'Reportar Incidencia';
         }
