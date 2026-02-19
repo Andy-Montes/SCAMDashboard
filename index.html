@@ -846,13 +846,8 @@ async function postToAppsScript(payload) {
 
             const looksLikeCors = /failed to fetch|networkerror|load failed|cors/i.test(errMsg);
             if (looksLikeCors) {
-                console.warn('[AppsScript POST CORS-LIKELY]', {url, action: payload?.action, error: errMsg});
-                activeAppsScriptUrl = url;
-                return {
-                    status: 'success',
-                    message: 'Solicitud enviada (respuesta bloqueada por CORS)',
-                    corsBlockedResponse: true
-                };
+                console.warn('[AppsScript POST CORS-BLOCKED]', {url, action: payload?.action, error: errMsg});
+                errors.push(url + ' → CORS bloqueó la solicitud o la respuesta');
             }
         }
     }
