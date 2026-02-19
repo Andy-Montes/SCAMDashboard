@@ -125,27 +125,34 @@
         .add-incident-section { 
             background: white; 
             border-radius: 8px; 
-            border: 3px solid #7AAB51; 
+            border: 4px solid #5f9b3a; 
             padding: 20px; 
             margin-bottom: 25px; 
-            box-shadow: 0 4px 20px rgba(122, 171, 81, 0.2);
+            box-shadow: 0 6px 24px rgba(95, 155, 58, 0.28);
         }
         .add-incident-section h3 { 
             margin-bottom: 15px; 
             font-size: 1.2rem; 
-            color: #2d3748; 
+            color: #111827; 
             font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
-        .add-incident-section h3::before { content: "⚠️"; font-size: 1.5rem; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
-        .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; align-items: end; }
+        .form-actions { grid-column: auto; display: flex; justify-content: flex-end; margin-top: 0; }
+        .field-device { grid-column: 1; }
+        .field-tipo { grid-column: 2; }
+        .field-estado { grid-column: 3; }
+        .field-descripcion { grid-column: 4; }
+        .field-registrado { grid-column: 1; }
+        .field-resp-tipo { grid-column: 2; }
+        .field-resp-asignado { grid-column: 3; }
+        .field-submit { grid-column: 4; align-self: end; }
+        .field-submit.form-actions { flex-direction: column; }
+        .field-submit.form-actions::before { content: ""; display: block; height: 22px; }
         .form-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; box-sizing: border-box; }
         .form-group textarea { min-height: 60px; resize: vertical; }
+        #newDescripcion { height: 38px; min-height: 38px; }
         .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
         .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
@@ -278,10 +285,10 @@
         .status-badge.resuelta { background: #a78bfa; }
         .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
         .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; }
-        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #7c3aed; }
+        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #16a34a; }
         .client-badge { display: inline-block; margin-top: 4px; font-size: 0.64rem; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
         .client-badge.sodimac { background: #dbeafe; color: #1e40af; }
-        .client-badge.sumato { background: #ede9fe; color: #5b21b6; }
+        .client-badge.sumato { background: #dcfce7; color: #166534; }
         .incident-card-content { display: flex; flex-direction: column; align-items: center; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
@@ -369,6 +376,7 @@
             .header { flex-direction: column; text-align: center; }
             .search-filters-container { grid-template-columns: 1fr; }
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
+            .field-device, .field-tipo, .field-estado, .field-descripcion, .field-registrado, .field-resp-tipo, .field-resp-asignado, .field-submit { grid-column: auto; }
             .stores-grid { grid-template-columns: 1fr 1fr; }
             .incidents-grid { grid-template-columns: 1fr; }
             .detail-modal-content {
@@ -429,50 +437,30 @@
                 <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Cámaras</div></div>
                 <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
                 <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div></div>
-                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div></div>
+                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div><div class="kpi-subtitle" id="kpiPendingSodimac">Sodimac: --</div><div class="kpi-subtitle" id="kpiPendingSumato">Sumato: --</div></div>
                 <div class="kpi-card"><div class="kpi-label">Resueltas</div><div class="kpi-value kpi-purple" id="kpiIncidentsResolved">--</div><div class="kpi-subtitle" id="kpiIncidentsTotal">--</div></div>
             </div>
             
             <div class="add-incident-section">
                 <h3>Registrar Nueva Anomalía</h3>
                 <form id="addIncidentForm" class="form-grid">
-                    <div class="form-group">
+                    <div class="form-group field-device">
                         <label>DeviceID</label>
                         <input type="number" id="newDeviceId" required placeholder="Ej: 23">
                     </div>
-                    <div class="form-group">
-                        <label>Registrado Por</label>
-                        <input type="text" id="newRegistradoPor" readonly required>
-                    </div>
-                    <div class="form-group">
-                        <label>Responsable Asignado</label>
-                        <select id="newResponsable" required>
-                            <option value="">Seleccione...</option>
-                            <optgroup label="Internos">
-                                <option value="Victor">Victor</option>
-                                <option value="Cael">Cael</option>
-                                <option value="Cami">Cami</option>
-                            </optgroup>
-                            <optgroup label="Externos">
-                                <option value="Mati">Mati</option>
-                                <option value="Diego">Diego</option>
-                                <option value="Andy">Andy</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="form-group">
+                    <div class="form-group field-tipo">
                         <label>Tipo Anomalía</label>
                         <select id="newTipoAnomalia" required>
                             <option value="">Seleccione...</option>
-                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                            <option value="Error de configuración">Error de configuración</option>
-                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                            <option value="Sin acceso a cámara">Sin acceso a cámara</option>
                             <option value="Problema de imagen">Problema de imagen</option>
-                            <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                            <option value="Error de configuración">Error de configuración</option>
                             <option value="Problema de Red">Problema de Red</option>
                         </select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group field-estado">
                         <label>Estado</label>
                         <select id="newEstadoCamara" required>
                             <option value="">Seleccione...</option>
@@ -480,17 +468,38 @@
                             <option value="Inactiva">Inactiva</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>RESPONSABLE</label>
+                    <div class="form-group field-descripcion">
+                        <label>Descripción</label>
+                        <input type="text" id="newDescripcion" placeholder="Descripción" required>
+                    </div>
+
+                    <div class="form-group field-registrado">
+                        <label>Registrado Por</label>
+                        <input type="text" id="newRegistradoPor" readonly required>
+                    </div>
+                    <div class="form-group field-resp-tipo">
+                        <label>Responsable (Cliente/Sumato)</label>
                         <select id="newResponsableTipo" required>
                             <option value="">Seleccione cliente primero...</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Descripción</label>
-                        <textarea id="newDescripcion" placeholder="Descripción" required></textarea>
+                    <div class="form-group field-resp-asignado">
+                        <label>Responsable Asignado</label>
+                        <select id="newResponsable" required>
+                            <option value="">Seleccione...</option>
+                            <optgroup label="Internos">
+                                <option value="Victor">Victor</option>
+                                <option value="Cael">Cael</option>
+                                <option value="Cami">Cami</option>
+                                <option value="Diego">Diego</option>
+                                <option value="Mati">Mati</option>
+                            </optgroup>
+                            <optgroup label="Externos">
+                                <option value="Andy">Andy</option>
+                            </optgroup>
+                        </select>
                     </div>
-                    <div class="form-group form-actions">
+                    <div class="form-group form-actions field-submit">
                         <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
                     </div>
                 </form>
@@ -563,11 +572,11 @@
                 <div class="form-group">
                     <label>Tipo Anomalía</label>
                     <select id="editTipoAnomalia" required>
-                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                        <option value="Error de configuración">Error de configuración</option>
-                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Sin acceso a cámara">Sin acceso a cámara</option>
                         <option value="Problema de imagen">Problema de imagen</option>
-                        <option value="Sin acceso a Camara">Sin acceso a Camara</option>
+                        <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
+                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Error de configuración">Error de configuración</option>
                         <option value="Problema de Red">Problema de Red</option>
                     </select>
                 </div>
@@ -625,10 +634,40 @@ const emailsResponsables = {
     'Andy': 'andy@andymontes.com'
 };
 
+const TIPOS_ANOMALIA = [
+    'Sin acceso a cámara',
+    'Problema de imagen',
+    'Cámara desalineada / mal posicionada',
+    'Obstrucción de cámara',
+    'Error de configuración',
+    'Problema de Red'
+];
+
+const MAP_TIPOS = {
+    'Cámara desalineada / mal posicionada': 'CD',
+    'Error de configuración': 'EC',
+    'Obstrucción de cámara': 'OB',
+    'Problema de imagen': 'PI',
+    'Sin acceso a Camara': 'SA',
+    'Problema de Red': 'PR'
+};
+
 let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
+
+function getTipoForIdMap(tipo) {
+    const value = String(tipo || '').trim();
+    if (!value) return '';
+    if (value === 'Sin acceso a cámara') return 'Sin acceso a Camara';
+    return value;
+}
+
+function getTipoCode(tipo) {
+    const key = getTipoForIdMap(tipo);
+    return MAP_TIPOS[key] || '';
+}
 
 function hasValidDeviceId(value) {
     const normalized = String(value ?? '').trim();
@@ -637,18 +676,21 @@ function hasValidDeviceId(value) {
     return lowered !== 'n/a' && lowered !== 'sin info' && lowered !== 'null' && lowered !== 'undefined';
 }
 
+function normalizeResponsableTipo(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const lower = raw.toLowerCase();
+
+    if (lower.includes('sumato')) return 'Sumato';
+    if (lower.includes('sodimac')) return 'Sodimac';
+    if (lower.includes('mts')) return raw;
+
+    return raw;
+}
+
 function inferResponsableTipo(raw) {
-    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
-    if (String(explicit).trim()) return String(explicit).trim();
-
-    const fromColumnK = raw.Responsable ?? raw.responsable ?? '';
-    const val = String(fromColumnK).trim();
-    if (!val) return '';
-
-    const lower = val.toLowerCase();
-    if (lower.includes('sodimac') || lower.includes('sumato') || lower.includes('mts')) return val;
-
-    return '';
+    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? raw['Responsable'] ?? raw.responsable ?? '';
+    return normalizeResponsableTipo(explicit);
 }
 
 
@@ -677,7 +719,7 @@ function normalizeIncidentRecord(raw = {}) {
         normalized.Responsable_Asignado = String(rawResponsable).trim();
     }
     normalized.Responsable = normalized.Responsable_Asignado;
-    normalized.ResponsableTipo = inferResponsableTipo(raw);
+    normalized.ResponsableTipo = inferResponsableTipo(raw) || normalizeResponsableTipo(raw.Responsable ?? raw.responsable ?? '');
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
     normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
 
@@ -704,6 +746,36 @@ function normalizeStoreName(storeName) {
 
 function isTestStore(storeName) {
     return normalizeStoreName(storeName) === 'SUMATO TEST';
+}
+
+function populateTipoAnomaliaOptions() {
+    const selects = [
+        document.getElementById('newTipoAnomalia'),
+        document.getElementById('editTipoAnomalia')
+    ].filter(Boolean);
+
+    selects.forEach((select, index) => {
+        const selectedBefore = select.value;
+        select.innerHTML = '';
+
+        if (index === 0) {
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Seleccione...';
+            select.appendChild(placeholder);
+        }
+
+        TIPOS_ANOMALIA.forEach(tipo => {
+            const option = document.createElement('option');
+            option.value = tipo;
+            option.textContent = tipo;
+            select.appendChild(option);
+        });
+
+        if (TIPOS_ANOMALIA.includes(selectedBefore)) {
+            select.value = selectedBefore;
+        }
+    });
 }
 
 function validateLogin() {
@@ -741,6 +813,7 @@ function validateLogin() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    populateTipoAnomaliaOptions();
     if (sessionStorage.getItem('auth') === 'true') {
         loggedUser = sessionStorage.getItem('user') || '';
         document.getElementById('loginModal').style.display = 'none';
@@ -916,6 +989,8 @@ function renderKPIs() {
     const totalInc = clientIncidents.length;
     const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
     const activeInc = totalInc - resolved;
+    const pendingBySodimac = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
+    const pendingBySumato = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sumato').length;
 
     if (!client) {
         document.getElementById('kpiTotal').textContent = '--';
@@ -924,6 +999,8 @@ function renderKPIs() {
         document.getElementById('kpiInactive').textContent = '--';
         document.getElementById('kpiInactivePercent').textContent = '--';
         document.getElementById('kpiIncidentsActive').textContent = '--';
+        document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: --';
+        document.getElementById('kpiPendingSumato').textContent = 'Sumato: --';
         document.getElementById('kpiIncidentsResolved').textContent = '--';
         document.getElementById('kpiIncidentsTotal').textContent = '--';
         return;
@@ -935,6 +1012,8 @@ function renderKPIs() {
     document.getElementById('kpiInactive').textContent = inactive;
     document.getElementById('kpiInactivePercent').textContent = total ? ((inactive/total)*100).toFixed(1) + '%' : '0%';
     document.getElementById('kpiIncidentsActive').textContent = activeInc;
+    document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: ' + pendingBySodimac;
+    document.getElementById('kpiPendingSumato').textContent = 'Sumato: ' + pendingBySumato;
     document.getElementById('kpiIncidentsResolved').textContent = resolved;
     document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
 }
@@ -967,6 +1046,14 @@ function getIncidentClient(incident) {
     return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda);
 }
 
+function getIncidentResponsableTipoLabel(incident) {
+    const val = normalizeResponsableTipo(incident.ResponsableTipo || incident.Responsable_Cliente || incident.ResponsableTipoCliente || incident.Responsable || '');
+    if (val === 'Sumato' || val === 'Sodimac') return val;
+
+    const fallback = normalizeResponsableTipo(getIncidentClient(incident));
+    return fallback || 'Sodimac';
+}
+
 function getDeviceClient(device) {
     return device.Cliente || getClientFromStoreName(device.StoreName);
 }
@@ -986,6 +1073,11 @@ function renderClientSelectionMessage() {
     document.getElementById('storesGridResumen').innerHTML = '';
     document.getElementById('incidentsByStoreContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
     document.getElementById('storesSectionsContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
+}
+
+function hasActiveIncidentFilter() {
+    const search = document.getElementById('searchInput')?.value.trim();
+    return Boolean(search);
 }
 
 function applyFilters() {
@@ -1047,9 +1139,17 @@ function renderResumen() {
     
     const grid = document.getElementById('storesGridResumen');
     grid.innerHTML = '';
-    document.getElementById('storeCountResumen').textContent = stores.length;
-    
-    stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
+
+    const summarySection = document.querySelector('.stores-summary-section');
+    const showSummary = !hasActiveIncidentFilter();
+    if (summarySection) summarySection.style.display = showSummary ? 'block' : 'none';
+
+    const storesToRender = showSummary
+        ? stores
+        : stores.filter(s => filteredIncidents.some(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s)));
+
+    document.getElementById('storeCountResumen').textContent = storesToRender.length;
+    storesToRender.forEach(s => renderStoreCard(s, stats[s], grid, false));
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
@@ -1193,7 +1293,7 @@ function syncResponsableTipoOptions() {
     const client = (document.getElementById('filterClient')?.value || '').trim();
     const optionsByClient = {
         'Sodimac': ['Sodimac', 'Sumato'],
-        'Sumato Test': ['Sumato Test', 'Sumato']
+        'Sumato Test': ['Sumato', 'Sodimac']
     };
 
     const selectedBefore = select.value;
@@ -1224,7 +1324,8 @@ function createCard(inc) {
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
     const client = getIncidentClient(inc);
-    const isSumato = client === 'Sumato Test';
+    const responsableTipoLabel = getIncidentResponsableTipoLabel(inc);
+    const isSumato = String(responsableTipoLabel).toLowerCase().includes('sumato');
     const pendingClientClass = !resolved ? (isSumato ? ' pendiente-sumato' : ' pendiente-sodimac') : '';
     const clientBadgeClass = isSumato ? 'sumato' : 'sodimac';
     const incidentRef = inc.__uiKey || inc.ID || '';
@@ -1239,7 +1340,7 @@ function createCard(inc) {
             <div class="cam-number">${cam || 'Sin CAM'}</div>
             <div class="incident-type">${tipo || 'Sin tipo'}</div>
             <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
-            <span class="client-badge ${clientBadgeClass}">${client}</span>
+            <span class="client-badge ${clientBadgeClass}">${responsableTipoLabel}</span>
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
@@ -1484,22 +1585,35 @@ function setupEvents() {
                 action: 'agregar_incidencia', 
                 deviceId: did, 
                 DeviceId: did,
+                columnaA_DeviceId: did,
                 tipoAnomalia: tipo, 
                 tipo: tipo,
                 Tipo: tipo,
+                columnaG_TipoAnomalia: tipo,
+                tipoDeProblema: tipo,
+                'Tipo de problema': tipo,
+                tipoAnomaliaLegacy: getTipoForIdMap(tipo),
+                codigoTipo: getTipoCode(tipo),
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
                 Estado: estadoCamara,
+                columnaI_Estado: estadoCamara,
                 descripcion: desc,
                 Descripcion: desc,
                 observacion: desc,
                 Observacion: desc,
+                columnaH_Descripcion: desc,
                 responsableTipo: responsableTipo,
                 ResponsableTipo: responsableTipo,
+                columnaK_Responsable: responsableTipo,
                 cliente: cliente,
                 Cliente: cliente,
                 registradoPor: registradoPor,
+                Registrado_Por: registradoPor,
+                columnaR_RegistradoPor: registradoPor,
                 responsable: responsable,
+                Responsable_Asignado: responsable,
+                columnaS_ResponsableAsignado: responsable,
                 emailResponsable: emailResponsable
             });
             if (result.status === 'success') {
