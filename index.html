@@ -860,6 +860,38 @@ async function postToAppsScript(payload) {
     throw new Error('No se pudo completar la solicitud: ' + errors.join(' | '));
 }
 
+async function resolveCreatedIncidentId({deviceId, tipoAnomalia, descripcion, registradoPor}) {
+    const normalize = (v) => String(v || '').trim().toLowerCase();
+
+    try {
+        const freshData = await fetchDashboardData();
+        const freshIncidents = (freshData.incidencias || []).map(normalizeIncidentRecord);
+
+        const matches = freshIncidents.filter(inc => {
+            const incidentId = getIncidentId(inc);
+            if (!incidentId) return false;
+
+            return normalize(inc.DeviceId) === normalize(deviceId) &&
+                normalize(inc.Tipo || inc.TipoAnomalia) === normalize(tipoAnomalia) &&
+                normalize(inc.Descripcion) === normalize(descripcion) &&
+                normalize(inc.Registrado_Por) === normalize(registradoPor);
+        });
+
+        if (!matches.length) return '';
+
+        matches.sort((a, b) => {
+            const dateA = getIncidentCreatedDate(a.Fecha);
+            const dateB = getIncidentCreatedDate(b.Fecha);
+            return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
+        });
+
+        return getIncidentId(matches[0]);
+    } catch (err) {
+        console.warn('[resolveCreatedIncidentId] No se pudo resolver ID recién creado', err);
+        return '';
+    }
+}
+
 
 function initDashboard() {
     const merged = allIncidents.map((inc, idx) => {
@@ -1359,20 +1391,13 @@ function sendIncidentEmail(idInc) {
     window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
-function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion, preopenedWindow}) {
-    if (!email) {
-        if (preopenedWindow && !preopenedWindow.closed) preopenedWindow.close();
-        return false;
-    }
+function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion}) {
+    if (!email) return false;
 
     const subject = `✅ Incidencia ${id} - ${tipo}`;
     const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\n🆔 ID: ${id}\n📷 Device: ${deviceId}\n🏢 Cliente: ${cliente}\n⚠️ Tipo: ${tipo}\n👤 Reportado por: ${registradoPor}\n📝 Descripción: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    if (preopenedWindow && !preopenedWindow.closed) {
-        preopenedWindow.location.href = mailtoUrl;
-        return true;
-    }
 
     const opened = window.open(mailtoUrl, '_blank');
     return !!opened;
@@ -1455,7 +1480,6 @@ function setupEvents() {
         }
         
         const btn = document.getElementById('btnAddIncident');
-        const preopenedMailWindow = emailResponsable ? window.open('about:blank', '_blank') : null;
         let mailWindowUsed = false;
         btn.disabled = true;
         btn.textContent = 'Agregando...';
@@ -1484,9 +1508,15 @@ function setupEvents() {
                 emailResponsable: emailResponsable
             });
             if (result.status === 'success') {
-                const idIncidencia = result.id || result.ID || result.idIncidencia || 'N/A';
-                alert('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.');
-                mailWindowUsed = openResponsibleMailto({
+                const idIncidencia = result.id || result.ID || result.idIncidencia || await resolveCreatedIncidentId({
+                    deviceId: did,
+                    tipoAnomalia: tipo,
+                    descripcion: desc,
+                    registradoPor: registradoPor
+                }) || 'N/A';
+                const confirmOpenMail = confirm('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.\n\n¿Deseas abrir ahora la ventana de correo?');
+                if (confirmOpenMail) {
+                    mailWindowUsed = openResponsibleMailto({
                     email: emailResponsable,
                     responsable: responsable,
                     id: idIncidencia,
@@ -1494,11 +1524,11 @@ function setupEvents() {
                     deviceId: did,
                     cliente: cliente,
                     registradoPor: registradoPor,
-                    descripcion: desc,
-                    preopenedWindow: preopenedMailWindow
-                });
-                if (!mailWindowUsed) {
-                    alert('⚠️ Tu navegador bloqueó la ventana de correo. Habilita popups para este sitio e inténtalo de nuevo.');
+                    descripcion: desc
+                    });
+                    if (!mailWindowUsed) {
+                        alert('⚠️ Tu navegador bloqueó la ventana de correo. Habilita popups para este sitio e inténtalo de nuevo.');
+                    }
                 }
                 setTimeout(() => location.reload(), 1000);
             } else {
