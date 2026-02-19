@@ -141,15 +141,13 @@
         }
         .add-incident-section h3::before { content: "⚠️"; font-size: 1.5rem; }
         
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; align-items: end; }
         .form-group-title { grid-column: 1 / -1; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: #4a5568; font-weight: 700; margin: 8px 0 -2px; }
-        .form-actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: 4px; }
-        .form-actions-under-desc { grid-column: span 2; margin-top: -2px; }
-        .descripcion-group { grid-column: span 2; }
+        .form-actions { grid-column: auto; display: flex; justify-content: flex-end; margin-top: 0; }
         .form-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
         .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: white; color: #2d3748; font-size: 0.9rem; box-sizing: border-box; }
         .form-group textarea { min-height: 60px; resize: vertical; }
-        #newDescripcion { min-height: 0; height: 34px; line-height: 1.2; overflow: hidden; resize: none; }
+        #newDescripcion { height: 38px; min-height: 38px; }
         .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
         .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
@@ -480,6 +478,15 @@
                         <input type="text" id="newRegistradoPor" readonly required>
                     </div>
                     <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" id="newDescripcion" placeholder="Descripción" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Registrado Por</label>
+                        <input type="text" id="newRegistradoPor" readonly required>
+                    </div>
+                    <div class="form-group">
                         <label>Responsable (Cliente/Sumato)</label>
                         <select id="newResponsableTipo" required>
                             <option value="">Seleccione cliente primero...</option>
@@ -500,6 +507,9 @@
                                 <option value="Andy">Andy</option>
                             </optgroup>
                         </select>
+                    </div>
+                    <div class="form-group form-actions">
+                        <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
                     </div>
 
                 </form>
@@ -655,18 +665,21 @@ function hasValidDeviceId(value) {
     return lowered !== 'n/a' && lowered !== 'sin info' && lowered !== 'null' && lowered !== 'undefined';
 }
 
+function normalizeResponsableTipo(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const lower = raw.toLowerCase();
+
+    if (lower.includes('sumato')) return 'Sumato';
+    if (lower.includes('sodimac')) return 'Sodimac';
+    if (lower.includes('mts')) return raw;
+
+    return raw;
+}
+
 function inferResponsableTipo(raw) {
-    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? '';
-    if (String(explicit).trim()) return String(explicit).trim();
-
-    const fromColumnK = raw.Responsable ?? raw.responsable ?? '';
-    const val = String(fromColumnK).trim();
-    if (!val) return '';
-
-    const lower = val.toLowerCase();
-    if (lower.includes('sodimac') || lower.includes('sumato') || lower.includes('mts')) return val;
-
-    return '';
+    const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? raw['Responsable'] ?? raw.responsable ?? '';
+    return normalizeResponsableTipo(explicit);
 }
 
 
@@ -695,7 +708,7 @@ function normalizeIncidentRecord(raw = {}) {
         normalized.Responsable_Asignado = String(rawResponsable).trim();
     }
     normalized.Responsable = normalized.Responsable_Asignado;
-    normalized.ResponsableTipo = inferResponsableTipo(raw);
+    normalized.ResponsableTipo = inferResponsableTipo(raw) || normalizeResponsableTipo(raw.Responsable ?? raw.responsable ?? '');
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
     normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
 
@@ -1016,6 +1029,14 @@ function getIncidentClient(incident) {
     return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda);
 }
 
+function getIncidentResponsableTipoLabel(incident) {
+    const val = normalizeResponsableTipo(incident.ResponsableTipo || incident.Responsable_Cliente || incident.ResponsableTipoCliente || incident.Responsable || '');
+    if (val === 'Sumato' || val === 'Sodimac') return val;
+
+    const fallback = normalizeResponsableTipo(getIncidentClient(incident));
+    return fallback || 'Sodimac';
+}
+
 function getDeviceClient(device) {
     return device.Cliente || getClientFromStoreName(device.StoreName);
 }
@@ -1035,6 +1056,15 @@ function renderClientSelectionMessage() {
     document.getElementById('storesGridResumen').innerHTML = '';
     document.getElementById('incidentsByStoreContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
     document.getElementById('storesSectionsContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
+}
+
+function hasActiveIncidentFilter() {
+    const search = document.getElementById('searchInput')?.value.trim();
+    const type = document.getElementById('filterType')?.value;
+    const status = document.getElementById('filterCameraStatus')?.value;
+    const resolved = document.getElementById('filterResolved')?.value;
+    const store = document.getElementById('filterStore')?.value;
+    return Boolean(search || type || status || resolved || store);
 }
 
 function applyFilters() {
@@ -1096,9 +1126,17 @@ function renderResumen() {
     
     const grid = document.getElementById('storesGridResumen');
     grid.innerHTML = '';
-    document.getElementById('storeCountResumen').textContent = stores.length;
-    
-    stores.forEach(s => renderStoreCard(s, stats[s], grid, false));
+
+    const summarySection = document.querySelector('.stores-summary-section');
+    const showSummary = !hasActiveIncidentFilter();
+    if (summarySection) summarySection.style.display = showSummary ? 'block' : 'none';
+
+    const storesToRender = showSummary
+        ? stores
+        : stores.filter(s => filteredIncidents.some(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s)));
+
+    document.getElementById('storeCountResumen').textContent = storesToRender.length;
+    storesToRender.forEach(s => renderStoreCard(s, stats[s], grid, false));
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
@@ -1242,8 +1280,7 @@ function syncResponsableTipoOptions() {
     const client = (document.getElementById('filterClient')?.value || '').trim();
     const optionsByClient = {
         'Sodimac': ['Sodimac', 'Sumato'],
-        'Solimac': ['Solimac', 'Sumato'],
-        'Sumato Test': ['Sumato Test', 'Sumato']
+        'Sumato Test': ['Sumato', 'Sodimac']
     };
 
     const selectedBefore = select.value;
@@ -1274,7 +1311,8 @@ function createCard(inc) {
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
     const client = getIncidentClient(inc);
-    const isSumato = client === 'Sumato Test';
+    const responsableTipoLabel = getIncidentResponsableTipoLabel(inc);
+    const isSumato = String(responsableTipoLabel).toLowerCase().includes('sumato');
     const pendingClientClass = !resolved ? (isSumato ? ' pendiente-sumato' : ' pendiente-sodimac') : '';
     const clientBadgeClass = isSumato ? 'sumato' : 'sodimac';
     const incidentRef = inc.__uiKey || inc.ID || '';
@@ -1289,7 +1327,7 @@ function createCard(inc) {
             <div class="cam-number">${cam || 'Sin CAM'}</div>
             <div class="incident-type">${tipo || 'Sin tipo'}</div>
             <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
-            <span class="client-badge ${clientBadgeClass}">${client}</span>
+            <span class="client-badge ${clientBadgeClass}">${responsableTipoLabel}</span>
         </div>
         <span class="days-badge" title="Días desde creación">${daysDiff}</span>
     `;
@@ -1539,6 +1577,8 @@ function setupEvents() {
                 tipo: tipo,
                 Tipo: tipo,
                 columnaG_TipoAnomalia: tipo,
+                tipoDeProblema: tipo,
+                'Tipo de problema': tipo,
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
                 Estado: estadoCamara,
