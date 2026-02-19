@@ -125,10 +125,10 @@
         .add-incident-section { 
             background: white; 
             border-radius: 8px; 
-            border: 3px solid #7AAB51; 
+            border: 4px solid #5f9b3a; 
             padding: 20px; 
             margin-bottom: 25px; 
-            box-shadow: 0 4px 20px rgba(122, 171, 81, 0.2);
+            box-shadow: 0 6px 24px rgba(95, 155, 58, 0.28);
         }
         .add-incident-section h3 { 
             margin-bottom: 15px; 
@@ -285,10 +285,10 @@
         .status-badge.resuelta { background: #a78bfa; }
         .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
         .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; }
-        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #7c3aed; }
+        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #16a34a; }
         .client-badge { display: inline-block; margin-top: 4px; font-size: 0.64rem; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
         .client-badge.sodimac { background: #dbeafe; color: #1e40af; }
-        .client-badge.sumato { background: #ede9fe; color: #5b21b6; }
+        .client-badge.sumato { background: #dcfce7; color: #166534; }
         .incident-card-content { display: flex; flex-direction: column; align-items: center; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
@@ -437,7 +437,7 @@
                 <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Cámaras</div></div>
                 <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
                 <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div></div>
-                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div></div>
+                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div><div class="kpi-subtitle" id="kpiPendingSodimac">Sodimac: --</div><div class="kpi-subtitle" id="kpiPendingSumato">Sumato: --</div></div>
                 <div class="kpi-card"><div class="kpi-label">Resueltas</div><div class="kpi-value kpi-purple" id="kpiIncidentsResolved">--</div><div class="kpi-subtitle" id="kpiIncidentsTotal">--</div></div>
             </div>
             
@@ -644,10 +644,31 @@ const TIPOS_ANOMALIA = [
     'Problema de Red'
 ];
 
+const MAP_TIPOS = {
+    'Cámara desalineada / mal posicionada': 'CD',
+    'Error de configuración': 'EC',
+    'Obstrucción de cámara': 'OB',
+    'Problema de imagen': 'PI',
+    'Sin acceso a Camara': 'SA',
+    'Problema de Red': 'PR'
+};
+
 let allDevices = [];
 let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
+
+function getTipoForIdMap(tipo) {
+    const value = String(tipo || '').trim();
+    if (!value) return '';
+    if (value === 'Sin acceso a cámara') return 'Sin acceso a Camara';
+    return value;
+}
+
+function getTipoCode(tipo) {
+    const key = getTipoForIdMap(tipo);
+    return MAP_TIPOS[key] || '';
+}
 
 function hasValidDeviceId(value) {
     const normalized = String(value ?? '').trim();
@@ -969,6 +990,8 @@ function renderKPIs() {
     const totalInc = clientIncidents.length;
     const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
     const activeInc = totalInc - resolved;
+    const pendingBySodimac = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
+    const pendingBySumato = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sumato').length;
 
     if (!client) {
         document.getElementById('kpiTotal').textContent = '--';
@@ -977,6 +1000,8 @@ function renderKPIs() {
         document.getElementById('kpiInactive').textContent = '--';
         document.getElementById('kpiInactivePercent').textContent = '--';
         document.getElementById('kpiIncidentsActive').textContent = '--';
+        document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: --';
+        document.getElementById('kpiPendingSumato').textContent = 'Sumato: --';
         document.getElementById('kpiIncidentsResolved').textContent = '--';
         document.getElementById('kpiIncidentsTotal').textContent = '--';
         return;
@@ -988,6 +1013,8 @@ function renderKPIs() {
     document.getElementById('kpiInactive').textContent = inactive;
     document.getElementById('kpiInactivePercent').textContent = total ? ((inactive/total)*100).toFixed(1) + '%' : '0%';
     document.getElementById('kpiIncidentsActive').textContent = activeInc;
+    document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: ' + pendingBySodimac;
+    document.getElementById('kpiPendingSumato').textContent = 'Sumato: ' + pendingBySumato;
     document.getElementById('kpiIncidentsResolved').textContent = resolved;
     document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
 }
@@ -1051,11 +1078,7 @@ function renderClientSelectionMessage() {
 
 function hasActiveIncidentFilter() {
     const search = document.getElementById('searchInput')?.value.trim();
-    const type = document.getElementById('filterType')?.value;
-    const status = document.getElementById('filterCameraStatus')?.value;
-    const resolved = document.getElementById('filterResolved')?.value;
-    const store = document.getElementById('filterStore')?.value;
-    return Boolean(search || type || status || resolved || store);
+    return Boolean(search);
 }
 
 function applyFilters() {
@@ -1570,6 +1593,8 @@ function setupEvents() {
                 columnaG_TipoAnomalia: tipo,
                 tipoDeProblema: tipo,
                 'Tipo de problema': tipo,
+                tipoAnomaliaLegacy: getTipoForIdMap(tipo),
+                codigoTipo: getTipoCode(tipo),
                 estadoCamara: estadoCamara,
                 estado: estadoCamara,
                 Estado: estadoCamara,
