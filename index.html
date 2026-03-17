@@ -410,11 +410,13 @@
             <div class="login-title">Dashboard de Incidencias</div>
             <select id="loginUser" class="login-input">
                 <option value="">Selecciona usuario...</option>
-                <option value="Victor">Victor</option>
-                <option value="Cael">Cael</option>
-                <option value="Nacho">Nacho</option>
-                <option value="Cami">Cami</option>
-                <option value="Andre">Andre</option>
+                <option value="Andrea Montes">Andrea Montes</option>
+                <option value="Camila Acuña">Camila Acuña</option>
+                <option value="Victor Catalán">Victor Catalán</option>
+                <option value="Cael Tarifa">Cael Tarifa</option>
+                <option value="Ricardo Ulloa">Ricardo Ulloa</option>
+                <option value="Katherine Martinez">Katherine Martinez</option>
+                <option value="Magda Arredondo">Magda Arredondo</option>
             </select>
             <input type="password" id="loginPassword" class="login-input" placeholder="Ingresa tu contraseña" autocomplete="off">
             <button onclick="validateLogin()" class="login-btn">Acceder</button>
@@ -443,7 +445,7 @@
             <div class="filters" style="margin-bottom: 20px;">
                 <h3>Cliente</h3>
                 <div class="filters-grid">
-                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="">Seleccione cliente...</option><option value="Sodimac">Sodimac</option><option value="Sumato Test">Sumato Test</option></select></div>
+                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="">Seleccione cliente...</option><option value="Sodimac">Sodimac</option></select></div>
                 </div>
             </div>
             <div class="kpis">
@@ -465,12 +467,6 @@
                         <label>Tipo Anomalía</label>
                         <select id="newTipoAnomalia" required>
                             <option value="">Seleccione...</option>
-                            <option value="Sin acceso a cámara">Sin acceso a cámara</option>
-                            <option value="Problema de imagen">Problema de imagen</option>
-                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
-                            <option value="Error de configuración">Error de configuración</option>
-                            <option value="Problema de Red">Problema de Red</option>
                         </select>
                     </div>
                     <div class="form-group field-estado">
@@ -501,14 +497,14 @@
                         <select id="newResponsable" required>
                             <option value="">Seleccione...</option>
                             <optgroup label="Internos">
-                                <option value="Victor">Victor</option>
-                                <option value="Cael">Cael</option>
-                                <option value="Cami">Cami</option>
-                                <option value="Diego">Diego</option>
-                                <option value="Mati">Mati</option>
+                                <option value="Victor Catalán">Victor Catalán</option>
+                                <option value="Cael Tarifa">Cael Tarifa</option>
+                                <option value="Camila Acuña">Camila Acuña</option>
                             </optgroup>
                             <optgroup label="Externos">
-                                <option value="Andy">Andy</option>
+                                <option value="Ricardo Ulloa">Ricardo Ulloa</option>
+                                <option value="Katherine Martinez">Katherine Martinez</option>
+                                <option value="Magda Arredondo">Magda Arredondo</option>
                             </optgroup>
                         </select>
                     </div>
@@ -615,11 +611,7 @@
                 </div>
                 <div class="form-group">
                     <label>Responsable Asignado</label>
-                    <select id="editResponsable" required>
-                        <option value="Andy">Andy</option>
-                        <option value="Diego">Diego</option>
-                        <option value="Mati">Mati</option>
-                    </select>
+                    <select id="editResponsable" required></select>
                 </div>
                 <div class="form-group" style="display:flex; align-items:flex-end;">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
@@ -640,28 +632,32 @@ let currentDetailIncidentId = '';
 let currentDetailIncidentKey = '';
 
 const loginUsers = [
-    'Victor',
-    'Cael',
-    'Nacho',
-    'Cami',
-    'Andre'
+    'Andrea Montes',
+    'Camila Acuña',
+    'Victor Catalán',
+    'Cael Tarifa',
+    'Ricardo Ulloa',
+    'Katherine Martinez',
+    'Magda Arredondo'
 ];
 
 const userEmails = {
-    'Victor': 'vcatalan@sumatoid.com',
-    'Cael': 'ctarifa@sumatoid.com',
-    'Nacho': 'jidiez@sumatoid.com',
-    'Cami': 'cacuna@sumatoid.com',
-    'Andre': 'amontes@sumatoid.com'
+    'Andrea Montes': 'amontes@sumatoid.com',
+    'Camila Acuña': 'cacuna@sumatoid.com',
+    'Victor Catalán': 'vcatalan@sumatoid.com',
+    'Cael Tarifa': 'ctarifa@sumatoid.com',
+    'Ricardo Ulloa': 'ext_rjulloah@sodimac.cl',
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
+    'Magda Arredondo': 'ext_marredondo@sodimac.cl'
 };
 
 const emailsResponsables = {
-    'Victor': 'vcatalan@sumatoid.com',
-    'Cael': 'ctarifa@sumatoid.com',
-    'Cami': 'cacuna@sumatoid.com',
-    'Mati': 'mgallo@sumatoid.com',
-    'Diego': 'ddescotte@sumatoid.com',
-    'Andy': 'andy@andymontes.com'
+    'Victor Catalán': 'vcatalan@sumatoid.com',
+    'Cael Tarifa': 'ctarifa@sumatoid.com',
+    'Camila Acuña': 'cacuna@sumatoid.com',
+    'Ricardo Ulloa': 'ext_rjulloah@sodimac.cl',
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
+    'Magda Arredondo': 'ext_marredondo@sodimac.cl'
 };
 
 const TIPOS_ANOMALIA = [
@@ -1100,7 +1096,8 @@ function getIncidentDetailsText(inc) {
     fullData.Email_Responsable = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '';
     return Object.entries(fullData)
         .map(([k, v]) => `${k}: ${v ?? ''}`)
-        .join('\n');
+        .join('
+');
 }
 
 function renderClientSelectionMessage() {
@@ -1564,7 +1561,6 @@ function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente,
     const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\n🆔 ID: ${id}\n📷 Device: ${deviceId}\n🏢 Cliente: ${cliente}\n⚠️ Tipo: ${tipo}\n👤 Reportado por: ${registradoPor}\n📝 Descripción: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-
     const opened = window.open(mailtoUrl, '_blank');
     return !!opened;
 }
@@ -1709,16 +1705,16 @@ function setupEvents() {
                         alert('⚠️ Tu navegador bloqueó la ventana de correo. Habilita popups para este sitio e inténtalo de nuevo.');
                     }
                 }
-                setTimeout(() => location.reload(), 1000);
+                inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
             }
         } catch (err) {
             alert('❌ Error: ' + err.message);
         } finally {
-            if (preopenedMailWindow && !mailWindowUsed && !preopenedMailWindow.closed) {
-                preopenedMailWindow.close();
-            }
             btn.disabled = false;
             btn.textContent = 'Reportar Incidencia';
         }
@@ -1763,7 +1759,10 @@ function setupEvents() {
             if (result.status === 'success') {
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
-                setTimeout(() => location.reload(), 1000);
+                inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
             }
@@ -1782,7 +1781,10 @@ async function resolveIncident(idInc) {
         const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: incidentId});
         if (result.status === 'success') {
             alert('✅ Incidencia marcada como resuelta');
-            setTimeout(() => location.reload(), 1000);
+            inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
         } else {
             alert('❌ Error: ' + (result.error || 'Error desconocido'));
         }
@@ -1829,7 +1831,7 @@ function editIncident(idInc) {
         opt.textContent = assignedValue;
         editResp.appendChild(opt);
     }
-    editResp.value = assignedValue || 'Andy';
+    editResp.value = assignedValue || '';
     
     document.getElementById('editModal').style.display = 'block';
 }
@@ -1847,7 +1849,10 @@ async function deleteIncident(idInc) {
         const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: incidentId});
         if (result.status === 'success') {
             alert('✅ Incidencia eliminada correctamente');
-            setTimeout(() => location.reload(), 1000);
+            inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
         } else {
             alert('❌ Error: ' + (result.error || 'Error desconocido'));
         }
