@@ -428,7 +428,7 @@
                 </div>
             </div>
             <div class="kpis">
-                <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Camaras</div></div>
+                <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">CÃ¡maras</div></div>
                 <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
                 <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div></div>
                 <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div></div>
@@ -463,10 +463,10 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Tipo Anomalia</label>
+                        <label>Tipo AnomalÃ­a</label>
                         <select id="newTipoAnomalia" required>
                             <option value="">Seleccione...</option>
-                            <option value="Camara desalineada / mal posicionada">Camara desalineada / mal posicionada</option>
+                            <option value="CÃ¡mara desalineada / mal posicionada">CÃ¡mara desalineada / mal posicionada</option>
                             <option value="Error de configuraciÃ³n">Error de configuraciÃ³n</option>
                             <option value="ObstrucciÃ³n de cÃ¡mara">ObstrucciÃ³n de cÃ¡mara</option>
                             <option value="Problema de imagen">Problema de imagen</option>
@@ -491,8 +491,8 @@
                         <input type="text" id="newClienteView" readonly placeholder="Seleccione cliente arriba">
                     </div>
                     <div class="form-group">
-                        <label>Descripcion</label>
-                        <textarea id="newDescripcion" placeholder="Descripcion" required></textarea>
+                        <label>DescripciÃ³n</label>
+                        <textarea id="newDescripcion" placeholder="DescripciÃ³n" required></textarea>
                     </div>
                     <div class="form-group form-actions">
                         <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
@@ -510,8 +510,8 @@
                     <h3>Filtros</h3>
                     <div class="filters-grid">
                         <div class="filter-group"><label>Tipo</label><select id="filterType"><option value="">Todos</option></select></div>
-                        <div class="filter-group"><label>Estado Camara</label><select id="filterCameraStatus"><option value="">Todas</option><option value="1">Activas</option><option value="0">Inactivas</option></select></div>
-                        <div class="filter-group"><label>Resolucion</label><select id="filterResolved"><option value="">Todas</option><option value="No">Pendientes</option><option value="Si">Resueltas</option></select></div>
+                        <div class="filter-group"><label>Estado CÃ¡mara</label><select id="filterCameraStatus"><option value="">Todas</option><option value="1">Activas</option><option value="0">Inactivas</option></select></div>
+                        <div class="filter-group"><label>ResoluciÃ³n</label><select id="filterResolved"><option value="">Todas</option><option value="No">Pendientes</option><option value="Si">Resueltas</option></select></div>
                         <div class="filter-group"><label>Tienda</label><select id="filterStore"><option value="">Todas</option></select></div>
                     </div>
                 </div>
@@ -565,9 +565,9 @@
             <form id="editIncidentForm" class="form-grid">
                 <input type="hidden" id="editIdIncidencia">
                 <div class="form-group">
-                    <label>Tipo Anomalia</label>
+                    <label>Tipo AnomalÃ­a</label>
                     <select id="editTipoAnomalia" required>
-                        <option value="Camara desalineada / mal posicionada">Camara desalineada / mal posicionada</option>
+                        <option value="CÃ¡mara desalineada / mal posicionada">CÃ¡mara desalineada / mal posicionada</option>
                         <option value="Error de configuraciÃ³n">Error de configuraciÃ³n</option>
                         <option value="ObstrucciÃ³n de cÃ¡mara">ObstrucciÃ³n de cÃ¡mara</option>
                         <option value="Problema de imagen">Problema de imagen</option>
@@ -576,14 +576,14 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Estado Camara</label>
+                    <label>Estado CÃ¡mara</label>
                     <select id="editEstadoCamara" required>
                         <option value="Activa">Activa</option>
                         <option value="Inactiva">Inactiva</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Descripcion</label>
+                    <label>DescripciÃ³n</label>
                     <textarea id="editDescripcion"></textarea>
                 </div>
                 <div class="form-group">
@@ -665,20 +665,20 @@ function normalizeIncidentRecord(raw = {}) {
     const rawResponsable = raw.Responsable ?? raw.responsable ?? '';
 
     normalized.DeviceId = raw.DeviceId ?? raw.deviceId ?? raw.DeviceID ?? raw['Device ID'] ?? '';
-    normalized.Codigo = raw.Codigo ?? raw.Codigo ?? raw.CodigoTest ?? raw['Codigo Test'] ?? raw.CodTest ?? '';
-    normalized.Camara = raw.Camara ?? raw.Camara ?? raw.Camera ?? raw.DeviceName ?? '';
+    normalized.Codigo = raw.Codigo ?? raw.CÃ³digo ?? raw.CodigoTest ?? raw['CÃ³digo Test'] ?? raw.CodTest ?? '';
+    normalized.Camara = raw.Camara ?? raw.CÃ¡mara ?? raw.Camera ?? raw.DeviceName ?? '';
     normalized.PhysicalZoneId = raw.PhysicalZoneId ?? raw.PhysicalZoneID ?? raw.ZoneId ?? raw.Zona ?? '';
     normalized.IP = raw.IP ?? raw.Ip ?? '';
-    normalized.Estado = raw.Estado ?? raw.EstadoCamara ?? raw['Estado Camara'] ?? raw['Estado Camara'] ?? raw.CameraStatus ?? '';
+    normalized.Estado = raw.Estado ?? raw.EstadoCamara ?? raw['Estado CÃ¡mara'] ?? raw['Estado Camara'] ?? raw.CameraStatus ?? '';
     normalized.ID = raw.ID ?? raw.Id ?? raw.id ?? raw.IdIncidencia ?? raw.idIncidencia ?? raw.ID_Incidencia ?? raw['ID Incidencia'] ?? raw['Id Incidencia'] ?? '';
-    normalized.Tipo = raw.Tipo ?? raw.TipoAnomalia ?? raw.tipoAnomalia ?? raw['Tipo Anomalia'] ?? raw['Tipo Anomalia'] ?? '';
+    normalized.Tipo = raw.Tipo ?? raw.TipoAnomalia ?? raw.tipoAnomalia ?? raw['Tipo AnomalÃ­a'] ?? raw['Tipo Anomalia'] ?? '';
     normalized.TipoAnomalia = normalized.Tipo;
-    normalized.Descripcion = raw.Descripcion ?? raw.Descripcion ?? raw.descripcion ?? raw.Observacion ?? raw.Observacion ?? raw.observacion ?? '';
+    normalized.Descripcion = raw.Descripcion ?? raw.DescripciÃ³n ?? raw.descripcion ?? raw.Observacion ?? raw.ObservaciÃ³n ?? raw.observacion ?? '';
     normalized.Tienda = raw.Tienda ?? raw.StoreName ?? raw.tienda ?? '';
     normalized.Fecha = raw.Fecha ?? raw.Timestamp ?? raw.fecha ?? '';
     normalized.Resuelto = raw.Resuelto ?? raw.resuelto ?? '';
-    normalized.FechaResolucion = raw.FechaResolucion ?? raw['Fecha Resolucion'] ?? raw.FechaResolucion ?? raw.fechaResolucion ?? '';
-    normalized.DiasPasados = raw.DiasPasados ?? raw['Dias pasados'] ?? raw.Dias ?? '';
+    normalized.FechaResolucion = raw.FechaResolucion ?? raw['Fecha ResoluciÃ³n'] ?? raw.FechaResoluciÃ³n ?? raw.fechaResolucion ?? '';
+    normalized.DiasPasados = raw.DiasPasados ?? raw['DÃ­as pasados'] ?? raw.Dias ?? '';
     normalized.Registrado_Por = raw.Registrado_Por ?? raw.RegistradoPor ?? raw['Registrado Por'] ?? raw.registradoPor ?? '';
     normalized.Responsable_Asignado = raw.Responsable_Asignado ?? raw.ResponsableAsignado ?? raw['Responsable Asignado'] ?? '';
     if (!normalized.Responsable_Asignado && emailsResponsables[String(rawResponsable).trim()]) {
@@ -687,7 +687,7 @@ function normalizeIncidentRecord(raw = {}) {
     normalized.Responsable = normalized.Responsable_Asignado;
     normalized.ResponsableTipo = inferResponsableTipo(raw);
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
-    normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observacion ?? raw.observacion ?? '';
+    normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.ObservaciÃ³n ?? raw.observacion ?? '';
 
     return normalized;
 }
@@ -1192,7 +1192,7 @@ function createCard(inc) {
             <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
             <span class="client-badge ${clientBadgeClass}">${client}</span>
         </div>
-        <span class="days-badge" title="Dias desde creaciÃ³n">${daysDiff}</span>
+        <span class="days-badge" title="DÃ­as desde creaciÃ³n">${daysDiff}</span>
     `;
     card.addEventListener('click', () => openDetailModal(incidentRef));
     return card;
@@ -1246,8 +1246,8 @@ function openDetailModal(idInc) {
 
     const cameraEntries = buildEntries([
         ['Device ID', inc.DeviceId],
-        ['Codigo test', inc.Codigo],
-        ['Camara', inc.DeviceName || inc.Camara],
+        ['CÃ³digo test', inc.Codigo],
+        ['CÃ¡mara', inc.DeviceName || inc.Camara],
         ['Physical Zone ID', inc.PhysicalZoneId],
         ['IP', inc.IP],
         ['Estado', inc.Estado]
@@ -1256,13 +1256,13 @@ function openDetailModal(idInc) {
     const incidentEntries = buildEntries([
         ['ID Incidencia', incidentId],
         ['Tipo de problema', inc.Tipo || inc.TipoAnomalia],
-        ['Descripcion', inc.Descripcion],
+        ['DescripciÃ³n', inc.Descripcion],
         ['Tienda', inc.DeviceStoreName || inc.Tienda],
         ['Cliente', getIncidentClient(inc)],
         ['Fecha', inc.Fecha],
         ['Resuelta', inc.Resuelto],
         ['Fecha resoluciÃ³n', inc.FechaResolucion],
-        ['Dias pasados', inc.DiasPasados]
+        ['DÃ­as pasados', inc.DiasPasados]
     ]);
 
     const ownerEntries = buildEntries([
@@ -1291,7 +1291,7 @@ function openDetailModal(idInc) {
                 <div class="detail-column">${renderEntries(incidentEntries)}</div>
             </section>
             <section class="detail-section">
-                <h4 class="detail-section-title">Resolucion y responsables</h4>
+                <h4 class="detail-section-title">ResoluciÃ³n y responsables</h4>
                 <div class="detail-column">${renderEntries(ownerEntries)}</div>
             </section>
         </div>
@@ -1344,7 +1344,7 @@ function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente,
     }
 
     const subject = `âœ… Incidencia ${id} - ${tipo}`;
-    const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\nðŸ†” ID: ${id}\nðŸ“· Device: ${deviceId}\nðŸ¢ Cliente: ${cliente}\nâš ï¸ Tipo: ${tipo}\nðŸ‘¤ Reportado por: ${registradoPor}\nðŸ“ Descripcion: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
+    const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\nðŸ†” ID: ${id}\nðŸ“· Device: ${deviceId}\nðŸ¢ Cliente: ${cliente}\nâš ï¸ Tipo: ${tipo}\nðŸ‘¤ Reportado por: ${registradoPor}\nðŸ“ DescripciÃ³n: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
     const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
     if (preopenedWindow && !preopenedWindow.closed) {
@@ -1411,10 +1411,10 @@ function setupEvents() {
         const missingFields = [];
         if (!cliente) missingFields.push('Cliente');
         if (!did) missingFields.push('DeviceID');
-        if (!tipo) missingFields.push('Tipo Anomalia');
+        if (!tipo) missingFields.push('Tipo AnomalÃ­a');
         if (!estadoCamara) missingFields.push('Estado');
         if (!responsableTipo) missingFields.push('Responsable');
-        if (!desc) missingFields.push('Descripcion');
+        if (!desc) missingFields.push('DescripciÃ³n');
         if (!registradoPor) missingFields.push('Registrado Por');
         if (!responsable) missingFields.push('Responsable Asignado');
 
@@ -1524,7 +1524,10 @@ async function resolveIncident(idInc) {
         const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: incidentId});
         if (result.status === 'success') {
             alert('âœ… Incidencia marcada como resuelta');
-            setTimeout(() => location.reload(), 1000);
+            inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
         } else {
             alert('âŒ Error: ' + (result.error || 'Error desconocido'));
         }
