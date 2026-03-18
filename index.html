@@ -1207,13 +1207,8 @@ function renderKPIs() {
 
 
 function populateFilters() {
-    // Tipos: primero los canónicos, luego legacy si existen en datos
-    const canonicos = new Set(TIPOS_ANOMALIA);
-    const enDatos = [...new Set(allIncidents.map(i => i.Tipo).filter(Boolean))];
-    const legacy = enDatos.filter(t => !canonicos.has(t));
-    const types = [...TIPOS_ANOMALIA, ...legacy].filter(t =>
-        enDatos.includes(t) // solo mostrar los que realmente existen en datos
-    );
+    // Tipos: siempre la lista canónica fija, independiente del Sheets
+    const types = TIPOS_ANOMALIA;
     const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
     const sel = document.getElementById('filterType');
     types.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.textContent = t; sel.appendChild(opt); });
