@@ -4,119 +4,113 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUMATO | Monitoring Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --navy: #0d1f35; --navy2: #162840; --navy3: #1e3a55;
+            --teal: #00c9b1; --teal-d: #009e8c;
+            --green: #25a567; --green-xl: #d4f2e5;
+            --blue: #2463b0; --blue-m: #3b7dd8;
+            --amber: #f59e0b;
+            --rose: #e8445a;
+            --bg: #f0f4f9; --white: #fff;
+            --text: #0d1f35; --text-m: #3d5470; --text-l: #7a92aa;
+            --border: #dde6f0;
+            --sh: 0 2px 16px rgba(13,31,53,.08);
+            --sh-lg: 0 8px 40px rgba(13,31,53,.14);
+            --r: 12px; --r-sm: 8px;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #2C3E50; color: #2d3748; min-height: 100vh; padding: 20px; }
-        .container { max-width: 1600px; margin: 0 auto; }
+        body { font-family: 'DM Sans', 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 24px 28px 40px; }
         
-        /* LOGIN MODAL PRO */
-        #loginModal { 
-            position: fixed; 
-            top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 10000;
+        /* ── LOCK SCREEN ── */
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+        #loginModal {
+            position: fixed; inset: 0; z-index: 99999;
+            background: #000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-family: 'DM Sans', sans-serif;
         }
-        .login-box {
-            background: white;
-            padding: 50px 40px;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-            max-width: 420px;
-            width: 90%;
-            text-align: center;
+        .logo-wrap-login {
+            width: 110px; height: 110px; border-radius: 22px;
+            margin-bottom: 22px; overflow: hidden;
+            animation: pulse 3s ease-in-out infinite;
         }
-        .login-logo {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #7AAB51;
-            margin-bottom: 10px;
+        .logo-wrap-login img { width: 110px; height: 110px; object-fit: cover; border-radius: 22px; display: block; }
+        .login-brand { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: .04em; margin-bottom: 4px; }
+        .login-sub { color: rgba(255,255,255,.35); font-size: 12px; margin-bottom: 36px; letter-spacing: .06em; text-transform: uppercase; }
+        .login-label { color: rgba(255,255,255,.5); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; width: 260px; text-align: left; }
+        .login-input-dark {
+            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+            border-radius: 8px; color: #fff; font-size: 15px;
+            padding: 13px 16px; width: 260px; outline: none; transition: border .2s;
+            font-family: 'DM Sans', sans-serif;
         }
-        .login-title {
-            font-size: 1.3rem;
-            color: #2d3748;
-            margin-bottom: 30px;
-            font-weight: 600;
+        .login-input-dark:focus { border-color: rgba(255,255,255,.4); }
+        .login-input-dark option, .login-input-dark optgroup { background: #fff; color: #111; }
+        .login-btn-dark {
+            margin-top: 16px; width: 260px; padding: 14px;
+            background: #fff; color: #000; font-weight: 700; font-size: 14px;
+            letter-spacing: .06em; border: none; border-radius: 8px;
+            cursor: pointer; transition: opacity .2s; font-family: 'DM Sans', sans-serif;
         }
-        .login-input {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid #cbd5e0;
-            border-radius: 6px;
-            font-size: 1rem;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+        .login-btn-dark:hover { opacity: .85; }
+        .login-error-dark { color: #ff4d4d; font-size: 12px; margin-top: 12px; transition: opacity .3s; }
+        .login-attempts-dark { color: rgba(255,255,255,.3); font-size: 11px; margin-top: 8px; }
+
+        /* ── TOP NAV ── */
+        #topnav {
+            background: var(--navy); display: flex; align-items: center;
+            padding: 0 28px; height: 70px; gap: 4px; flex-wrap: nowrap;
+            box-shadow: 0 2px 20px rgba(0,0,0,.3); z-index: 100;
+            position: sticky; top: 0;
         }
-        .login-input:focus {
-            outline: none;
-            border-color: #7AAB51;
+        .nav-logo { display: flex; align-items: center; gap: 10px; margin-right: 16px; flex-shrink: 0; }
+        .nav-logo-img { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+        .nav-logo-img img { width: 30px; height: 30px; object-fit: cover; display: block; }
+        .nav-logo-text { font-weight: 700; color: #fff; font-size: 13.5px; line-height: 1.1; }
+        .nav-logo-sub { color: rgba(255,255,255,.35); font-size: 10px; }
+        .nav-sep { width: 1px; height: 20px; background: rgba(255,255,255,.1); margin: 0 6px; flex-shrink: 0; }
+        .nav-btn {
+            padding: 7px 14px; border: none; background: transparent;
+            color: rgba(255,255,255,.45); font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px;
+            transition: all .2s; white-space: nowrap;
         }
-        .login-btn {
-            width: 100%;
-            padding: 14px;
-            background: #7AAB51;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .nav-btn:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); }
+        .nav-active { background: rgba(0,201,177,.12) !important; color: var(--teal) !important; font-weight: 600 !important; }
+        @keyframes navPulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(122,171,81,.6); }
+            50% { box-shadow: 0 0 0 7px rgba(122,171,81,0); }
         }
-        .login-btn:hover {
-            background: #6a9847;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(122, 171, 81, 0.4);
+        .nav-btn-new {
+            background: #5cb85c !important; color: #fff !important;
+            font-weight: 700 !important; border: none !important;
+            animation: navPulse 2s ease-in-out infinite;
+            border-radius: 8px !important;
+            box-shadow: 0 2px 12px rgba(76,175,80,.5) !important;
         }
-        .login-error {
-            color: #7AAB51;
-            font-size: 0.9rem;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        .login-attempts {
-            color: #718096;
-            font-size: 0.85rem;
-            margin-top: 15px;
-        }
-        
-        .header { 
-            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
-            padding: 20px 40px; 
-            border-radius: 8px; 
-            margin-bottom: 25px; 
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .header h1 { 
-            font-size: 2rem; 
-            font-weight: 700; 
-            color: white;
-        }
-        .header h1 span { color: #7AAB51; }
-        .header .live-time {
-            color: #cbd5e0;
-            font-size: 0.9rem;
-        }
-        .header p { font-size: 0.85rem; color: #cbd5e0; margin-top: 5px; }
-        
+        .nav-btn-new:hover { background: #4cae4c !important; transform: scale(1.05); box-shadow: 0 4px 18px rgba(76,175,80,.7) !important; }
+        .nav-right { margin-left: auto; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+        .nav-user { color: rgba(255,255,255,.6); font-size: 12px; font-weight: 600; }
+        .nav-live { color: var(--teal); font-size: 12px; font-weight: 700; font-family: monospace; }
+        .nav-update { color: rgba(255,255,255,.25); font-size: 11px; }
+
+
         .loading { text-align: center; padding: 100px 20px; color: white; }
         .loading-spinner { display: inline-block; width: 50px; height: 50px; border: 5px solid #34495E; border-top: 5px solid #7AAB51; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .error { background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 20px; border-radius: 8px; margin: 20px 0; }
         
         .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
-        .kpi-card { background: white; border-radius: 8px; padding: 12px; min-height: 114px; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .kpi-card { background: white; border-radius: 8px; padding: 16px; min-height: 130px; transition: all 0.3s ease; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .kpi-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2); }
-        .kpi-label { font-size: 0.75rem; color: #718096; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
-        .kpi-value { font-size: 2.15rem; font-weight: 700; line-height: 1; margin-bottom: 4px; }
-        .kpi-subtitle { font-size: 0.8rem; color: #8b98ab; }
-        .kpi-subtitle-strong { font-size: 1rem; font-weight: 800; color: #334155; margin-top: 2px; }
+        .kpi-label { font-size: 0.95rem; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .kpi-value { font-size: 3rem; font-weight: 800; line-height: 1; margin-bottom: 6px; font-family: 'Inter', 'Segoe UI', Arial, sans-serif; letter-spacing: -0.02em; }
+        .kpi-subtitle { font-size: 0.82rem; color: #64748b; font-weight: 500; }
+        .kpi-subtitle-strong { font-size: 0.82rem; font-weight: 500; color: #64748b; margin-top: 0; }
         .kpi-green { color: #16a34a; }
         .kpi-yellow { color: #f59e0b; }
         .kpi-red { color: #dc2626; }
@@ -124,19 +118,10 @@
         .kpi-purple { color: #7c3aed; }
         
         .add-incident-section { 
-            background: white; 
-            border-radius: 8px; 
-            border: 4px solid #5f9b3a; 
-            padding: 20px; 
-            margin-bottom: 25px; 
-            box-shadow: 0 6px 24px rgba(95, 155, 58, 0.28);
+            background: white; border-radius: 8px; border: 4px solid #5f9b3a; 
+            padding: 20px; margin-bottom: 25px; box-shadow: 0 6px 24px rgba(95, 155, 58, 0.28);
         }
-        .add-incident-section h3 { 
-            margin-bottom: 15px; 
-            font-size: 1.2rem; 
-            color: #111827; 
-            font-weight: 700;
-        }
+        .add-incident-section h3 { margin-bottom: 15px; font-size: 1.2rem; color: #111827; font-weight: 700; }
         
         .form-grid { display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 12px; align-items: end; }
         .form-actions { grid-column: auto; display: flex; justify-content: flex-end; margin-top: 0; }
@@ -156,13 +141,8 @@
         #newDescripcion { height: 38px; min-height: 38px; }
         .btn-primary { background: #7AAB51; color: white; border: none; padding: 10px 24px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; }
         .btn-primary:hover { background: #6a9847; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(122, 171, 81, 0.4); }
-        .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; }
+        .btn-primary:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; }
         
-        .search-filters-container { display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-bottom: 25px; }
-        .search-box { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
-        .search-box h3 { margin-bottom: 12px; font-size: 1.1rem; color: #2d3748; }
-        .search-input { width: 100%; padding: 12px; border-radius: 4px; border: 2px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 1rem; }
-        .search-input:focus { outline: none; border-color: #7AAB51; background: white; }
         
         .filters { background: white; border-radius: 8px; padding: 18px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
         .filters h3 { margin-bottom: 12px; font-size: 1.1rem; color: #2d3748; }
@@ -170,23 +150,8 @@
         .filter-group label { display: block; font-size: 0.75rem; color: #718096; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
         .filter-group select { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; font-size: 0.9rem; cursor: pointer; }
         .filter-group select:focus { outline: none; border-color: #7AAB51; background: white; }
-        .btn-export {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-        }
-        .btn-export:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-        }
+        .btn-export { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; margin-bottom: 20px; }
+        .btn-export:hover { background: #2563eb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
         
         .view-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .view-tab { padding: 10px 20px; background: white; border: 2px solid #e2e8f0; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; color: #2d3748; }
@@ -195,179 +160,130 @@
         
         .stores-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
         .store-card { 
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%); 
-            border-radius: 10px; 
-            overflow: hidden;
-            transition: all 0.25s ease; 
-            cursor: pointer; 
-            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08); 
-            border: 1px solid #dbe2ea;
+            background: #ffffff; 
+            border-radius: 10px; overflow: hidden; transition: all 0.25s ease; 
+            cursor: pointer; box-shadow: 0 1px 4px rgba(15,23,42,.06), 0 0 0 1px rgba(15,23,42,.04);
             min-height: 126px;
         }
         .store-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14); border-color: #c5d1df; }
-        .store-card.test-store {
-            opacity: 0.7;
-            border-color: #cbd5e0;
-        }
-        
-        
-        .store-content {
-            padding: 0;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .store-header { margin: 0; padding: 8px 11px; background: #1e3a8a; display:flex; align-items:center; justify-content:space-between; gap:8px; }
-        .store-name { font-size: 0.92rem; font-weight: 700; color: white; }
+        .store-content { padding: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between; }
+        .store-header { margin: 0; padding: 5px 10px; background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .store-name { font-size: 0.85rem; font-weight: 700; color: white; }
         .store-active-total { font-size: 0.9rem; font-weight: 800; color: #dbeafe; }
-        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75rem; padding: 9px 10px 10px; }
-        .store-stat { display: flex; justify-content: space-between; padding: 2px 4px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; }
-        .stat-label { color: #64748b; font-weight: 600; font-size: 0.72rem; }
-        .stat-value { font-weight: 800; color: #1f2937; font-size: 0.8rem; }
+        .store-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.82rem; padding: 10px 11px 11px; }
+        .store-stat { display: flex; justify-content: space-between; padding: 3px 6px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .stat-label { color: #64748b; font-weight: 600; font-size: 0.82rem; }
+        .stat-value { font-weight: 800; color: #1f2937; font-size: 0.95rem; }
         .stat-value.green { color: #10b981; }
         .stat-value.red { color: #ef4444; }
         .stat-value.purple { color: #8b5cf6; }
         .stat-value.blue { color: #1d4ed8; }
         
-        .store-section { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
-        .store-section-header { 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 10px;
-            padding: 10px 16px;
-            background: #7AAB51;
-            margin-bottom: 15px;
-            border-radius: 4px;
-        }
-        .store-section-title { font-size: 1rem; font-weight: 700; color: white; }
-        .store-section-count { background: rgba(255, 255, 255, 0.9); padding: 4px 12px; border-radius: 4px; color: #7AAB51; font-size: 0.85rem; font-weight: 700; }
+        .store-section { background: transparent; border-radius: 0; padding: 0; margin-bottom: 16px; box-shadow: none; }
+        .store-section-header { display: flex; align-items: center; gap: 10px; padding: 4px 12px; background: linear-gradient(90deg, #3d6b24 0%, #5a9a35 100%); border-radius: 6px 6px 0 0; margin-bottom: 0; }
+        .store-section-title { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,.95); letter-spacing: .02em; }
+        .store-section-count { background: rgba(255,255,255,.18); padding: 1px 8px; border-radius: 20px; color: #fff; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255,255,255,.25); }
+        .store-section-body { background: #fafbfc; border-radius: 0 6px 6px 6px; padding: 10px 12px; border: 1px solid #e4e9f0; border-top: none; }
         .no-incidents-message { text-align: center; padding: 30px; color: #718096; font-size: 1rem; background: #f7fafc; border-radius: 6px; border: 2px dashed #cbd5e0; }
         
-        .stores-summary-section {
-            background: #EBF4FF;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .incidents-section-bg {
-            padding: 0;
-        }
+        .stores-summary-section { background: #EBF4FF; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); }
+        .incidents-section-bg { padding: 0; }
         
         .incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 10px; }
         .incidents-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .incidents-owner-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; }
-        .incidents-owner-header { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-        .incidents-owner-header.sumato { color: #166534; }
-        .incidents-owner-header.sodimac { color: #1e40af; }
+        .incidents-owner-col { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; }
+        .incidents-owner-col.sumato {
+            background: #f0fdf4;
+            border: 1.5px solid #86efac;
+            border-top: 3px solid #16a34a;
+            box-shadow: 0 3px 14px rgba(22,163,74,.12);
+        }
+        .incidents-owner-col.sodimac {
+            background: #eff6ff;
+            border: 1.5px solid #93c5fd;
+            border-top: 3px solid #1d4ed8;
+            box-shadow: 0 3px 14px rgba(29,78,216,.12);
+        }
+        .incidents-owner-header { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .incidents-owner-header::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .incidents-owner-header.sumato { color: #15803d; }
+        .incidents-owner-header.sumato::before { background: #16a34a; }
+        .incidents-owner-header.sodimac { color: #1d4ed8; }
+        .incidents-owner-header.sodimac::before { background: #1d4ed8; }
         .owner-incidents-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 9px; }
         .owner-empty { font-size: 0.78rem; color: #94a3b8; font-style: italic; }
-        .incident-card { 
-            background: #ffffff;
-            border-radius: 6px; 
-            padding: 9px 9px 9px 11px; 
-            transition: all 0.3s ease; 
-            position: relative;
-            border: 1px solid #cbd5e0;
-            border-left: 10px solid var(--tipo-color, #6b7280);
+        .incident-card {
+            background: color-mix(in srgb, var(--tipo-color, #6b7280) 7%, white);
+            border-radius: 6px;
+            padding: 7px 28px 7px 36px;
+            transition: all 0.2s ease; position: relative;
+            border: 1px solid color-mix(in srgb, var(--tipo-color, #6b7280) 18%, #cbd5e0);
+            border-left: 8px solid var(--tipo-color, #6b7280);
+            min-height: 80px;
         }
         .incident-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
-        .tipo-desalineada { --tipo-color: #FBC02D; }
+        .tipo-traslado    { --tipo-color: #F9A825; }   /* amarillo intenso */
+        .tipo-reenfoque   { --tipo-color: #FFD54F; }   /* amarillo claro   */
+        .tipo-desalineada { --tipo-color: #FBC02D; }   /* legacy           */
         .tipo-configuracion { --tipo-color: #D32F2F; }
-        .tipo-obstruida { --tipo-color: #1E88E5; }
-        .tipo-imagen { --tipo-color: #FB8C00; }
-        .tipo-acceso { --tipo-color: #B71C1C; }
-        .tipo-red { --tipo-color: #43A047; }
-        .tipo-otro { --tipo-color: #6b7280; }
-        
-        .days-badge { position: absolute; top: 8px; right: 8px; color: #64748b; font-size: 0.78rem; font-weight: 600; line-height: 1; display: inline-flex; align-items: center; gap: 3px; }
-        .device-number { font-size: 1.2rem; text-align: center; font-weight: 700; color: #111827; line-height: 1.1; }
-        .cam-number { font-size: 0.8rem; color: #64748b; text-align: center; line-height: 1.1; }
-        .incident-type { font-size: 0.7rem; color: #4a5568; margin: 3px 0; font-weight: 700; text-align: center; line-height: 1.2; }
-        .status-badge { display: inline-block; color: white; padding: 2px 7px; border-radius: 4px; font-size: 0.66rem; font-weight: bold; margin: 0 auto; }
-        .status-badge.resuelta { background: #a78bfa; }
-        .status-badge.pendiente { background: #fbbf24; color: #2d3748; }
-        .incident-card.pendiente-sodimac { box-shadow: inset 0 -4px 0 #1d4ed8; }
-        .incident-card.pendiente-sumato { box-shadow: inset 0 -4px 0 #16a34a; }
-        .client-badge { display: inline-block; margin-top: 4px; font-size: 0.68rem; font-weight: 800; padding: 2px 9px; border-radius: 999px; }
+        .tipo-obstruida   { --tipo-color: #1E88E5; }
+        .tipo-imagen      { --tipo-color: #FB8C00; }
+        .tipo-acceso      { --tipo-color: #B71C1C; }
+        .tipo-red         { --tipo-color: #43A047; }
+        .tipo-otro        { --tipo-color: #6b7280; }
+
+        .incident-status-bar {
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 22px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .incident-status-bar span {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+            font-size: 0.58rem;
+            font-weight: 800;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: white;
+            white-space: nowrap;
+        }
+        .incident-status-bar.resuelta { background: #a78bfa; }
+        .incident-status-bar.pendiente { background: #f59e0b; }
+
+        .days-badge { position: absolute; top: 5px; right: 6px; color: #64748b; font-size: 0.72rem; font-weight: 600; line-height: 1; display: inline-flex; align-items: center; gap: 2px; }
+        .device-number { font-size: 1.1rem; font-weight: 700; color: #111827; line-height: 1.1; }
+        .cam-number { font-size: 0.72rem; color: #64748b; line-height: 1.1; }
+        .incident-type { font-size: 0.68rem; color: #374151; font-weight: 700; line-height: 1.2; margin-top: 2px; }
+        .status-badge { display: none; }
+        .client-badge { display: inline-block; margin-top: 3px; font-size: 0.64rem; font-weight: 800; padding: 1px 7px; border-radius: 999px; }
         .client-badge.sodimac { background: #dbeafe; color: #1e40af; }
         .client-badge.sumato { background: #dcfce7; color: #166534; }
-        .incident-card-content { display: flex; flex-direction: column; align-items: center; }
+        .incident-card-content { display: flex; flex-direction: column; align-items: flex-start; }
+        .incident-card.pendiente-sodimac { box-shadow: none; }
+        .incident-card.pendiente-sumato { box-shadow: none; }
         .btn-resolve { background: #7AAB51; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-edit { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .btn-delete { background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600; }
         .modal-body { max-height: 58vh; overflow-y: auto; margin-bottom: 16px; }
         .modal-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-        .detail-modal-content {
-            width: min(80vw, 1400px);
-            max-height: 88vh;
-            margin: 3vh auto;
-            padding: 18px 20px;
-            display: flex;
-            flex-direction: column;
-        }
+        .detail-modal-content { width: min(80vw, 1400px); max-height: 88vh; margin: 3vh auto; padding: 18px 20px; display: flex; flex-direction: column; }
         .detail-modal-content .modal-header { margin-bottom: 12px; }
         .detail-modal-content .modal-header h3 { font-size: 1.2rem; }
-        .detail-modal-body {
-            flex: 1;
-            margin-bottom: 10px;
-            max-height: none;
-            overflow-y: auto;
-        }
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-        }
-        .detail-section {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            background: #f8fafc;
-            padding: 8px;
-        }
-        .detail-section-title {
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: #2d3748;
-            text-transform: uppercase;
-            letter-spacing: 0.03em;
-            margin-bottom: 6px;
-        }
-        .detail-column {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .detail-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 5px 7px;
-            background: #ffffff;
-            min-height: 48px;
-        }
-        .detail-label {
-            display: block;
-            font-size: 0.68rem;
-            font-weight: 700;
-            color: #4a5568;
-            letter-spacing: 0.01em;
-            margin-bottom: 1px;
-            text-transform: uppercase;
-        }
-        .detail-value {
-            display: block;
-            font-size: 0.8rem;
-            color: #1a202c;
-            line-height: 1.2;
-            word-break: break-word;
-        }
-        .detail-modal-actions {
-            padding-top: 8px;
-            border-top: 1px solid #e2e8f0;
-            gap: 6px;
-        }
+        .detail-modal-body { flex: 1; margin-bottom: 10px; max-height: none; overflow-y: auto; }
+        .detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+        .detail-section { border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 8px; }
+        .detail-section-title { font-size: 0.75rem; font-weight: 800; color: #2d3748; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 6px; }
+        .detail-column { display: flex; flex-direction: column; gap: 5px; }
+        .detail-item { border: 1px solid #e2e8f0; border-radius: 6px; padding: 5px 7px; background: #ffffff; min-height: 48px; }
+        .detail-label { display: block; font-size: 0.68rem; font-weight: 700; color: #4a5568; letter-spacing: 0.01em; margin-bottom: 1px; text-transform: uppercase; }
+        .detail-value { display: block; font-size: 0.8rem; color: #1a202c; line-height: 1.2; word-break: break-word; }
+        .detail-modal-actions { padding-top: 8px; border-top: 1px solid #e2e8f0; gap: 6px; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); }
         .modal-content { background: white; margin: 5% auto; padding: 24px; border-radius: 8px; max-width: 720px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
@@ -375,16 +291,25 @@
         .modal-header h3 { font-size: 1.3rem; color: #2d3748; }
         .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
         .close:hover { color: #000; }
-        
 
-        @media (max-width: 1300px) {
-            .stores-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .ticket-badge {
+            position: absolute;
+            bottom: 7px;
+            right: 8px;
+            background: #dc2626;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 5px;
+            line-height: 1.2;
+            letter-spacing: 0.02em;
         }
 
+        @media (max-width: 1300px) { .stores-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
         @media (max-width: 768px) {
             .header h1 { font-size: 1.4rem; }
             .header { flex-direction: column; text-align: center; }
-            .search-filters-container { grid-template-columns: 1fr; }
             .filters-grid, .form-grid { grid-template-columns: 1fr; }
             .kpis { grid-template-columns: 1fr 1fr; }
             .field-device, .field-tipo, .field-estado, .field-descripcion, .field-registrado, .field-resp-tipo, .field-resp-asignado, .field-submit { grid-column: auto; }
@@ -392,45 +317,191 @@
             .incidents-grid { grid-template-columns: 1fr; }
             .incidents-split { grid-template-columns: 1fr; }
             .owner-incidents-grid { grid-template-columns: 1fr; }
-            .detail-modal-content {
-                width: 94vw;
-                margin: 2vh auto;
-                max-height: 92vh;
-                padding: 14px;
-            }
+            .detail-modal-content { width: 94vw; margin: 2vh auto; max-height: 92vh; padding: 14px; }
             .detail-grid { grid-template-columns: 1fr; }
             .detail-section { padding: 7px; }
         }
+        /* ── CHARTS PAGE ── */
+        .chart-page-title { font-family:'DM Sans',sans-serif; font-size:26px; font-weight:800; color:var(--navy); margin:24px 0 4px; }
+        .chart-page-sub { font-size:14px; color:var(--text-m); margin-bottom:24px; }
+        .charts-grid-top { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:16px; }
+        .chart-card { background:var(--white); border-radius:var(--r); padding:20px 22px; box-shadow:var(--sh); border:1px solid var(--border); margin-bottom:16px; }
+        .chart-card-full { width:100%; }
+        .chart-card-title { font-size:12.5px; font-weight:700; color:var(--text-m); text-transform:uppercase; letter-spacing:.6px; margin-bottom:4px; }
+        .chart-card-sub { font-size:12px; color:var(--text-l); margin-bottom:14px; }
+
+        /* ── KPI CARDS rediseño Akira ── */
+        .kpis { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; margin-bottom:20px; }
+        .kpi-card { background:var(--white); border-radius:var(--r); padding:18px 20px; min-height:120px; transition:all .25s; box-shadow:var(--sh); border:1px solid var(--border); }
+        .kpi-card:hover { transform:translateY(-4px); box-shadow:var(--sh-lg); }
+        .kpi-label { font-size:0.78rem; color:var(--text-l); margin-bottom:6px; text-transform:uppercase; letter-spacing:.8px; font-weight:700; }
+        .kpi-value { font-size:3rem; font-weight:800; line-height:1; margin-bottom:6px; font-family:'DM Sans',sans-serif; letter-spacing:-0.02em; }
+        .kpi-subtitle { font-size:0.8rem; color:var(--text-l); font-weight:500; }
+        .kpi-subtitle-strong { font-size:0.8rem; font-weight:500; color:var(--text-l); }
+        .kpi-green { color:var(--green); }
+        .kpi-yellow { color:var(--amber); }
+        .kpi-red { color:var(--rose); }
+        .kpi-blue { color:var(--blue-m); }
+        .kpi-purple { color:#7c3aed; }
+
+        /* ── MODAL FORM GRID ── */
+        .form-grid-modal { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; }
+
+        /* ── STORES SUMMARY ── */
+        .stores-summary-section { background:var(--white); border-radius:var(--r); padding:20px; margin-bottom:20px; box-shadow:var(--sh); border:1px solid var(--border); }
+
+        /* ── FILTROS ── */
+        .filters { background:var(--white); border-radius:var(--r); padding:16px 20px; box-shadow:var(--sh); border:1px solid var(--border); }
+        .filters h3 { margin-bottom:10px; font-size:0.95rem; color:var(--navy); font-weight:700; }
+
+        /* ── EXPORT BTN ── */
+        .btn-export { background:var(--blue-m); color:white; border:none; padding:9px 18px; border-radius:var(--r-sm); cursor:pointer; font-weight:600; font-size:0.88rem; transition:all .2s; margin-bottom:18px; font-family:'DM Sans',sans-serif; }
+        .btn-export:hover { background:var(--blue); transform:translateY(-1px); box-shadow:0 4px 12px rgba(59,125,216,.4); }
+
+
+        /* ── CHATBOT ── */
+        @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        #chat-btn {
+            position: fixed; bottom: 28px; right: 28px; z-index: 9000;
+            width: 52px; height: 52px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), var(--blue-m));
+            border: none; cursor: pointer;
+            box-shadow: 0 4px 18px rgba(13,31,53,.4);
+            display: flex; align-items: center; justify-content: center;
+            transition: transform .2s, box-shadow .2s; font-size: 22px;
+        }
+        #chat-btn:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(13,31,53,.55); }
+        #chat-badge {
+            position: absolute; top: -3px; right: -3px;
+            background: var(--rose); color: #fff; font-size: 10px; font-weight: 700;
+            width: 17px; height: 17px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #fff;
+        }
+        #chat-panel {
+            position: fixed; bottom: 90px; right: 28px; z-index: 9000;
+            width: 340px; max-height: 500px;
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0,0,0,.16);
+            display: none; flex-direction: column; overflow: hidden;
+            animation: slideUp .22s ease;
+        }
+        #chat-header {
+            background: linear-gradient(135deg, var(--navy), var(--blue-m));
+            padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+        }
+        #chat-header-img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,.3); }
+        .ch-name { color: #fff; font-weight: 700; font-size: 13px; }
+        .ch-sub { color: rgba(255,255,255,.6); font-size: 11px; }
+        #chat-close { margin-left: auto; background: none; border: none; color: rgba(255,255,255,.7); font-size: 18px; cursor: pointer; line-height: 1; padding: 0; }
+        #chat-close:hover { color: #fff; }
+        #chat-messages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 8px; background: #f7f9fc; }
+        .msg-bot { background: #fff; color: var(--navy); border: 1px solid var(--border); border-radius: 12px 12px 12px 3px; padding: 9px 13px; font-size: 13px; line-height: 1.5; max-width: 92%; box-shadow: 0 1px 4px rgba(0,0,0,.06); align-self: flex-start; }
+        .msg-user { background: var(--navy); color: #fff; border-radius: 12px 12px 3px 12px; padding: 9px 13px; font-size: 13px; max-width: 88%; align-self: flex-end; }
+        #chat-qs { padding: 10px 12px; border-top: 1px solid var(--border); background: #fff; }
+        #chat-qs-label { font-size: 10px; color: var(--text-l); font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 7px; }
+        #chat-qs-list { display: flex; flex-direction: column; gap: 5px; max-height: 160px; overflow-y: auto; }
+        .cq-btn { text-align: left; padding: 7px 11px; border-radius: 8px; border: 1px solid var(--border); background: #f7f9fc; color: var(--navy); font-size: 12px; cursor: pointer; transition: background .15s; font-family: 'DM Sans', sans-serif; line-height: 1.4; }
+        .cq-btn:hover { background: var(--blue-xl); border-color: var(--blue-m); }
+        #chat-back { margin-top: 6px; padding: 5px 8px; border: none; background: none; color: var(--text-l); font-size: 11px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+        #chat-back:hover { color: var(--navy); }
+        /* ── CHART TOGGLE ── */
+        .chart-toggle { display:flex; gap:6px; margin-bottom:12px; }
+        .chart-toggle-btn {
+            padding: 4px 12px; border-radius: 20px; border: 1.5px solid var(--border);
+            background: white; color: var(--text-m); font-family: 'DM Sans',sans-serif;
+            font-size: 11px; font-weight: 600; cursor: pointer; transition: all .15s;
+        }
+        .chart-toggle-btn.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+        .chart-toggle-btn:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+            background: var(--navy); color: #fff;
+            padding: 8px 20px; border-radius: 20px;
+            font-size: 12px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+            box-shadow: 0 4px 16px rgba(0,0,0,.25);
+            opacity: 0; transition: opacity .3s; pointer-events: none;
+            z-index: 8000; white-space: nowrap;
+        }
+        #toast.show { opacity: 1; }
+
+        .login-pwd-wrap { position: relative; width: 260px; }
+        .login-pwd-wrap input { width: 260px; padding-right: 40px; }
+        .login-pwd-eye {
+            position: absolute; right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,.4); font-size: 16px; line-height: 1;
+            padding: 0;
+        }
+        .login-pwd-eye:hover { color: rgba(255,255,255,.8); }
+
     </style>
 </head>
 <body>
     <div id="loginModal">
-        <div class="login-box">
-            <div class="login-logo">SUMATO</div>
-            <div class="login-title">Dashboard de Incidencias</div>
-            <select id="loginUser" class="login-input">
+        <div class="logo-wrap-login">
+            <img src="https://i.imgur.com/wRjiu0U.jpeg" alt="Sumato Logo">
+        </div>
+        <div class="login-brand">Akira Analytics</div>
+        <div class="login-sub">Monitoring Hub · Acceso Restringido</div>
+
+        <div style="display:flex;flex-direction:column;align-items:flex-start;width:260px;gap:0;">
+            <div class="login-label">Usuario</div>
+            <select id="loginUser" class="login-input-dark" style="width:260px;margin-bottom:14px;">
                 <option value="">Selecciona usuario...</option>
-                <option value="Victor">Victor</option>
-                <option value="Cael">Cael</option>
-                <option value="Nacho">Nacho</option>
-                <option value="Cami">Cami</option>
-                <option value="Andre">Andre</option>
+                <optgroup label="Internos">
+                    <option value="Andrea Montes">Andrea Montes</option>
+                    <option value="Camila Acuña">Camila Acuña</option>
+                    <option value="Victor Catalán">Victor Catalán</option>
+                    <option value="Cael Tarifa">Cael Tarifa</option>
+                </optgroup>
+                <optgroup label="Externos">
+                    <option value="Ricardo Ulloa">Ricardo Ulloa</option>
+                    <option value="Katherine Martinez">Katherine Martinez</option>
+                    <option value="Magda Arredondo">Magda Arredondo</option>
+                </optgroup>
             </select>
-            <input type="password" id="loginPassword" class="login-input" placeholder="Ingresa tu contraseña" autocomplete="off">
-            <button onclick="validateLogin()" class="login-btn">Acceder</button>
-            <div id="loginError" class="login-error" style="display:none;"></div>
-            <div id="loginAttempts" class="login-attempts"></div>
+
+            <div class="login-label">Contraseña</div>
+            <div style="position:relative;width:260px;">
+                <input type="password" id="loginPassword" class="login-input-dark" placeholder="••••••••" autocomplete="off" style="width:260px;padding-right:42px;">
+                <button type="button" id="pwdEyeBtn" onclick="var i=document.getElementById('loginPassword');this.textContent=i.type==='password'?(i.type='text','🙈'):(i.type='password','👁');" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);font-size:18px;padding:4px;line-height:1;z-index:10;">👁</button>
+            </div>
+
+            <button onclick="validateLogin()" class="login-btn-dark" style="margin-top:16px;">INGRESAR</button>
+            <div id="loginError" class="login-error-dark" style="opacity:0;width:260px;text-align:center;"></div>
+            <div id="loginAttempts" class="login-attempts-dark" style="width:260px;text-align:center;"></div>
         </div>
     </div>
 
-    <div class="container" id="mainContent" style="display:none;">
-        <div class="header">
-            <div>
-                <h1><span>SUMATO</span> | MONITORING HUB</h1>
-                <p id="lastUpdate">Conectando...</p>
+    <div id="mainContent" style="display:none;">
+        <!-- TOP NAV -->
+        <nav id="topnav">
+            <div class="nav-logo">
+                <div class="nav-logo-img"><img src="https://i.imgur.com/wRjiu0U.jpeg" alt="Sumato"></div>
+                <div>
+                    <div class="nav-logo-text">Akira Analytics</div>
+                    <div class="nav-logo-sub">Monitoring Hub · Sodimac</div>
+                </div>
             </div>
-            <div class="live-time" id="liveTime">Live: --:--:--</div>
-        </div>
+            <div class="nav-sep"></div>
+            <button class="nav-btn nav-active" id="navBtnDashboard" onclick="switchView('dashboard')">📋 Dashboard</button>
+            <button class="nav-btn" id="navBtnGraficos" onclick="switchView('graficos')">📊 Gráficos</button>
+            <div class="nav-sep"></div>
+            <button class="nav-btn nav-btn-new" onclick="openNuevaIncidenciaModal()">＋ Nueva Incidencia</button>
+            <div class="nav-sep"></div>
+            <button class="nav-btn" onclick="exportToExcel()" style="color:rgba(255,255,255,.6);">📊 Exportar</button>
+            <div class="nav-right">
+                <span class="nav-user" id="navUser">—</span>
+                <span class="nav-live" id="liveTime">--:--:--</span>
+                <span class="nav-update" id="lastUpdate">Conectando...</span>
+                <button class="nav-btn" onclick="cerrarSesion()" style="color:#f87171;font-weight:600;font-size:12px;padding:5px 12px;border:1px solid rgba(248,113,113,.3);border-radius:6px;">⎋ Salir</button>
+            </div>
+        </nav>
+        <div class="container">
         
         <div id="loadingDiv" class="loading">
             <div class="loading-spinner"></div>
@@ -440,103 +511,51 @@
         <div id="errorDiv" class="error" style="display: none;"></div>
         
         <div id="contentDiv" style="display: none;">
-            <div class="filters" style="margin-bottom: 20px;">
-                <h3>Cliente</h3>
-                <div class="filters-grid">
-                    <div class="filter-group"><label>Cliente</label><select id="filterClient"><option value="">Seleccione cliente...</option><option value="Sodimac">Sodimac</option><option value="Sumato Test">Sumato Test</option></select></div>
-                </div>
-            </div>
+
             <div class="kpis">
-                <div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value kpi-blue" id="kpiTotal">--</div><div class="kpi-subtitle">Cámaras</div></div>
-                <div class="kpi-card"><div class="kpi-label">Activas</div><div class="kpi-value kpi-green" id="kpiActive">--</div><div class="kpi-subtitle" id="kpiActivePercent">--</div></div>
-                <div class="kpi-card"><div class="kpi-label">Inactivas</div><div class="kpi-value kpi-yellow" id="kpiInactive">--</div><div class="kpi-subtitle" id="kpiInactivePercent">--</div><div class="kpi-subtitle" id="kpiInactiveByIncidents">Por incidencias: --</div><div class="kpi-subtitle" id="kpiInactiveIncTotal">Total incidencias: --</div></div>
-                <div class="kpi-card"><div class="kpi-label">Pendientes</div><div class="kpi-value kpi-red" id="kpiIncidentsActive">--</div><div class="kpi-subtitle">Incidencias</div><div class="kpi-subtitle" id="kpiPendingSodimac" class="kpi-subtitle-strong">Sodimac: --</div><div class="kpi-subtitle-strong" id="kpiPendingSumato">Sumato: --</div></div>
-                <div class="kpi-card"><div class="kpi-label">Resueltas</div><div class="kpi-value kpi-purple" id="kpiIncidentsResolved">--</div><div class="kpi-subtitle" id="kpiIncidentsTotal">--</div></div>
-            </div>
-            
-            <div class="add-incident-section">
-                <h3>Registrar Nueva Anomalía</h3>
-                <form id="addIncidentForm" class="form-grid">
-                    <div class="form-group field-device">
-                        <label>DeviceID</label>
-                        <input type="number" id="newDeviceId" required placeholder="Ej: 23">
-                    </div>
-                    <div class="form-group field-tipo">
-                        <label>Tipo Anomalía</label>
-                        <select id="newTipoAnomalia" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Sin acceso a cámara">Sin acceso a cámara</option>
-                            <option value="Problema de imagen">Problema de imagen</option>
-                            <option value="Cámara desalineada / mal posicionada">Cámara desalineada / mal posicionada</option>
-                            <option value="Obstrucción de cámara">Obstrucción de cámara</option>
-                            <option value="Error de configuración">Error de configuración</option>
-                            <option value="Problema de Red">Problema de Red</option>
-                        </select>
-                    </div>
-                    <div class="form-group field-estado">
-                        <label>Estado</label>
-                        <select id="newEstadoCamara" required>
-                            <option value="">Seleccione...</option>
-                            <option value="Activa">Activa</option>
-                            <option value="Inactiva">Inactiva</option>
-                        </select>
-                    </div>
-                    <div class="form-group field-descripcion">
-                        <label>Descripción</label>
-                        <input type="text" id="newDescripcion" placeholder="Descripción" required>
-                    </div>
-
-                    <div class="form-group field-registrado">
-                        <label>Registrado Por</label>
-                        <input type="text" id="newRegistradoPor" readonly required>
-                    </div>
-                    <div class="form-group field-resp-tipo">
-                        <label>Responsable (Cliente/Sumato)</label>
-                        <select id="newResponsableTipo" required>
-                            <option value="">Seleccione cliente primero...</option>
-                        </select>
-                    </div>
-                    <div class="form-group field-resp-asignado">
-                        <label>Responsable Asignado</label>
-                        <select id="newResponsable" required>
-                            <option value="">Seleccione...</option>
-                            <optgroup label="Internos">
-                                <option value="Victor">Victor</option>
-                                <option value="Cael">Cael</option>
-                                <option value="Cami">Cami</option>
-                                <option value="Diego">Diego</option>
-                                <option value="Mati">Mati</option>
-                            </optgroup>
-                            <optgroup label="Externos">
-                                <option value="Andy">Andy</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div class="form-group form-actions field-submit">
-                        <button type="submit" class="btn-primary" id="btnAddIncident">Reportar Incidencia</button>
-                    </div>
-
-                </form>
-            </div>
-            
-            <div class="search-filters-container">
-                <div class="search-box">
-                    <h3>🔍 Buscar</h3>
-                    <input type="text" class="search-input" id="searchInput" placeholder="DeviceId, Tipo, IP, Zona...">
+                <div class="kpi-card">
+                    <div class="kpi-label">Total</div>
+                    <div class="kpi-value kpi-blue" id="kpiTotal">--</div>
+                    <div class="kpi-subtitle">Incidencias</div>
                 </div>
-                
-                <div class="filters">
+                <div class="kpi-card">
+                    <div class="kpi-label">Pendientes — Sin Resolver</div>
+                    <div class="kpi-value kpi-red" id="kpiPendientes">--</div>
+                    <div class="kpi-subtitle" id="kpiPendingSodimac">Sodimac: --</div>
+                    <div class="kpi-subtitle" id="kpiPendingSumato">Sumato: --</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Resueltas</div>
+                    <div class="kpi-value kpi-purple" id="kpiResueltas">--</div>
+                    <div class="kpi-subtitle" id="kpiResueltasPct">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Con Ticket</div>
+                    <div class="kpi-value kpi-green" id="kpiConTicket">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Sin Respuesta</div>
+                    <div class="kpi-value kpi-yellow" id="kpiSinRespuesta">--</div>
+                    <div class="kpi-subtitle">Pendientes sin ticket</div>
+                </div>
+            </div>
+            
+
+            <div class="filters" style="margin-bottom: 25px;">
                     <h3>Filtros</h3>
                     <div class="filters-grid">
+                        <div class="filter-group">
+                            <label>🔍 Buscar</label>
+                            <input type="text" class="search-input" id="searchInput" placeholder="DeviceId, Tipo, IP, Zona..." style="border: 1px solid #cbd5e0; background: #f7fafc; padding: 8px; border-radius: 4px; width: 100%; font-size: 0.9rem;">
+                        </div>
                         <div class="filter-group"><label>Tipo</label><select id="filterType"><option value="">Todos</option></select></div>
                         <div class="filter-group"><label>Estado Cámara</label><select id="filterCameraStatus"><option value="">Todas</option><option value="1">Activas</option><option value="0">Inactivas</option></select></div>
-                        <div class="filter-group"><label>Resolución</label><select id="filterResolved"><option value="">Todas</option><option value="No">Pendientes</option><option value="Si">Resueltas</option></select></div>
+                        <div class="filter-group"><label>Resolución</label><select id="filterResolved"><option value="">Todas</option><option value="No" selected>Pendientes</option><option value="Si">Resueltas</option></select></div>
                         <div class="filter-group"><label>Tienda</label><select id="filterStore"><option value="">Todas</option></select></div>
+                        <div class="filter-group"><label>Ticket</label><select id="filterTicket"><option value="">Todos</option><option value="con">Con ticket</option><option value="sin">Sin ticket</option></select></div>
                     </div>
-                </div>
             </div>
             
-            <button class="btn-export" onclick="exportToExcel()">📊 Exportar a Excel</button>
             
             <div class="view-tabs">
                 <div class="view-tab active" id="tabResumen">Vista Resumen</div>
@@ -545,7 +564,7 @@
             
             <div id="resumenView">
                 <div class="stores-summary-section">
-                    <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Resumen Tiendas (<span id="storeCountResumen">--</span>)</h2>
+                    <h2 style="font-size: 1.3rem; margin-bottom: 15px; color: #2d3748;">Incidencias Pendientes por Tienda (<span id="storeCountResumen">--</span>)</h2>
                     <div class="stores-grid" id="storesGridResumen"></div>
                 </div>
                 <div class="incidents-section-bg" id="incidentsByStoreContainer"></div>
@@ -554,9 +573,133 @@
             <div id="agrupadaView" style="display: none;">
                 <div id="storesSectionsContainer"></div>
             </div>
-        </div>
-    </div>
+        </div><!-- /contentDiv -->
 
+        <!-- VISTA GRÁFICOS -->
+        <div id="graficosView" style="display:none;">
+            <div class="chart-page-title">Análisis de Incidencias</div>
+            <div class="chart-page-sub">Distribución y evolución de anomalías registradas en tiendas Sodimac</div>
+            <div class="charts-grid-top">
+                <div class="chart-card">
+                    <div class="chart-card-title">Por Tipo de Incidencia</div>
+                    <div class="chart-toggle">
+                        <button class="chart-toggle-btn active" onclick="setChartFilter('tipo','todas',this)">Todas</button>
+                        <button class="chart-toggle-btn" onclick="setChartFilter('tipo','pendientes',this)">Pendientes</button>
+                        <button class="chart-toggle-btn" onclick="setChartFilter('tipo','resueltas',this)">Resueltas</button>
+                    </div>
+                    <div style="height:260px;position:relative"><canvas id="chartTipo"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-title">Por Responsable</div>
+                    <div class="chart-toggle">
+                        <button class="chart-toggle-btn active" onclick="setChartFilter('resp','todas',this)">Todas</button>
+                        <button class="chart-toggle-btn" onclick="setChartFilter('resp','pendientes',this)">Pendientes</button>
+                        <button class="chart-toggle-btn" onclick="setChartFilter('resp','resueltas',this)">Resueltas</button>
+                    </div>
+                    <div style="height:260px;position:relative"><canvas id="chartResponsable"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-card-title">Estado de Incidencias</div>
+                    <div class="chart-card-sub">Pendientes vs Resueltas</div>
+                    <div style="height:260px;position:relative"><canvas id="chartEstado"></canvas></div>
+                </div>
+            </div>
+            <div class="chart-card chart-card-full">
+                <div class="chart-card-title">Incidencias por Tienda</div>
+                <div class="chart-card-sub">Pendientes y resueltas desglosadas por tienda</div>
+                <div style="height:300px;position:relative"><canvas id="chartTienda"></canvas></div>
+            </div>
+            <div class="chart-card chart-card-full">
+                <div class="chart-card-title">Evolución Temporal</div>
+                <div class="chart-card-sub">Incidencias creadas por mes</div>
+                <div style="height:240px;position:relative"><canvas id="chartEvolucion"></canvas></div>
+            </div>
+        </div><!-- /graficosView -->
+
+    </div><!-- /container -->
+</div><!-- /mainContent -->
+
+
+<!-- MODAL NUEVA ANOMALÍA -->
+<div id="nuevaIncidenciaModal" class="modal">
+    <div class="modal-content" style="max-width:900px;">
+        <div class="modal-header">
+            <h3 style="color:var(--navy); font-family:'DM Sans',sans-serif;">＋ Nueva Incidencia</h3>
+            <span class="close" onclick="closeNuevaIncidenciaModal()">&times;</span>
+        </div>
+        <form id="addIncidentForm">
+            <!-- Fila 1: Device + Tipo + Estado -->
+            <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:14px;margin-bottom:14px;">
+                <div class="form-group">
+                    <label>Device ID</label>
+                    <input type="number" id="newDeviceId" required placeholder="Ej: 23">
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Incidencia</label>
+                    <select id="newTipoAnomalia" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Sin acceso a cámara">Sin acceso a cámara</option>
+                        <option value="Problema de imagen">Problema de imagen</option>
+                        <option value="Camara mal posicionada/Traslado">Camara mal posicionada/Traslado</option>
+                        <option value="Camara mal posicionada/Reenfoque">Camara mal posicionada/Reenfoque</option>
+                        <option value="Obstrucción de cámara">Obstrucción de cámara</option>
+                        <option value="Error de configuración">Error de configuración</option>
+                        <option value="Problema de Red">Problema de Red</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estado Cámara</label>
+                    <select id="newEstadoCamara" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Activa">Activa</option>
+                        <option value="Inactiva">Inactiva</option>
+                    </select>
+                </div>
+            </div>
+            <!-- Fila 2: Descripción (full width) -->
+            <div class="form-group" style="margin-bottom:14px;">
+                <label>Descripción del Problema</label>
+                <input type="text" id="newDescripcion" placeholder="Describe brevemente la anomalía detectada..." required style="width:100%;">
+            </div>
+            <!-- Fila 3: Registrado + Responsable tipo + Responsable asignado -->
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;">
+                <div class="form-group">
+                    <label>Registrado Por</label>
+                    <input type="text" id="newRegistradoPor" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>Responsable</label>
+                    <select id="newResponsableTipo" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Sodimac">Sodimac</option>
+                        <option value="Sumato">Sumato</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Persona Asignada</label>
+                    <select id="newResponsable" required>
+                        <option value="">Seleccione...</option>
+                        <optgroup label="Internos">
+                            <option value="Victor Catalán">Victor Catalán</option>
+                            <option value="Cael Tarifa">Cael Tarifa</option>
+                            <option value="Camila Acuña">Camila Acuña</option>
+                        </optgroup>
+                        <optgroup label="Externos">
+                            <option value="Ricardo Ulloa">Ricardo Ulloa</option>
+                            <option value="Katherine Martinez">Katherine Martinez</option>
+                            <option value="Magda Arredondo">Magda Arredondo</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+            <!-- Acción -->
+            <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:12px;border-top:1px solid var(--border);">
+                <button type="button" onclick="closeNuevaIncidenciaModal()" style="padding:10px 22px;border:1px solid var(--border);border-radius:8px;background:white;color:var(--text-m);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;">Cancelar</button>
+                <button type="submit" class="btn-primary" id="btnAddIncident" style="padding:10px 28px;font-size:14px;border-radius:8px;">📋 Reportar Incidencia</button>
+            </div>
+        </form>
+    </div>
+</div>
 
     <div id="detailModal" class="modal">
         <div class="modal-content detail-modal-content">
@@ -588,7 +731,7 @@
                     <input type="number" id="editDeviceId" required>
                 </div>
                 <div class="form-group">
-                    <label>Tipo Anomalía</label>
+                    <label>Tipo Incidencia</label>
                     <select id="editTipoAnomalia" required></select>
                 </div>
                 <div class="form-group">
@@ -614,11 +757,14 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Responsable Asignado</label>
+                    <label>Persona Responsable Asignada</label>
                     <select id="editResponsable" required>
-                        <option value="Andy">Andy</option>
-                        <option value="Diego">Diego</option>
-                        <option value="Mati">Mati</option>
+                        <option value="Victor Catalán">Victor Catalán</option>
+                        <option value="Cael Tarifa">Cael Tarifa</option>
+                        <option value="Camila Acuña">Camila Acuña</option>
+                        <option value="Ricardo Ulloa">Ricardo Ulloa</option>
+                        <option value="Katherine Martinez">Katherine Martinez</option>
+                        <option value="Magda Arredondo">Magda Arredondo</option>
                     </select>
                 </div>
                 <div class="form-group" style="display:flex; align-items:flex-end;">
@@ -630,55 +776,88 @@
     
     <script>
 const APPS_SCRIPT_URLS = [
-    'https://script.google.com/macros/s/AKfycbxABZiCJnMf7v07Zt7cIt7-Xe1rdhx_3QV81H7LS3hjeqX3nurbVRcv3sxnwCj3bLJXiA/exec'
+    'https://script.google.com/macros/s/AKfycby0Tqcg7GrErF5YrvXnoA6EHTlZ0dvkRCrjUqHowaEkJ0EAAYB2Tma7Uejhtll9Uxd4iA/exec'
 ];
 let activeAppsScriptUrl = APPS_SCRIPT_URLS[0];
-const CORRECT_PASSWORD = 'deploy2026';
+const USER_PASSWORDS = {
+    'Andrea Montes':      'am2026',
+    'Camila Acuña':       'ca2026',
+    'Victor Catalán':     'vc2026',
+    'Cael Tarifa':        'ct2026',
+    'Ricardo Ulloa':      'ru2026',
+    'Katherine Martinez': 'km2026',
+    'Magda Arredondo':    'ma2026'
+};
 let loginAttempts = 0;
 let loggedUser = '';
 let currentDetailIncidentId = '';
 let currentDetailIncidentKey = '';
 
+// ── Usuarios y emails ──────────────────────────────────────────────────────
 const loginUsers = [
-    'Victor',
-    'Cael',
-    'Nacho',
-    'Cami',
-    'Andre'
+    'Andrea Montes',
+    'Camila Acuña',
+    'Victor Catalán',
+    'Cael Tarifa',
+    'Ricardo Ulloa',
+    'Katherine Martinez',
+    'Magda Arredondo'
 ];
 
 const userEmails = {
-    'Victor': 'vcatalan@sumatoid.com',
-    'Cael': 'ctarifa@sumatoid.com',
-    'Nacho': 'jidiez@sumatoid.com',
-    'Cami': 'cacuna@sumatoid.com',
-    'Andre': 'amontes@sumatoid.com'
+    'Andrea Montes':      'amontes@sumatoid.com',
+    'Camila Acuña':       'cacuna@sumatoid.com',
+    'Victor Catalán':     'vcatalan@sumatoid.com',
+    'Cael Tarifa':        'ctarifa@sumatoid.com',
+    'Ricardo Ulloa':      'ext_rjulloah@sodimac.cl',
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
+    'Magda Arredondo':    'ext_marredondo@sodimac.cl'
 };
 
 const emailsResponsables = {
-    'Victor': 'vcatalan@sumatoid.com',
-    'Cael': 'ctarifa@sumatoid.com',
-    'Cami': 'cacuna@sumatoid.com',
-    'Mati': 'mgallo@sumatoid.com',
-    'Diego': 'ddescotte@sumatoid.com',
-    'Andy': 'andy@andymontes.com'
+    'Victor Catalán':     'vcatalan@sumatoid.com',
+    'Cael Tarifa':        'ctarifa@sumatoid.com',
+    'Camila Acuña':       'cacuna@sumatoid.com',
+    'Ricardo Ulloa':      'ext_rjulloah@sodimac.cl',
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
+    'Magda Arredondo':    'ext_marredondo@sodimac.cl'
 };
+
+// Destinatarios fijos de notificaciones
+const NOTIF_NUEVA_INCIDENCIA = [
+    'ext_rjulloah@sodimac.cl',       // Ricardo Ulloa
+    'kathmartinezg@sodimac.cl',      // Katherine Martinez
+    'ext_marredondo@sodimac.cl',     // Magda Arredondo
+    'amontes@sumatoid.com'           // Andrea Montes
+];
+
+const NOTIF_RESUELTA = [
+    'ext_rjulloah@sodimac.cl',       // Ricardo Ulloa
+    'kathmartinezg@sodimac.cl',      // Katherine Martinez
+    'ext_marredondo@sodimac.cl',     // Magda Arredondo
+    'amontes@sumatoid.com',          // Andrea Montes
+    'cacuna@sumatoid.com'            // Camila Acuña
+];
 
 const TIPOS_ANOMALIA = [
     'Sin acceso a cámara',
     'Problema de imagen',
-    'Cámara desalineada / mal posicionada',
+    'Camara mal posicionada/Traslado',
+    'Camara mal posicionada/Reenfoque',
     'Obstrucción de cámara',
     'Error de configuración',
     'Problema de Red'
 ];
 
 const MAP_TIPOS = {
-    'Cámara desalineada / mal posicionada': 'CD',
+    'Cámara desalineada / mal posicionada': 'CD',  // legacy resueltas
+    'Camara mal posicionada/Traslado': 'CT',
+    'Camara mal posicionada/Reenfoque': 'CR',
     'Error de configuración': 'EC',
     'Obstrucción de cámara': 'OB',
     'Problema de imagen': 'PI',
     'Sin acceso a Camara': 'SA',
+    'Sin acceso a cámara': 'SA',
     'Problema de Red': 'PR'
 };
 
@@ -687,6 +866,7 @@ let allIncidents = [];
 let filteredIncidents = [];
 let currentView = 'resumen';
 
+// ── Helpers ────────────────────────────────────────────────────────────────
 function getTipoForIdMap(tipo) {
     const value = String(tipo || '').trim();
     if (!value) return '';
@@ -694,9 +874,13 @@ function getTipoForIdMap(tipo) {
     return value;
 }
 
+function hasTicket(inc) {
+    const obs = String(inc.Observaciones || inc.Descripcion || '');
+    return /Ticket Cargado\s*\(SODCORP-\d+\)/i.test(obs);
+}
+
 function getTipoCode(tipo) {
-    const key = getTipoForIdMap(tipo);
-    return MAP_TIPOS[key] || '';
+    return MAP_TIPOS[getTipoForIdMap(tipo)] || '';
 }
 
 function hasValidDeviceId(value) {
@@ -710,11 +894,9 @@ function normalizeResponsableTipo(value) {
     const raw = String(value || '').trim();
     if (!raw) return '';
     const lower = raw.toLowerCase();
-
     if (lower.includes('sumato')) return 'Sumato';
     if (lower.includes('sodimac')) return 'Sodimac';
     if (lower.includes('mts')) return raw;
-
     return raw;
 }
 
@@ -722,7 +904,6 @@ function inferResponsableTipo(raw) {
     const explicit = raw.ResponsableTipo ?? raw.responsableTipo ?? raw['RESPONSABLE'] ?? raw['Responsable Tipo'] ?? raw['Responsable'] ?? raw.responsable ?? '';
     return normalizeResponsableTipo(explicit);
 }
-
 
 function normalizeIncidentRecord(raw = {}) {
     const normalized = {...raw};
@@ -758,54 +939,44 @@ function normalizeIncidentRecord(raw = {}) {
 
 function getIncidentId(inc) {
     if (!inc) return '';
-    return String(
-        inc.ID ??
-        inc.Id ??
-        inc.id ??
-        inc.IdIncidencia ??
-        inc.idIncidencia ??
-        inc.ID_Incidencia ??
-        inc['ID Incidencia'] ??
-        ''
-    ).trim();
+    return String(inc.ID ?? inc.Id ?? inc.id ?? inc.IdIncidencia ?? inc.idIncidencia ?? inc.ID_Incidencia ?? inc['ID Incidencia'] ?? '').trim();
 }
 
 function normalizeStoreName(storeName) {
     return String(storeName || '').trim().replace(/\s+/g, ' ').toUpperCase();
 }
 
-function isTestStore(storeName) {
-    return normalizeStoreName(storeName) === 'SUMATO TEST';
+function populateTipoAnomaliaOptions() {
+    [document.getElementById('newTipoAnomalia'), document.getElementById('editTipoAnomalia')]
+        .filter(Boolean)
+        .forEach((select, index) => {
+            const selectedBefore = select.value;
+            select.innerHTML = '';
+            if (index === 0) {
+                const ph = document.createElement('option');
+                ph.value = ''; ph.textContent = 'Seleccione...';
+                select.appendChild(ph);
+            }
+            TIPOS_ANOMALIA.forEach(tipo => {
+                const opt = document.createElement('option');
+                opt.value = tipo; opt.textContent = tipo;
+                select.appendChild(opt);
+            });
+            if (TIPOS_ANOMALIA.includes(selectedBefore)) select.value = selectedBefore;
+        });
 }
 
-function populateTipoAnomaliaOptions() {
-    const selects = [
-        document.getElementById('newTipoAnomalia'),
-        document.getElementById('editTipoAnomalia')
-    ].filter(Boolean);
-
-    selects.forEach((select, index) => {
-        const selectedBefore = select.value;
-        select.innerHTML = '';
-
-        if (index === 0) {
-            const placeholder = document.createElement('option');
-            placeholder.value = '';
-            placeholder.textContent = 'Seleccione...';
-            select.appendChild(placeholder);
-        }
-
-        TIPOS_ANOMALIA.forEach(tipo => {
-            const option = document.createElement('option');
-            option.value = tipo;
-            option.textContent = tipo;
-            select.appendChild(option);
-        });
-
-        if (TIPOS_ANOMALIA.includes(selectedBefore)) {
-            select.value = selectedBefore;
-        }
-    });
+// ── Login ──────────────────────────────────────────────────────────────────
+function togglePwd() {
+    const input = document.getElementById('loginPassword');
+    const btn = document.getElementById('pwdEyeBtn');
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+    }
 }
 
 function validateLogin() {
@@ -819,35 +990,40 @@ function validateLogin() {
         errDiv.style.display = 'block';
         return;
     }
-
-    if (pwd === CORRECT_PASSWORD) {
-        sessionStorage.setItem('auth', 'true');
-        sessionStorage.setItem('user', selectedUser);
+    const correctPwd = USER_PASSWORDS[selectedUser] || '';
+    if (pwd === correctPwd) {
+        localStorage.setItem('auth', 'true');
+        localStorage.setItem('user', selectedUser);
         loggedUser = selectedUser;
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('navUser').textContent = selectedUser;
+        // Registrar sesión en el script
+        postToAppsScript({ action: 'login', usuario: selectedUser }).catch(() => {});
         loadData();
     } else {
         loginAttempts++;
         if (loginAttempts >= 3) {
             errDiv.textContent = '❌ Acceso bloqueado. Demasiados intentos.';
-            errDiv.style.display = 'block';
+            errDiv.style.opacity = '1';
             document.getElementById('loginPassword').disabled = true;
             return;
         }
         errDiv.textContent = `Contraseña incorrecta. Intento ${loginAttempts} de 3`;
-        errDiv.style.display = 'block';
+        errDiv.style.opacity = '1';
         attDiv.textContent = `${3 - loginAttempts} intentos restantes`;
         document.getElementById('loginPassword').value = '';
+        setTimeout(() => { errDiv.style.opacity = '0'; }, 2500);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     populateTipoAnomaliaOptions();
-    if (sessionStorage.getItem('auth') === 'true') {
-        loggedUser = sessionStorage.getItem('user') || '';
+    if (localStorage.getItem('auth') === 'true') {
+        loggedUser = localStorage.getItem('user') || '';
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('navUser').textContent = loggedUser;
         loadData();
     }
     document.getElementById('newRegistradoPor').value = loggedUser;
@@ -856,58 +1032,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ── Tiempo real ────────────────────────────────────────────────────────────
 function updateLiveTime() {
     const now = new Date();
-    const time = now.toLocaleTimeString('es-CL', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
-    document.getElementById('liveTime').textContent = 'Live: ' + time;
+    document.getElementById('liveTime').textContent = 'Live: ' + now.toLocaleTimeString('es-CL', {hour: '2-digit', minute: '2-digit', second: '2-digit'});
 }
 
+// ── Fetch datos ────────────────────────────────────────────────────────────
 async function fetchDashboardData() {
     const errors = [];
-
     for (const url of APPS_SCRIPT_URLS) {
         try {
             const resp = await fetch(url, {cache: 'no-store'});
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
-
             const data = await resp.json();
             if (data.status === 'error') throw new Error(data.error || 'Error del servicio');
-
             activeAppsScriptUrl = url;
             return data;
         } catch (err) {
             errors.push(url + ' → ' + err.message);
         }
     }
-
     throw new Error('No se pudo conectar con el servicio. ' + errors.join(' | '));
 }
 
 async function loadData() {
     try {
         const data = await fetchDashboardData();
-
-        allDevices = data.devices || [];
+        allDevices = (data.devices || []).filter(d => String(d.StoreName || '').trim().toUpperCase() !== 'SUMATO TEST');
         allIncidents = (data.incidencias || [])
             .map(normalizeIncidentRecord)
-            .filter(inc => hasValidDeviceId(inc.DeviceId));
-
+            .filter(inc => hasValidDeviceId(inc.DeviceId))
+            .filter(inc => String(inc.Tienda || '').trim().toUpperCase() !== 'SUMATO TEST');
         document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('contentDiv').style.display = 'block';
-
         initDashboard();
     } catch (err) {
         document.getElementById('loadingDiv').style.display = 'none';
         document.getElementById('errorDiv').style.display = 'block';
-        document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top: 15px; padding: 10px 20px; background: #7AAB51; color: white; border: none; border-radius: 6px; cursor: pointer;">Reintentar</button>';
+        document.getElementById('errorDiv').innerHTML = '<h3>Error</h3><p>' + err.message + '</p><button onclick="location.reload()" style="margin-top:15px;padding:10px 20px;background:#7AAB51;color:white;border:none;border-radius:6px;cursor:pointer;">Reintentar</button>';
     }
 }
 
 async function postToAppsScript(payload) {
-    const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS.filter(url => url !== activeAppsScriptUrl)];
+    const urlsToTry = [activeAppsScriptUrl, ...APPS_SCRIPT_URLS.filter(u => u !== activeAppsScriptUrl)];
     const errors = [];
-
     for (const url of urlsToTry) {
         try {
             const response = await fetch(url, {
@@ -915,89 +1085,88 @@ async function postToAppsScript(payload) {
                 headers: {'Content-Type': 'text/plain;charset=utf-8'},
                 body: JSON.stringify(payload)
             });
-
             const rawText = await response.text();
             let result = null;
             if (rawText) {
-                try {
-                    result = JSON.parse(rawText);
-                } catch (parseErr) {
-                    throw new Error('Respuesta no JSON del servidor');
-                }
+                try { result = JSON.parse(rawText); }
+                catch { throw new Error('Respuesta no JSON del servidor'); }
             }
-
-            if (!response.ok) {
-                const message = (result && (result.error || result.message)) || ('HTTP ' + response.status);
-                throw new Error(message);
-            }
-
-            if (!result) {
-                throw new Error('Respuesta vacía del servidor');
-            }
-
-            if (result.status === 'error') {
-                throw new Error(result.error || 'Error de Apps Script');
-            }
-
-            console.info('[AppsScript POST OK]', {url, action: payload?.action, result});
+            if (!response.ok) throw new Error((result && (result.error || result.message)) || ('HTTP ' + response.status));
+            if (!result) throw new Error('Respuesta vacía del servidor');
+            if (result.status === 'error') throw new Error(result.error || 'Error de Apps Script');
             activeAppsScriptUrl = url;
             return result;
         } catch (err) {
-            const errMsg = (err && err.message) ? err.message : String(err);
-            console.error('[AppsScript POST FAIL]', {url, action: payload?.action, error: errMsg});
+            const errMsg = err.message || String(err);
             errors.push(url + ' → ' + errMsg);
-
-            const looksLikeCors = /failed to fetch|networkerror|load failed|cors/i.test(errMsg);
-            if (looksLikeCors) {
-                console.warn('[AppsScript POST CORS-BLOCKED]', {url, action: payload?.action, error: errMsg});
-                errors.push(url + ' → CORS bloqueó la solicitud o la respuesta');
+            if (/failed to fetch|networkerror|load failed|cors/i.test(errMsg)) {
+                throw new Error('El navegador bloqueó la respuesta del servidor (CORS).');
             }
         }
     }
-
     throw new Error('No se pudo completar la solicitud: ' + errors.join(' | '));
 }
 
-async function resolveCreatedIncidentId({deviceId, tipoAnomalia, descripcion, registradoPor}) {
-    const normalize = (v) => String(v || '').trim().toLowerCase();
-
-    try {
-        const freshData = await fetchDashboardData();
-        const freshIncidents = (freshData.incidencias || []).map(normalizeIncidentRecord);
-
-        const matches = freshIncidents.filter(inc => {
-            const incidentId = getIncidentId(inc);
-            if (!incidentId) return false;
-
-            return normalize(inc.DeviceId) === normalize(deviceId) &&
-                normalize(inc.Tipo || inc.TipoAnomalia) === normalize(tipoAnomalia) &&
-                normalize(inc.Descripcion) === normalize(descripcion) &&
-                normalize(inc.Registrado_Por) === normalize(registradoPor);
-        });
-
-        if (!matches.length) return '';
-
-        matches.sort((a, b) => {
-            const dateA = getIncidentCreatedDate(a.Fecha);
-            const dateB = getIncidentCreatedDate(b.Fecha);
-            return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
-        });
-
-        return getIncidentId(matches[0]);
-    } catch (err) {
-        console.warn('[resolveCreatedIncidentId] No se pudo resolver ID recién creado', err);
-        return '';
-    }
+// ── Correo: nueva incidencia ───────────────────────────────────────────────
+function openNuevaIncidenciaMailto({id, deviceId, tienda, tipo, descripcion, registradoPor, responsable, cliente}) {
+    const to = NOTIF_NUEVA_INCIDENCIA.join(',');
+    const subject = `Nueva Incidencia ${id} — Device ${deviceId} (${tienda})`;
+    const body = [
+        `Se ha registrado una nueva incidencia en el SUMATO Monitoring Hub.`,
+        ``,
+        `ID Incidencia : ${id}`,
+        `Device ID     : ${deviceId}`,
+        `Tienda        : ${tienda}`,
+        `Cliente       : ${cliente}`,
+        `Tipo          : ${tipo}`,
+        `Descripción   : ${descripcion}`,
+        `Registrado por: ${registradoPor}`,
+        `Responsable   : ${responsable}`,
+        ``,
+        `Por favor adjuntar evidencia fotográfica si corresponde.`,
+        ``,
+        `— SUMATO Monitoring Hub`
+    ].join('\n');
+    window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
 }
 
+// ── Correo: incidencia resuelta ────────────────────────────────────────────
+function openResueltaMailto(inc) {
+    const to = NOTIF_RESUELTA.join(',');
+    const incidentId = getIncidentId(inc);
+    const subject = `Incidencia Resuelta ${incidentId} — Device ${inc.DeviceId} (${inc.DeviceStoreName || inc.Tienda})`;
+    const body = [
+        `La siguiente incidencia ha sido marcada como RESUELTA.`,
+        ``,
+        `ID Incidencia : ${incidentId}`,
+        `Device ID     : ${inc.DeviceId}`,
+        `Tienda        : ${inc.DeviceStoreName || inc.Tienda}`,
+        `Cliente       : ${getIncidentClient(inc)}`,
+        `Tipo          : ${inc.Tipo}`,
+        `Descripción   : ${inc.Descripcion}`,
+        `Responsable   : ${inc.Responsable_Asignado || inc.Responsable}`,
+        `Resuelta por  : ${loggedUser}`,
+        `Fecha         : ${new Date().toLocaleString('es-CL')}`,
+        ``,
+        `— SUMATO Monitoring Hub`
+    ].join('\n');
+    window.open(`mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+}
 
+// ── Init dashboard ─────────────────────────────────────────────────────────
 function initDashboard() {
     const merged = allIncidents.map((inc, idx) => {
         const dev = allDevices.find(d => String(d.DeviceId) === String(inc.DeviceId));
         const incidentId = getIncidentId(inc);
-        return {...inc, ID: incidentId, __uiKey: `${incidentId || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`, CameraActive: dev ? String(dev.Active) : (String(inc.Estado).toLowerCase() === 'activa' ? '1' : '0'), DeviceName: dev?.Name || inc.Camara, DeviceStoreName: dev?.StoreName || inc.Tienda};
-    });
-    
+        return {
+            ...inc,
+            ID: incidentId,
+            __uiKey: `${incidentId || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`,
+            CameraActive: dev ? String(dev.Active) : (String(inc.Estado).toLowerCase() === 'activa' ? '1' : '0'),
+            DeviceName: dev?.Name || inc.Camara,
+            DeviceStoreName: dev?.StoreName || inc.Tienda
+        };
+    }).filter(inc => String(inc.DeviceStoreName || '').trim().toUpperCase() !== 'SUMATO TEST');
     allIncidents = merged;
     document.getElementById('newRegistradoPor').value = loggedUser;
     syncResponsableTipoOptions();
@@ -1007,100 +1176,69 @@ function initDashboard() {
     setupEvents();
     setInterval(updateLiveTime, 1000);
     updateLiveTime();
+    // Poll silencioso cada 30 segundos
+    setInterval(silentRefresh, 30000);
+    // Cierre automático por inactividad (30 minutos)
+    iniciarTimerInactividad();
+    // Cierre automático por inactividad (30 minutos)
+    iniciarTimerInactividad();
 }
 
+// ── KPIs ───────────────────────────────────────────────────────────────────
 function renderKPIs() {
-    const client = document.getElementById('filterClient')?.value || '';
-    const clientDevices = allDevices.filter(d => !client || getDeviceClient(d) === client);
-    const clientIncidents = allIncidents.filter(i => !client || getIncidentClient(i) === client);
-    const total = clientDevices.length;
-    const active = clientDevices.filter(d => d.Active === 1).length;
-    const inactive = total - active;
-    const totalInc = clientIncidents.length;
-    const resolved = clientIncidents.filter(i => i.Resuelto === 'Si').length;
-    const activeInc = totalInc - resolved;
-    const inactiveByIncidents = clientIncidents.filter(i => String(i.Estado || '').toLowerCase() === 'inactiva').length;
-    const pendingBySodimac = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
-    const pendingBySumato = clientIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sumato').length;
+    const incidents = allIncidents.filter(i => getIncidentClient(i) === 'Sodimac');
+    const total = incidents.length;
+    const pendientes = incidents.filter(i => i.Resuelto !== 'Si').length;
+    const resueltas = incidents.filter(i => i.Resuelto === 'Si').length;
+    const conTicket = incidents.filter(i => hasTicket(i)).length;
+    const sinRespuesta = incidents.filter(i => i.Resuelto !== 'Si' && !hasTicket(i)).length;
+    const pendingSodimac = incidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
+    const pendingSumato = incidents.filter(i => i.Resuelto !== 'Si' && getIncidentResponsableTipoLabel(i) === 'Sumato').length;
 
-    if (!client) {
-        document.getElementById('kpiTotal').textContent = '--';
-        document.getElementById('kpiActive').textContent = '--';
-        document.getElementById('kpiActivePercent').textContent = '--';
-        document.getElementById('kpiInactive').textContent = '--';
-        document.getElementById('kpiInactivePercent').textContent = '--';
-        document.getElementById('kpiInactiveByIncidents').textContent = 'Por incidencias: --';
-        document.getElementById('kpiInactiveIncTotal').textContent = 'Total incidencias: --';
-        document.getElementById('kpiIncidentsActive').textContent = '--';
-        document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: --';
-        document.getElementById('kpiPendingSumato').textContent = 'Sumato: --';
-        document.getElementById('kpiIncidentsResolved').textContent = '--';
-        document.getElementById('kpiIncidentsTotal').textContent = '--';
-        return;
-    }
-    
     document.getElementById('kpiTotal').textContent = total;
-    document.getElementById('kpiActive').textContent = active;
-    document.getElementById('kpiActivePercent').textContent = total ? ((active/total)*100).toFixed(1) + '%' : '0%';
-    document.getElementById('kpiInactive').textContent = inactive;
-    document.getElementById('kpiInactivePercent').textContent = total ? ((inactive/total)*100).toFixed(1) + '%' : '0%';
-    document.getElementById('kpiInactiveByIncidents').textContent = 'Por incidencias: ' + inactiveByIncidents;
-    document.getElementById('kpiInactiveIncTotal').textContent = 'Total incidencias: ' + totalInc;
-    document.getElementById('kpiIncidentsActive').textContent = activeInc;
-    document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: ' + pendingBySodimac;
-    document.getElementById('kpiPendingSumato').textContent = 'Sumato: ' + pendingBySumato;
-    document.getElementById('kpiIncidentsResolved').textContent = resolved;
-    document.getElementById('kpiIncidentsTotal').textContent = 'Total: ' + totalInc;
+    document.getElementById('kpiPendientes').textContent = pendientes;
+    document.getElementById('kpiPendingSodimac').textContent = 'Sodimac: ' + pendingSodimac;
+    document.getElementById('kpiPendingSumato').textContent = 'Sumato: ' + pendingSumato;
+    document.getElementById('kpiResueltas').textContent = resueltas;
+    document.getElementById('kpiResueltasPct').textContent = total ? ((resueltas / total) * 100).toFixed(1) + '%' : '0%';
+    document.getElementById('kpiConTicket').textContent = conTicket;
+    document.getElementById('kpiSinRespuesta').textContent = sinRespuesta;
 }
+
 
 function populateFilters() {
-    const types = [...new Set(allIncidents.map(i => i.Tipo).filter(Boolean))].sort();
-    const client = document.getElementById('filterClient').value;
-    const stores = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))].sort();
+    // Tipos: primero los canónicos, luego legacy si existen en datos
+    const canonicos = new Set(TIPOS_ANOMALIA);
+    const enDatos = [...new Set(allIncidents.map(i => i.Tipo).filter(Boolean))];
+    const legacy = enDatos.filter(t => !canonicos.has(t));
+    const types = [...TIPOS_ANOMALIA, ...legacy].filter(t =>
+        enDatos.includes(t) // solo mostrar los que realmente existen en datos
+    );
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
     const sel = document.getElementById('filterType');
-    types.forEach(t => {
-        const opt = document.createElement('option');
-        opt.value = t;
-        opt.textContent = t;
-        sel.appendChild(opt);
-    });
+    types.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.textContent = t; sel.appendChild(opt); });
     const storeSel = document.getElementById('filterStore');
-    stores.forEach(st => {
-        const opt = document.createElement('option');
-        opt.value = st;
-        opt.textContent = st;
-        storeSel.appendChild(opt);
-    });
+    stores.forEach(st => { const opt = document.createElement('option'); opt.value = st; opt.textContent = st; storeSel.appendChild(opt); });
 }
 
 function getClientFromStoreName(storeName) {
-    return isTestStore(storeName) ? 'Sumato Test' : 'Sodimac';
+    return 'Sodimac';
 }
-
-function getIncidentClient(incident) {
-    return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda);
-}
+function getIncidentClient(incident) { return incident.Cliente || getClientFromStoreName(incident.DeviceStoreName || incident.Tienda); }
+function getDeviceClient(device) { return device.Cliente || getClientFromStoreName(device.StoreName); }
 
 function getIncidentResponsableTipoLabel(incident) {
     const val = normalizeResponsableTipo(incident.ResponsableTipo || incident.Responsable_Cliente || incident.ResponsableTipoCliente || incident.Responsable || '');
     if (val === 'Sumato' || val === 'Sodimac') return val;
-
-    const fallback = normalizeResponsableTipo(getIncidentClient(incident));
-    return fallback || 'Sodimac';
-}
-
-function getDeviceClient(device) {
-    return device.Cliente || getClientFromStoreName(device.StoreName);
+    return normalizeResponsableTipo(getIncidentClient(incident)) || 'Sodimac';
 }
 
 function getIncidentDetailsText(inc) {
-    const fullData = { ...inc };
+    const fullData = {...inc};
     fullData.Tienda = inc.DeviceStoreName || inc.Tienda || '';
     fullData.Cliente = getIncidentClient(inc);
     fullData.Email_Responsable = inc.Email_Responsable || emailsResponsables[inc.Responsable_Asignado] || '';
-    return Object.entries(fullData)
-        .map(([k, v]) => `${k}: ${v ?? ''}`)
-        .join('\n');
+    return Object.entries(fullData).map(([k, v]) => `${k}: ${v ?? ''}`).join('\n');
 }
 
 function renderClientSelectionMessage() {
@@ -1110,25 +1248,15 @@ function renderClientSelectionMessage() {
     document.getElementById('storesSectionsContainer').innerHTML = '<div class="no-incidents-message">Selecciona un cliente para ver incidencias.</div>';
 }
 
-function hasActiveIncidentFilter() {
-    const search = document.getElementById('searchInput')?.value.trim();
-    return Boolean(search);
-}
-
+// ── Filtros y render ───────────────────────────────────────────────────────
 function applyFilters() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const type = document.getElementById('filterType').value;
     const status = document.getElementById('filterCameraStatus').value;
     const resolved = document.getElementById('filterResolved').value;
     const store = document.getElementById('filterStore').value;
-    const client = document.getElementById('filterClient').value;
+    const ticket = document.getElementById('filterTicket').value;
 
-    if (!client) {
-        filteredIncidents = [];
-        renderClientSelectionMessage();
-        return;
-    }
-    
     filteredIncidents = allIncidents.filter(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
         const matchSearch = !search || String(i.DeviceId).includes(search) || (i.DeviceStoreName||'').toLowerCase().includes(search) || (i.Tipo||'').toLowerCase().includes(search) || (i.IP||'').toLowerCase().includes(search) || (i.PhysicalZoneId||'').toLowerCase().includes(search);
@@ -1136,11 +1264,9 @@ function applyFilters() {
         const matchStatus = !status || i.CameraActive === status;
         const matchResolved = !resolved || i.Resuelto === resolved;
         const matchStore = !store || normalizeStoreName(storeName) === normalizeStoreName(store);
-        const matchClient = !client || getIncidentClient(i) === client;
-        return matchSearch && matchType && matchStatus && matchResolved && matchStore && matchClient;
+        const matchTicket = !ticket || (ticket === 'con' ? hasTicket(i) : !hasTicket(i));
+        return matchSearch && matchType && matchStatus && matchResolved && matchStore && matchTicket;
     });
-    
-    // Ordenar por Device ID
     filteredIncidents.sort((a, b) => (a.DeviceId || 0) - (b.DeviceId || 0));
     
     if (currentView === 'resumen') renderResumen();
@@ -1148,31 +1274,18 @@ function applyFilters() {
 }
 
 function renderResumen() {
-    const client = document.getElementById('filterClient').value;
-    const allStoreNames = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))];
-    const stores = allStoreNames.sort();
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
     
-    // Calcular stats desde incidencias filtradas
     const stats = {};
     stores.forEach(s => stats[s] = {total:0, active:0, inactive:0, pending:0, pendingSodimac:0, pendingSumato:0, resolved:0});
-    allDevices.filter(d => !client || getDeviceClient(d) === client).forEach(d => {
-        if (stats[d.StoreName]) {
-            stats[d.StoreName].total++;
-            if (d.Active === 1) stats[d.StoreName].active++;
-            else stats[d.StoreName].inactive++;
-        }
-    });
-    
-    // Usar filteredIncidents
-    filteredIncidents.forEach(i => {
+    // Stats de tienda siempre sobre allIncidents (sin filtros)
+    allIncidents.forEach(i => {
         const storeName = i.DeviceStoreName || i.Tienda;
         if (stats[storeName]) {
-            if (i.Resuelto === 'Si') {
-                stats[storeName].resolved++;
-            } else {
+            if (i.Resuelto === 'Si') { stats[storeName].resolved++; }
+            else {
                 stats[storeName].pending++;
-                const owner = getIncidentResponsableTipoLabel(i);
-                if (owner === 'Sumato') stats[storeName].pendingSumato++;
+                if (getIncidentResponsableTipoLabel(i) === 'Sumato') stats[storeName].pendingSumato++;
                 else stats[storeName].pendingSodimac++;
             }
         }
@@ -1180,58 +1293,36 @@ function renderResumen() {
     
     const grid = document.getElementById('storesGridResumen');
     grid.innerHTML = '';
-
-    const summarySection = document.querySelector('.stores-summary-section');
-    if (summarySection) summarySection.style.display = 'block';
-
-    const storesToRender = stores.filter(s => filteredIncidents.some(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s)));
-
+    const storesToRender = stores.filter(s => allIncidents.some(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s)));
     document.getElementById('storeCountResumen').textContent = storesToRender.length;
-    storesToRender.forEach(s => renderStoreCard(s, stats[s], grid, false));
+    storesToRender.forEach(s => renderStoreCard(s, stats[s], grid));
     
     const cont = document.getElementById('incidentsByStoreContainer');
     cont.innerHTML = '';
-    
-    // Primero tiendas normales
     stores.forEach(s => {
         const storeInc = filteredIncidents.filter(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s));
-        if (storeInc.length === 0) return;
-        
+        if (!storeInc.length) return;
         const sec = document.createElement('div');
         sec.className = 'store-section';
         sec.id = 'section-' + normalizeStoreName(s).replace(/[^A-Z0-9]+/g, '-');
-        sec.style.background = '#FFFFFF';
-        sec.innerHTML = `
-            <div class="store-section-header">
-                <h3 class="store-section-title">${s}</h3>
-                <div class="store-section-count">${storeInc.length}</div>
-            </div>
-            <div id="grid-${s.replace(/\s/g,'-')}"></div>
-        `;
+        sec.innerHTML = `<div class="store-section-header"><h3 class="store-section-title">${s}</h3><div class="store-section-count">${storeInc.length}</div></div><div class="store-section-body" id="grid-${s.replace(/\s/g,'-')}"></div>`;
         cont.appendChild(sec);
-
-        const g = document.getElementById('grid-' + s.replace(/\s/g,'-'));
-        renderIncidentColumns(storeInc, g);
+        renderIncidentColumns(storeInc, document.getElementById('grid-' + s.replace(/\s/g,'-')));
     });
-    
 }
 
 function renderIncidentColumns(storeInc, hostElement) {
     const sumatoInc = storeInc.filter(inc => getIncidentResponsableTipoLabel(inc) === 'Sumato');
     const sodimacInc = storeInc.filter(inc => getIncidentResponsableTipoLabel(inc) !== 'Sumato');
-
     const split = document.createElement('div');
     split.className = 'incidents-split';
-
     const createColumn = (title, cls, list) => {
         const col = document.createElement('div');
-        col.className = 'incidents-owner-col';
-
+        col.className = 'incidents-owner-col ' + cls;
         const header = document.createElement('div');
         header.className = `incidents-owner-header ${cls}`;
         header.textContent = `${title} (${list.length})`;
         col.appendChild(header);
-
         if (!list.length) {
             const empty = document.createElement('div');
             empty.className = 'owner-empty';
@@ -1239,117 +1330,98 @@ function renderIncidentColumns(storeInc, hostElement) {
             col.appendChild(empty);
             return col;
         }
-
-        const grid = document.createElement('div');
-        grid.className = 'owner-incidents-grid';
-        list.forEach(inc => grid.appendChild(createCard(inc)));
-        col.appendChild(grid);
+        const g = document.createElement('div');
+        g.className = 'owner-incidents-grid';
+        list.forEach(inc => g.appendChild(createCard(inc)));
+        col.appendChild(g);
         return col;
     };
-
     split.appendChild(createColumn('Sumato', 'sumato', sumatoInc));
     split.appendChild(createColumn('Sodimac', 'sodimac', sodimacInc));
     hostElement.appendChild(split);
 }
 
-function renderStoreCard(name, st, container, isTest) {
+function renderStoreCard(name, st, container) {
     const card = document.createElement('div');
-    card.className = 'store-card' + (isTest ? ' test-store' : '');
+    card.className = 'store-card';
+    const storeTicket = allIncidents.filter(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(name) && hasTicket(i)).length;
+    const cv = (val, cls) => val === 0 ? `<span class="stat-value" style="color:#c0c9d6">${val}</span>` : `<span class="stat-value ${cls}">${val}</span>`;
+    const headerNum = st.pending === 0 ? `<span style="color:rgba(255,255,255,.35);font-size:0.9rem;font-weight:700">${st.pending}</span>` : `<div class="store-active-total">${st.pending}</div>`;
     card.innerHTML = `
         <div class="store-content">
             <div class="store-header">
                 <div class="store-name">${name}</div>
-                <div class="store-active-total">${st.active}</div>
+                ${headerNum}
             </div>
             <div class="store-stats">
-                <div class="store-stat"><span class="stat-label">Inactivas</span><span class="stat-value">${st.inactive}</span></div>
-                <div class="store-stat"><span class="stat-label">Pend. Sod.</span><span class="stat-value blue">${st.pendingSodimac}</span></div>
-                <div class="store-stat"><span class="stat-label">Pend. Sum.</span><span class="stat-value green">${st.pendingSumato}</span></div>
-                <div class="store-stat"><span class="stat-label">Resueltas</span><span class="stat-value purple">${st.resolved}</span></div>
+                <div class="store-stat"><span class="stat-label">Pend. Sod.</span>${cv(st.pendingSodimac,'blue')}</div>
+                <div class="store-stat"><span class="stat-label">Pend. Sum.</span>${cv(st.pendingSumato,'green')}</div>
+                <div class="store-stat"><span class="stat-label">Con Ticket</span>${cv(storeTicket,'red')}</div>
+                <div class="store-stat"><span class="stat-label">Resueltas</span>${cv(st.resolved,'purple')}</div>
             </div>
-        </div>
-    `;
+        </div>`;
     card.addEventListener('click', () => {
-        const sectionId = 'section-' + normalizeStoreName(name).replace(/[^A-Z0-9]+/g, '-');
-        const target = document.getElementById(sectionId);
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const target = document.getElementById('section-' + normalizeStoreName(name).replace(/[^A-Z0-9]+/g, '-'));
+        if (target) {
+            const navH = document.getElementById('topnav')?.offsetHeight || 70;
+            const y = target.getBoundingClientRect().top + window.scrollY - navH - 12;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+        }
     });
     container.appendChild(card);
 }
 
 function renderAgrupada() {
-    const client = document.getElementById('filterClient').value;
-    const stores = [...new Set(allDevices.filter(d => !client || getDeviceClient(d) === client).map(d => d.StoreName).filter(Boolean))]
-        .sort();
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
     const cont = document.getElementById('storesSectionsContainer');
     cont.innerHTML = '';
-    
     stores.forEach(s => {
         const storeInc = filteredIncidents.filter(i => normalizeStoreName(i.DeviceStoreName || i.Tienda) === normalizeStoreName(s));
         const sec = document.createElement('div');
         sec.className = 'store-section';
-        
         const hdr = document.createElement('div');
         hdr.className = 'store-section-header';
         hdr.innerHTML = `<h2 class="store-section-title">${s}</h2><div class="store-section-count">${storeInc.length}</div>`;
         sec.appendChild(hdr);
-        
-        if (storeInc.length === 0) {
+        const body = document.createElement('div');
+        body.className = 'store-section-body';
+        if (!storeInc.length) {
             const msg = document.createElement('div');
             msg.className = 'no-incidents-message';
             msg.textContent = 'Sin incidencias';
-            sec.appendChild(msg);
+            body.appendChild(msg);
         } else {
-            const g = document.createElement('div');
-            renderIncidentColumns(storeInc, g);
-            sec.appendChild(g);
+            renderIncidentColumns(storeInc, body);
         }
+        sec.appendChild(body);
         cont.appendChild(sec);
     });
 }
 
+// ── Fechas ─────────────────────────────────────────────────────────────────
 function getIncidentCreatedDate(rawDate) {
     if (rawDate === null || rawDate === undefined || rawDate === '') return null;
-
     if (typeof rawDate === 'number') {
-        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-        const millis = rawDate * 24 * 60 * 60 * 1000;
-        return new Date(excelEpoch.getTime() + millis);
+        return new Date(new Date(Date.UTC(1899, 11, 30)).getTime() + rawDate * 86400000);
     }
-
     const value = String(rawDate).trim();
-
     const directDate = new Date(value);
-    if (!Number.isNaN(directDate.getTime())) {
-        return directDate;
-    }
-
-    const datePart = value.split(' ')[0];
-    const parts = datePart.split('/');
+    if (!Number.isNaN(directDate.getTime())) return directDate;
+    const parts = value.split(' ')[0].split('/');
     if (parts.length === 3) {
-        const day = Number(parts[0]);
-        const month = Number(parts[1]);
-        const year = Number(parts[2]);
-        if (!Number.isNaN(day) && !Number.isNaN(month) && !Number.isNaN(year)) {
-            return new Date(year, month - 1, day);
-        }
+        const [day, month, year] = parts.map(Number);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) return new Date(year, month - 1, day);
     }
-
     return null;
 }
 
 function getIncidentDays(rawDate) {
     const createdAt = getIncidentCreatedDate(rawDate);
     if (!createdAt || Number.isNaN(createdAt.getTime())) return 0;
-
     const now = new Date();
-    const utcStartNow = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-    const utcStartCreated = Date.UTC(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate());
-    const diff = Math.floor((utcStartNow - utcStartCreated) / (1000 * 60 * 60 * 24));
-
+    const diff = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - Date.UTC(createdAt.getFullYear(), createdAt.getMonth(), createdAt.getDate())) / 86400000);
     return Math.max(0, diff);
 }
-
 
 function findIncidentByRef(ref) {
     if (!ref && ref !== 0) return null;
@@ -1359,61 +1431,35 @@ function findIncidentByRef(ref) {
 function syncResponsableTipoOptions() {
     const select = document.getElementById('newResponsableTipo');
     if (!select) return;
-
-    const client = (document.getElementById('filterClient')?.value || '').trim();
-    const optionsByClient = {
-        'Sodimac': ['Sodimac', 'Sumato'],
-        'Sumato Test': ['Sumato', 'Sodimac']
-    };
-
+    const options = ['Sodimac', 'Sumato'];
     const selectedBefore = select.value;
-    const options = optionsByClient[client] || [];
     select.innerHTML = '';
-
-    const placeholder = document.createElement('option');
-    placeholder.value = '';
-    placeholder.textContent = options.length ? 'Seleccione...' : 'Seleccione cliente primero...';
-    select.appendChild(placeholder);
-
-    options.forEach(optVal => {
-        const opt = document.createElement('option');
-        opt.value = optVal;
-        opt.textContent = optVal;
-        select.appendChild(opt);
-    });
-
-    if (options.includes(selectedBefore)) {
-        select.value = selectedBefore;
-    } else {
-        select.value = '';
-    }
+    const ph = document.createElement('option');
+    ph.value = ''; ph.textContent = 'Seleccione...';
+    select.appendChild(ph);
+    options.forEach(v => { const opt = document.createElement('option'); opt.value = v; opt.textContent = v; select.appendChild(opt); });
+    if (options.includes(selectedBefore)) select.value = selectedBefore;
 }
 
+// ── Cards ──────────────────────────────────────────────────────────────────
 function createCard(inc) {
     const resolved = inc.Resuelto === 'Si';
     const tipo = inc.Tipo || '';
     const cls = getTipoClass(tipo);
-    const client = getIncidentClient(inc);
-    const responsableTipoLabel = getIncidentResponsableTipoLabel(inc);
-    const isSumato = String(responsableTipoLabel).toLowerCase().includes('sumato');
-    const pendingClientClass = !resolved ? (isSumato ? ' pendiente-sumato' : ' pendiente-sodimac') : '';
-    const clientBadgeClass = isSumato ? 'sumato' : 'sodimac';
     const incidentRef = inc.__uiKey || inc.ID || '';
-    const cam = inc.Camara || '';
     const daysDiff = getIncidentDays(inc.Fecha);
-
     const card = document.createElement('div');
-    card.className = 'incident-card ' + cls + pendingClientClass;
+    card.className = 'incident-card ' + cls;
     card.innerHTML = `
         <div class="incident-card-content">
             <div class="device-number">${inc.DeviceId || 'N/A'}</div>
-            <div class="cam-number">${cam || 'Sin CAM'}</div>
-            <div class="incident-type">${tipo || 'Sin tipo'}</div>
-            <span class="status-badge ${resolved ? 'resuelta' : 'pendiente'}">${resolved ? 'Resuelta' : 'Pendiente'}</span>
-            <span class="client-badge ${clientBadgeClass}">${responsableTipoLabel}</span>
+            <div class="cam-number">${inc.Camara || 'Sin CAM'}</div>
+            <div class="incident-type">${(tipo||'Sin tipo').replace('posicionada/','posicionada/<wbr>')}</div>
+
         </div>
+        <div class="incident-status-bar ${resolved ? 'resuelta' : 'pendiente'}"><span>${resolved ? 'Resuelta' : 'Pendiente'}</span></div>
         <span class="days-badge" title="Días desde creación">🕒 ${daysDiff}</span>
-    `;
+        ${hasTicket(inc) ? '<span class="ticket-badge">🎫 TICKET</span>' : ''}`;
     card.addEventListener('click', () => openDetailModal(incidentRef));
     return card;
 }
@@ -1421,24 +1467,23 @@ function createCard(inc) {
 function copyCard(idInc) {
     const inc = findIncidentByRef(idInc);
     if (!inc) return;
-    const text = getIncidentDetailsText(inc);
-    navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Copiado al portapapeles');
-    });
+    navigator.clipboard.writeText(getIncidentDetailsText(inc)).then(() => alert('✅ Copiado al portapapeles'));
 }
 
 function getTipoClass(t) {
     const tl = (t || '').toLowerCase();
+    if (tl.includes('traslado')) return 'tipo-traslado';
+    if (tl.includes('reenfoque')) return 'tipo-reenfoque';
     if (tl.includes('desalineada') || tl.includes('mal posicionada')) return 'tipo-desalineada';
     if (tl.includes('error de configuración') || tl.includes('error de configuracion')) return 'tipo-configuracion';
     if (tl.includes('obstrucción') || tl.includes('obstruccion')) return 'tipo-obstruida';
     if (tl.includes('problema de imagen') || tl.includes('imagen')) return 'tipo-imagen';
-    if (tl.includes('sin acceso a camara') || tl.includes('sin acceso a cámara')) return 'tipo-acceso';
+    if (tl.includes('sin acceso')) return 'tipo-acceso';
     if (tl.includes('problema de red')) return 'tipo-red';
     return 'tipo-otro';
 }
 
-
+// ── Modal detalle ──────────────────────────────────────────────────────────
 function openDetailModal(idInc) {
     const inc = findIncidentByRef(idInc);
     if (!inc) return;
@@ -1446,14 +1491,11 @@ function openDetailModal(idInc) {
     const incidentId = getIncidentId(inc);
     currentDetailIncidentId = incidentId;
     const resolved = inc.Resuelto === 'Si';
-    const normalizeField = field => String(field || '').toLowerCase().replace(/[_\s]/g, '');
+
     const formatDetailValue = (key, value) => {
         if (value === null || value === undefined || value === '') return 'N/A';
-        const normalizedKey = normalizeField(key).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (normalizedKey.includes('diaspasados')) {
-            const numericValue = Number(value);
-            return Number.isNaN(numericValue) ? value : Math.floor(numericValue);
-        }
+        const nk = String(key || '').toLowerCase().replace(/[_\s]/g, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        if (nk.includes('diaspasados')) { const n = Number(value); return isNaN(n) ? value : Math.floor(n); }
         return value;
     };
 
@@ -1461,80 +1503,86 @@ function openDetailModal(idInc) {
     const emailResponsable = inc.Email_Responsable || emailsResponsables[responsableAsignado] || '';
 
     const buildEntries = entries => entries
-        .map(([label, value]) => [label, formatDetailValue(label, value)])
-        .filter(([, value]) => value !== 'N/A');
-
-    const cameraEntries = buildEntries([
-        ['Device ID', inc.DeviceId],
-        ['Código test', inc.Codigo],
-        ['Cámara', inc.DeviceName || inc.Camara],
-        ['Physical Zone ID', inc.PhysicalZoneId],
-        ['IP', inc.IP],
-        ['Estado', inc.Estado]
-    ]);
-
-    const incidentEntries = buildEntries([
-        ['ID Incidencia', incidentId],
-        ['Tipo de problema', inc.Tipo || inc.TipoAnomalia],
-        ['Descripción', inc.Descripcion],
-        ['Tienda', inc.DeviceStoreName || inc.Tienda],
-        ['Cliente', getIncidentClient(inc)],
-        ['Fecha', inc.Fecha],
-        ['Resuelta', inc.Resuelto],
-        ['Fecha resolución', inc.FechaResolucion],
-        ['Días pasados', inc.DiasPasados]
-    ]);
-
-    const ownerEntries = buildEntries([
-        ['Responsable (tipo)', inc.ResponsableTipo],
-        ['Reportado por', inc.Registrado_Por],
-        ['Responsable asignado', responsableAsignado],
-        ['Email responsable', emailResponsable],
-        ['Observaciones', inc.Observaciones]
-    ]);
+        .map(([l, v]) => [l, formatDetailValue(l, v)])
+        .filter(([, v]) => v !== 'N/A');
 
     const renderEntries = entries => {
         if (!entries.length) return '<div class="detail-item"><span class="detail-label">Info</span><span class="detail-value">N/A</span></div>';
-        return entries
-            .map(([key, value]) => `<div class="detail-item"><span class="detail-label">${key}</span><span class="detail-value">${value}</span></div>`)
-            .join('');
+        return entries.map(([k, v]) => `<div class="detail-item"><span class="detail-label">${k}</span><span class="detail-value">${v}</span></div>`).join('');
     };
+
+    // Historial del device
+    const deviceHistory = allIncidents
+        .filter(i => String(i.DeviceId) === String(inc.DeviceId) && i.__uiKey !== inc.__uiKey)
+        .sort((a, b) => {
+            const da = getIncidentCreatedDate(a.Fecha);
+            const db = getIncidentCreatedDate(b.Fecha);
+            return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+        });
+
+    const historialRows = deviceHistory.slice(0, 5).map(h =>
+        `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:#f8fafc;border-radius:6px;border:1px solid var(--border);font-size:0.78rem;">
+            <span style="font-weight:700;color:var(--navy);min-width:90px;">${getIncidentId(h) || '—'}</span>
+            <span style="flex:1;color:var(--text-m);">${h.Tipo || '—'}</span>
+            <span style="color:var(--text-l);white-space:nowrap;">${h.Fecha ? String(h.Fecha).split(' ')[0] : '—'}</span>
+            <span style="padding:2px 8px;border-radius:10px;font-size:0.68rem;font-weight:700;background:${h.Resuelto === 'Si' ? '#ede9fe' : '#fef3c7'};color:${h.Resuelto === 'Si' ? '#7c3aed' : '#92400e'};">${h.Resuelto === 'Si' ? 'Resuelta' : 'Pendiente'}</span>
+        </div>`
+    ).join('');
+
+    const historialHtml = `
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px;">
+            <div style="font-size:0.72rem;font-weight:800;color:var(--text-l);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">
+                📋 Historial Device ${inc.DeviceId} — ${deviceHistory.length} incidencia${deviceHistory.length !== 1 ? 's' : ''} anterior${deviceHistory.length !== 1 ? 'es' : ''}
+            </div>
+            ${deviceHistory.length === 0
+                ? '<div style="font-size:0.78rem;color:var(--text-l);font-style:italic;padding:4px 0;">Primera incidencia registrada para este device.</div>'
+                : historialRows + (deviceHistory.length > 5 ? `<div style="font-size:0.72rem;color:var(--text-l);text-align:center;padding:6px 0;">…y ${deviceHistory.length - 5} más</div>` : '')
+            }
+        </div>`;
 
     document.getElementById('detailBody').innerHTML = `
         <div class="detail-grid">
             <section class="detail-section">
                 <h4 class="detail-section-title">Datos de cámara</h4>
-                <div class="detail-column">${renderEntries(cameraEntries)}</div>
+                <div class="detail-column">${renderEntries(buildEntries([
+                    ['Device ID', inc.DeviceId], ['Código test', inc.Codigo],
+                    ['Cámara', inc.DeviceName || inc.Camara], ['Physical Zone ID', inc.PhysicalZoneId],
+                    ['IP', inc.IP], ['Estado', inc.Estado]
+                ]))}</div>
             </section>
             <section class="detail-section">
                 <h4 class="detail-section-title">Datos de incidencia</h4>
-                <div class="detail-column">${renderEntries(incidentEntries)}</div>
+                <div class="detail-column">${renderEntries(buildEntries([
+                    ['ID Incidencia', incidentId], ['Tipo de problema', inc.Tipo || inc.TipoAnomalia],
+                    ['Descripción', inc.Descripcion], ['Tienda', inc.DeviceStoreName || inc.Tienda],
+                    ['Cliente', getIncidentClient(inc)], ['Fecha', inc.Fecha],
+                    ['Resuelta', inc.Resuelto], ['Fecha resolución', inc.FechaResolucion],
+                    ['Días pasados', inc.DiasPasados]
+                ]))}</div>
             </section>
             <section class="detail-section">
                 <h4 class="detail-section-title">Resolución y responsables</h4>
-                <div class="detail-column">${renderEntries(ownerEntries)}</div>
+                <div class="detail-column">${renderEntries(buildEntries([
+                    ['Responsable (tipo)', inc.ResponsableTipo], ['Reportado por', inc.Registrado_Por],
+                    ['Responsable asignado', responsableAsignado], ['Email responsable', emailResponsable],
+                    ['Observaciones', inc.Observaciones]
+                ]))}</div>
             </section>
         </div>
-    `;
+        ${historialHtml}`;
+
     const resolveBtn = document.getElementById('detailResolveBtn');
     const editBtn = document.getElementById('detailEditBtn');
     const deleteBtn = document.getElementById('detailDeleteBtn');
-    const hasIncidentId = Boolean(incidentId);
+    const hasId = Boolean(incidentId);
 
-    resolveBtn.disabled = resolved || !hasIncidentId;
+    resolveBtn.disabled = resolved || !hasId;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
-    editBtn.disabled = !hasIncidentId;
-    deleteBtn.disabled = !hasIncidentId;
-
-    if (!hasIncidentId) {
-        resolveBtn.title = 'Esta incidencia no tiene ID en la hoja';
-        editBtn.title = 'Esta incidencia no tiene ID en la hoja';
-        deleteBtn.title = 'Esta incidencia no tiene ID en la hoja';
-    } else {
-        resolveBtn.title = '';
-        editBtn.title = '';
-        deleteBtn.title = '';
-    }
+    editBtn.disabled = !hasId;
+    deleteBtn.disabled = !hasId;
+    [resolveBtn, editBtn, deleteBtn].forEach(btn => {
+        btn.title = !hasId ? 'Esta incidencia no tiene ID en la hoja' : '';
+    });
 
     document.getElementById('detailResolveBtn').onclick = () => resolveIncident(currentDetailIncidentKey);
     editBtn.onclick = () => { closeDetailModal(); editIncident(currentDetailIncidentKey); };
@@ -1544,9 +1592,7 @@ function openDetailModal(idInc) {
     document.getElementById('detailModal').style.display = 'block';
 }
 
-function closeDetailModal() {
-    document.getElementById('detailModal').style.display = 'none';
-}
+function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
 
 function sendIncidentEmail(idInc) {
     const inc = findIncidentByRef(idInc);
@@ -1557,39 +1603,60 @@ function sendIncidentEmail(idInc) {
     window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, '_blank');
 }
 
-function openResponsibleMailto({email, responsable, id, tipo, deviceId, cliente, registradoPor, descripcion}) {
-    if (!email) return false;
+function formatFechaExport(rawDate) {
+    if (!rawDate) return '';
+    const d = getIncidentCreatedDate(rawDate);
+    if (!d || isNaN(d.getTime())) return String(rawDate);
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
 
-    const subject = `✅ Incidencia ${id} - ${tipo}`;
-    const body = `Hola ${responsable},\n\nNueva incidencia asignada:\n\n🆔 ID: ${id}\n📷 Device: ${deviceId}\n🏢 Cliente: ${cliente}\n⚠️ Tipo: ${tipo}\n👤 Reportado por: ${registradoPor}\n📝 Descripción: ${descripcion}\n\nPor favor gestiona esta incidencia.\n\n---\nSUMATO Monitoring Hub`;
-    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-
-    const opened = window.open(mailtoUrl, '_blank');
-    return !!opened;
+function escapeCsv(val) {
+    const s = String(val ?? '');
+    return '"' + s.replace(/"/g, '""') + '"';
 }
 
 function exportToExcel() {
-    let csv = 'ID,DeviceId,Tienda,Tipo,Zona,IP,Estado,Resuelto,Fecha\n';
+    const BOM = '\uFEFF';
+    const headers = ['ID', 'DeviceId', 'Tienda', 'Tipo', 'Zona', 'IP', 'Estado', 'Resuelto', 'Fecha', 'Responsable', 'Registrado Por', 'Observaciones'];
+    let csv = BOM + headers.join(';') + '\n';
     filteredIncidents.forEach(i => {
-        csv += `"${i.ID || ''}","${i.DeviceId || ''}","${i.Tienda || ''}","${i.Tipo || ''}","${i.PhysicalZoneId || ''}","${i.IP || ''}","${i.Estado || ''}","${i.Resuelto || ''}","${i.Fecha || ''}"\n`;
+        const row = [
+            i.ID || '',
+            i.DeviceId || '',
+            i.DeviceStoreName || i.Tienda || '',
+            i.Tipo || '',
+            i.PhysicalZoneId || '',
+            i.IP || '',
+            i.Estado || '',
+            i.Resuelto || '',
+            formatFechaExport(i.Fecha),
+            i.Responsable_Asignado || i.Responsable || '',
+            i.Registrado_Por || '',
+            i.Observaciones || i.Descripcion || ''
+        ];
+        csv += row.map(escapeCsv).join(';') + '\n';
     });
-    
-    const blob = new Blob([csv], {type: 'text/csv'});
-    const url = URL.createObjectURL(blob);
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
     const a = document.createElement('a');
-    a.href = url;
+    a.href = URL.createObjectURL(blob);
     a.download = 'incidencias_' + new Date().toISOString().split('T')[0] + '.csv';
     a.click();
 }
 
+// ── Eventos ────────────────────────────────────────────────────────────────
 function setupEvents() {
     document.getElementById('searchInput').addEventListener('input', applyFilters);
     document.getElementById('filterType').addEventListener('change', applyFilters);
     document.getElementById('filterCameraStatus').addEventListener('change', applyFilters);
     document.getElementById('filterResolved').addEventListener('change', applyFilters);
     document.getElementById('filterStore').addEventListener('change', applyFilters);
-    document.getElementById('filterClient').addEventListener('change', () => { syncResponsableTipoOptions(); renderKPIs(); applyFilters(); });
+    document.getElementById('filterTicket').addEventListener('change', applyFilters);
+
     
     document.getElementById('tabResumen').addEventListener('click', () => {
         currentView = 'resumen';
@@ -1599,7 +1666,6 @@ function setupEvents() {
         document.getElementById('agrupadaView').style.display = 'none';
         applyFilters();
     });
-    
     document.getElementById('tabAgrupada').addEventListener('click', () => {
         currentView = 'agrupada';
         document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
@@ -1609,6 +1675,7 @@ function setupEvents() {
         applyFilters();
     });
     
+    // ── Formulario nueva incidencia ────────────────────────────────────────
     document.getElementById('addIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const did = document.getElementById('newDeviceId').value.trim();
@@ -1616,7 +1683,7 @@ function setupEvents() {
         const estadoCamara = document.getElementById('newEstadoCamara').value.trim();
         const responsableTipo = document.getElementById('newResponsableTipo').value.trim();
         const desc = document.getElementById('newDescripcion').value.trim();
-        const cliente = document.getElementById('filterClient').value.trim();
+        const cliente = 'Sodimac';
         const registradoPor = document.getElementById('newRegistradoPor').value.trim();
         const responsable = document.getElementById('newResponsable').value.trim();
         const emailResponsable = (emailsResponsables[responsable] || '').trim();
@@ -1637,93 +1704,63 @@ function setupEvents() {
         }
 
         const dev = allDevices.find(d => String(d.DeviceId) === String(did));
-        if (!dev) {alert('DeviceID no encontrado'); return;}
-
-        const deviceClient = getDeviceClient(dev);
-        if (deviceClient !== cliente) {
-            alert(`El DeviceID ${did} pertenece a ${deviceClient}, no a ${cliente}. Verifica cliente o DeviceID.`);
-            return;
-        }
+        if (!dev) { alert('DeviceID no encontrado'); return; }
         
         const btn = document.getElementById('btnAddIncident');
-        let mailWindowUsed = false;
         btn.disabled = true;
         btn.textContent = 'Agregando...';
         
         try {
             const result = await postToAppsScript({
-                action: 'agregar_incidencia', 
-                deviceId: did, 
-                DeviceId: did,
-                columnaA_DeviceId: did,
-                tipoAnomalia: tipo, 
-                tipo: tipo,
-                Tipo: tipo,
-                columnaG_TipoAnomalia: tipo,
-                tipoDeProblema: tipo,
-                'Tipo de problema': tipo,
-                tipoAnomaliaLegacy: getTipoForIdMap(tipo),
-                codigoTipo: getTipoCode(tipo),
-                estadoCamara: estadoCamara,
-                estado: estadoCamara,
-                Estado: estadoCamara,
-                columnaI_Estado: estadoCamara,
-                descripcion: desc,
-                Descripcion: desc,
-                observacion: desc,
-                Observacion: desc,
-                columnaH_Descripcion: desc,
-                responsableTipo: responsableTipo,
-                ResponsableTipo: responsableTipo,
-                columnaK_Responsable: responsableTipo,
-                cliente: cliente,
-                Cliente: cliente,
-                registradoPor: registradoPor,
-                Registrado_Por: registradoPor,
-                columnaR_RegistradoPor: registradoPor,
-                responsable: responsable,
-                Responsable_Asignado: responsable,
-                columnaS_ResponsableAsignado: responsable,
-                emailResponsable: emailResponsable
+                action: 'agregar_incidencia',
+                deviceId: did, DeviceId: did,
+                tipoAnomalia: tipo, Tipo: tipo, 'Tipo de problema': tipo,
+                tipoAnomaliaLegacy: getTipoForIdMap(tipo), codigoTipo: getTipoCode(tipo),
+                estadoCamara, estado: estadoCamara, Estado: estadoCamara,
+                descripcion: desc, Descripcion: desc, observacion: desc,
+                responsableTipo, ResponsableTipo: responsableTipo,
+                cliente: 'Sodimac', Cliente: 'Sodimac',
+                registradoPor, Registrado_Por: registradoPor,
+                responsable, Responsable_Asignado: responsable,
+                emailResponsable
             });
+
             if (result.status === 'success') {
-                const idIncidencia = result.id || result.ID || result.idIncidencia || await resolveCreatedIncidentId({
-                    deviceId: did,
-                    tipoAnomalia: tipo,
-                    descripcion: desc,
-                    registradoPor: registradoPor
-                }) || 'N/A';
-                const confirmOpenMail = confirm('✅ Incidencia creada correctamente.\n\nSe abrirá un cuadro de diálogo para que adjuntes evidencia si tienes. Si no, simplemente haz click en Enviar.\n\n¿Deseas abrir ahora la ventana de correo?');
-                if (confirmOpenMail) {
-                    mailWindowUsed = openResponsibleMailto({
-                    email: emailResponsable,
-                    responsable: responsable,
-                    id: idIncidencia,
-                    tipo: tipo,
-                    deviceId: did,
-                    cliente: cliente,
-                    registradoPor: registradoPor,
-                    descripcion: desc
-                    });
-                    if (!mailWindowUsed) {
-                        alert('⚠️ Tu navegador bloqueó la ventana de correo. Habilita popups para este sitio e inténtalo de nuevo.');
-                    }
-                }
-                setTimeout(() => location.reload(), 1000);
+                const idIncidencia = result.id || result.ID || result.idIncidencia || 'N/A';
+                const tienda = dev.StoreName || '';
+                // Abrir correo
+                openNuevaIncidenciaMailto({ id: idIncidencia, deviceId: did, tienda, tipo, descripcion: desc, registradoPor, responsable, cliente });
+                // Agregar en memoria sin recargar
+                const newInc = normalizeIncidentRecord({
+                    DeviceId: did, Tienda: tienda, StoreName: tienda,
+                    Tipo: tipo, Descripcion: desc, Estado: estadoCamara,
+                    Responsable_Asignado: responsable, Registrado_Por: registradoPor,
+                    ResponsableTipo: responsableTipo, Cliente: cliente,
+                    Resuelto: 'No', Fecha: new Date().toLocaleString('es-CL'), ID: idIncidencia
+                });
+                const devObj = allDevices.find(d => String(d.DeviceId) === String(did));
+                newInc.ID = idIncidencia;
+                newInc.__uiKey = `${idIncidencia}::${did}::${allIncidents.length}`;
+                newInc.CameraActive = devObj ? String(devObj.Active) : '1';
+                newInc.DeviceName = devObj?.Name || '';
+                newInc.DeviceStoreName = tienda;
+                allIncidents.push(newInc);
+                closeNuevaIncidenciaModal();
+                renderKPIs();
+                applyFilters();
+                showToast('✅ Incidencia creada — ' + idIncidencia);
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
             }
         } catch (err) {
             alert('❌ Error: ' + err.message);
         } finally {
-            if (preopenedMailWindow && !mailWindowUsed && !preopenedMailWindow.closed) {
-                preopenedMailWindow.close();
-            }
             btn.disabled = false;
             btn.textContent = 'Reportar Incidencia';
         }
     });
 
+    // ── Formulario editar incidencia ───────────────────────────────────────
     document.getElementById('editIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const idInc = document.getElementById('editIdIncidencia').value;
@@ -1739,31 +1776,30 @@ function setupEvents() {
         try {
             if (!idInc) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
             const result = await postToAppsScript({
-                action: 'editar_incidencia',
-                idIncidencia: idInc,
-                deviceId,
-                DeviceId: deviceId,
-                columnaA_DeviceId: deviceId,
-                tipoAnomalia: tipo,
-                estadoCamara: estadoCamara,
-                estado: estadoCamara,
-                descripcion: desc,
-                columnaH_Descripcion: desc,
-                registradoPor,
-                Registrado_Por: registradoPor,
-                columnaR_RegistradoPor: registradoPor,
-                responsableTipo,
-                ResponsableTipo: responsableTipo,
-                columnaK_Responsable: responsableTipo,
-                responsable,
-                Responsable_Asignado: responsable,
-                columnaS_ResponsableAsignado: responsable,
+                action: 'editar_incidencia', idIncidencia: idInc,
+                deviceId, DeviceId: deviceId,
+                tipoAnomalia: tipo, estadoCamara, estado: estadoCamara,
+                descripcion: desc, Descripcion: desc,
+                registradoPor, Registrado_Por: registradoPor,
+                responsableTipo, ResponsableTipo: responsableTipo,
+                responsable, Responsable_Asignado: responsable,
                 emailResponsable
             });
             if (result.status === 'success') {
+                // Actualizar en memoria sin recargar
+                const inc = findIncidentByRef(idInc);
+                if (inc) {
+                    inc.Tipo = tipo; inc.TipoAnomalia = tipo;
+                    inc.Estado = estadoCamara;
+                    inc.Descripcion = desc;
+                    inc.Registrado_Por = registradoPor;
+                    inc.ResponsableTipo = responsableTipo;
+                    inc.Responsable_Asignado = responsable;
+                    inc.Responsable = responsable;
+                }
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
-                setTimeout(() => location.reload(), 1000);
+                applyFilters();
             } else {
                 alert('❌ Error: ' + (result.error || 'Error desconocido'));
             }
@@ -1773,16 +1809,24 @@ function setupEvents() {
     });
 }
 
+// ── Acciones sobre incidencias ─────────────────────────────────────────────
 async function resolveIncident(idInc) {
     if (!confirm('¿Marcar como resuelta?')) return;
     try {
         const inc = findIncidentByRef(idInc);
         const incidentId = getIncidentId(inc);
         if (!inc || !incidentId) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+
         const result = await postToAppsScript({action: 'marcar_resuelta', idIncidencia: incidentId});
         if (result.status === 'success') {
-            alert('✅ Incidencia marcada como resuelta');
-            setTimeout(() => location.reload(), 1000);
+            // Actualizar en memoria
+            inc.Resuelto = 'Si';
+            inc.FechaResolucion = new Date().toLocaleString('es-CL');
+            closeDetailModal();
+            applyFilters();
+            renderKPIs();
+            // Abrir correo de resolución a Ricardo, Kathy, Magda, Andrea y Cami
+            openResueltaMailto(inc);
         } else {
             alert('❌ Error: ' + (result.error || 'Error desconocido'));
         }
@@ -1793,24 +1837,17 @@ async function resolveIncident(idInc) {
 
 function editIncident(idInc) {
     const inc = findIncidentByRef(idInc);
-    if (!inc) {
-        alert('❌ Incidencia no encontrada');
-        return;
-    }
-    
+    if (!inc) { alert('❌ Incidencia no encontrada'); return; }
     const incidentId = getIncidentId(inc);
+    if (!incidentId) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
+
     document.getElementById('editIdIncidencia').value = incidentId;
-    if (!incidentId) {
-        alert('Esta incidencia no tiene ID único en la hoja.');
-        return;
-    }
 
     const tipoEdit = document.getElementById('editTipoAnomalia');
     const tipoValue = inc.Tipo || '';
     if (tipoValue && ![...tipoEdit.options].some(o => o.value === tipoValue)) {
         const opt = document.createElement('option');
-        opt.value = tipoValue;
-        opt.textContent = tipoValue;
+        opt.value = tipoValue; opt.textContent = tipoValue;
         tipoEdit.appendChild(opt);
     }
 
@@ -1825,18 +1862,14 @@ function editIncident(idInc) {
     const assignedValue = inc.Responsable_Asignado || inc.Responsable || '';
     if (assignedValue && ![...editResp.options].some(o => o.value === assignedValue)) {
         const opt = document.createElement('option');
-        opt.value = assignedValue;
-        opt.textContent = assignedValue;
+        opt.value = assignedValue; opt.textContent = assignedValue;
         editResp.appendChild(opt);
     }
-    editResp.value = assignedValue || 'Andy';
-    
+    editResp.value = assignedValue || 'Victor Catalán';
     document.getElementById('editModal').style.display = 'block';
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-}
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
 
 async function deleteIncident(idInc) {
     if (!confirm('⚠️ ¿ELIMINAR permanentemente esta incidencia?')) return;
@@ -1846,8 +1879,12 @@ async function deleteIncident(idInc) {
         if (!inc || !incidentId) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
         const result = await postToAppsScript({action: 'eliminar_incidencia', idIncidencia: incidentId});
         if (result.status === 'success') {
-            alert('✅ Incidencia eliminada correctamente');
-            setTimeout(() => location.reload(), 1000);
+            // Eliminar en memoria sin recargar
+            const idx = allIncidents.findIndex(i => i.__uiKey === inc.__uiKey);
+            if (idx >= 0) allIncidents.splice(idx, 1);
+            closeDetailModal();
+            applyFilters();
+            renderKPIs();
         } else {
             alert('❌ Error: ' + (result.error || 'Error desconocido'));
         }
@@ -1856,12 +1893,463 @@ async function deleteIncident(idInc) {
     }
 }
 
-window.onclick = function(event) {
-    const editModal = document.getElementById('editModal');
-    const detailModal = document.getElementById('detailModal');
-    if (event.target == editModal) closeEditModal();
-    if (event.target == detailModal) closeDetailModal();
+// ── Refresh silencioso ───────────────────────────────────────────────────
+async function silentRefresh() {
+    try {
+        const data = await fetchDashboardData();
+        const newDevices = (data.devices || [])
+            .filter(d => String(d.StoreName || '').trim().toUpperCase() !== 'SUMATO TEST');
+        const newIncidents = (data.incidencias || [])
+            .map(normalizeIncidentRecord)
+            .filter(inc => hasValidDeviceId(inc.DeviceId))
+            .filter(inc => String(inc.Tienda || '').trim().toUpperCase() !== 'SUMATO TEST');
+
+        // Solo actualizar si hay cambios
+        const prevCount = allIncidents.length;
+        const newCount  = newIncidents.length;
+        const prevResueltas = allIncidents.filter(i => i.Resuelto === 'Si').length;
+        const newResueltas  = newIncidents.filter(i => i.Resuelto === 'Si').length;
+
+        if (prevCount !== newCount || prevResueltas !== newResueltas) {
+            allDevices   = newDevices;
+            // Re-mergear con uiKeys
+            allIncidents = newIncidents.map((inc, idx) => {
+                const dev = allDevices.find(d => String(d.DeviceId) === String(inc.DeviceId));
+                const incidentId = getIncidentId(inc);
+                return {
+                    ...inc,
+                    ID: incidentId,
+                    __uiKey: `${incidentId || 'NOID'}::${inc.DeviceId || 'NODEV'}::${idx}`,
+                    CameraActive: dev ? String(dev.Active) : (String(inc.Estado).toLowerCase() === 'activa' ? '1' : '0'),
+                    DeviceName: dev?.Name || inc.Camara,
+                    DeviceStoreName: dev?.StoreName || inc.Tienda
+                };
+            }).filter(inc => String(inc.DeviceStoreName || '').trim().toUpperCase() !== 'SUMATO TEST');
+
+            renderKPIs();
+            applyFilters();
+            if (chartsRendered) { chartsRendered = false; } // forzar re-render de gráficos si están abiertos
+            document.getElementById('lastUpdate').textContent = 'Última actualización: ' + new Date(data.lastUpdated).toLocaleString('es-CL');
+            console.info('[silentRefresh] Datos actualizados — incidencias:', newCount);
+            showToast('↻ Datos actualizados');
+        }
+    } catch (err) {
+        console.warn('[silentRefresh] Error:', err.message);
+    }
 }
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── Cerrar sesión ──────────────────────────────────────────────────────────
+function cerrarSesion() {
+    if (!confirm('¿Cerrar sesión?')) return;
+    postToAppsScript({ action: 'login', usuario: loggedUser, accion: 'Logout' }).catch(() => {});
+    localStorage.removeItem('auth');
+    localStorage.removeItem('user');
+    location.reload();
+}
+
+// ── Timer de inactividad ──────────────────────────────────────────────────
+let inactividadTimer = null;
+const INACTIVIDAD_MS = 30 * 60 * 1000; // 30 minutos
+
+function iniciarTimerInactividad() {
+    resetTimerInactividad();
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt =>
+        document.addEventListener(evt, resetTimerInactividad, { passive: true })
+    );
+}
+
+function resetTimerInactividad() {
+    clearTimeout(inactividadTimer);
+    inactividadTimer = setTimeout(() => {
+        postToAppsScript({ action: 'login', usuario: loggedUser, accion: 'Logout-Auto' }).catch(() => {});
+        localStorage.removeItem('auth');
+        localStorage.removeItem('user');
+        alert('Tu sesión se cerró por inactividad (30 minutos). Por favor vuelve a ingresar.');
+        location.reload();
+    }, INACTIVIDAD_MS);
+}window.onclick = function(event) {
+    if (event.target == document.getElementById('editModal')) closeEditModal();
+    if (event.target == document.getElementById('detailModal')) closeDetailModal();
+    if (event.target == document.getElementById('nuevaIncidenciaModal')) closeNuevaIncidenciaModal();
+};
+
+// ── Switch vistas ──────────────────────────────────────────────────────────
+function switchView(view) {
+    const dashboard = document.getElementById('contentDiv');
+    const graficos = document.getElementById('graficosView');
+    const btnD = document.getElementById('navBtnDashboard');
+    const btnG = document.getElementById('navBtnGraficos');
+
+    if (view === 'dashboard') {
+        dashboard.style.display = 'block';
+        graficos.style.display = 'none';
+        btnD.classList.add('nav-active');
+        btnG.classList.remove('nav-active');
+    } else {
+        dashboard.style.display = 'none';
+        graficos.style.display = 'block';
+        btnD.classList.remove('nav-active');
+        btnG.classList.add('nav-active');
+        renderCharts();
+    }
+}
+
+// ── Modal nueva anomalía ──────────────────────────────────────────────────
+function openNuevaIncidenciaModal() {
+    document.getElementById('newRegistradoPor').value = loggedUser;
+    document.getElementById('nuevaIncidenciaModal').style.display = 'block';
+}
+function closeNuevaIncidenciaModal() {
+    document.getElementById('nuevaIncidenciaModal').style.display = 'none';
+}
+
+// ── Gráficos ──────────────────────────────────────────────────────────────
+let chartsRendered = false;
+const CHART_COLORS = {
+    desalineada: '#FBC02D', configuracion: '#D32F2F', obstruida: '#1E88E5',
+    imagen: '#FB8C00', acceso: '#B71C1C', red: '#43A047', otro: '#6b7280'
+};
+
+function renderCharts() {
+    if (chartsRendered) return;
+    chartsRendered = true;
+
+    window.setChartFilter = function(chart, filtro, btn) {
+        // Actualizar botones activos
+        const parent = btn.closest('.chart-toggle');
+        parent.querySelectorAll('.chart-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Reconstruir gráfico
+        if (chart === 'tipo') buildChartTipo(filtro);
+        else buildChartResp(filtro);
+    };
+
+    const incidents = allIncidents;
+    if (!incidents.length) return;
+
+    // ── Torta: por tipo ──
+    const TIPO_COLORS = {
+        'Camara mal posicionada/Traslado': '#F9A825',
+        'Camara mal posicionada/Reenfoque': '#FFD54F',
+        'Sin acceso a cámara': '#B71C1C',
+        'Problema de imagen': '#FB8C00',
+        'Obstrucción de cámara': '#1E88E5',
+        'Error de configuración': '#D32F2F',
+        'Problema de Red': '#43A047',
+    };
+
+    window.chartTipoInstance = null;
+    window.chartRespInstance = null;
+
+    window.buildChartTipo = function(filtro) {
+        const src = filtro === 'pendientes' ? incidents.filter(i => i.Resuelto !== 'Si')
+                  : filtro === 'resueltas'  ? incidents.filter(i => i.Resuelto === 'Si')
+                  : incidents;
+        const counts = {};
+        src.forEach(i => {
+            let t = i.Tipo || 'Sin tipo';
+            if (t === 'Cámara desalineada / mal posicionada') t = 'Camara mal posicionada/Traslado';
+            counts[t] = (counts[t] || 0) + 1;
+        });
+        const labels = Object.keys(counts);
+        const bgColors = labels.map(t => TIPO_COLORS[t] || '#6b7280');
+        if (window.chartTipoInstance) window.chartTipoInstance.destroy();
+        window.chartTipoInstance = new Chart(document.getElementById('chartTipo'), {
+            type: 'bar',
+            data: { labels, datasets: [{ data: Object.values(counts), backgroundColor: bgColors, borderRadius: 5, borderSkipped: false }] },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: { family:'DM Sans', size:11 }, stepSize:1, precision:0 }, grid: { color:'#f0f4f9' } },
+                    y: { ticks: { font: { family:'DM Sans', size:11 } }, grid: { display:false } }
+                }
+            }
+        });
+    };
+
+    window.buildChartResp = function(filtro) {
+        const src = filtro === 'pendientes' ? incidents.filter(i => i.Resuelto !== 'Si')
+                  : filtro === 'resueltas'  ? incidents.filter(i => i.Resuelto === 'Si')
+                  : incidents;
+        const sod = src.filter(i => getIncidentResponsableTipoLabel(i) === 'Sodimac').length;
+        const sum = src.filter(i => getIncidentResponsableTipoLabel(i) === 'Sumato').length;
+        if (window.chartRespInstance) window.chartRespInstance.destroy();
+        window.chartRespInstance = new Chart(document.getElementById('chartResponsable'), {
+            type: 'doughnut',
+            data: { labels: ['Sodimac','Sumato'], datasets: [{ data:[sod,sum], backgroundColor:['#1d4ed8','#16a34a'], borderWidth:2, borderColor:'#fff' }] },
+            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ family:'DM Sans', size:12 }, boxWidth:14 } } } }
+        });
+    };
+
+    buildChartTipo('todas');
+    buildChartResp('todas');
+
+    // ── Dona: estado ──
+    const pendientes = incidents.filter(i => i.Resuelto !== 'Si').length;
+    const resueltas = incidents.filter(i => i.Resuelto === 'Si').length;
+    new Chart(document.getElementById('chartEstado'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Pendientes', 'Resueltas'],
+            datasets: [{ data: [pendientes, resueltas],
+                backgroundColor: ['#f59e0b','#7c3aed'], borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'right', labels:{ font:{ family:'DM Sans', size:12 }, boxWidth:14 } } } }
+    });
+
+    // ── Barras: por tienda ──
+    const stores = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
+    const pendByStore = stores.map(s => incidents.filter(i => normalizeStoreName(i.DeviceStoreName||i.Tienda) === normalizeStoreName(s) && i.Resuelto !== 'Si').length);
+    const resByStore = stores.map(s => incidents.filter(i => normalizeStoreName(i.DeviceStoreName||i.Tienda) === normalizeStoreName(s) && i.Resuelto === 'Si').length);
+    new Chart(document.getElementById('chartTienda'), {
+        type: 'bar',
+        data: {
+            labels: stores,
+            datasets: [
+                { label: 'Pendientes', data: pendByStore, backgroundColor: '#f59e0b', borderRadius: 4 },
+                { label: 'Resueltas', data: resByStore, backgroundColor: '#7c3aed', borderRadius: 4 }
+            ]
+        },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ labels:{ font:{ family:'DM Sans', size:12 } } } },
+            scales:{
+                x:{ ticks:{ font:{ family:'DM Sans', size:11 } }, grid:{ display:false } },
+                y:{ ticks:{ font:{ family:'DM Sans', size:11 }, stepSize:1 }, grid:{ color:'#f0f4f9' } }
+            }
+        }
+    });
+
+    // ── Línea: evolución por día desde primera incidencia ──
+    const datesWithData = incidents
+        .map(i => getIncidentCreatedDate(i.Fecha))
+        .filter(d => d && !isNaN(d.getTime()));
+
+    if (datesWithData.length > 0) {
+        // Rango: primera fecha → hoy
+        const firstDate = new Date(Math.min(...datesWithData.map(d => d.getTime())));
+        const today = new Date();
+        firstDate.setHours(0,0,0,0); today.setHours(0,0,0,0);
+
+        // Generar todos los días del rango
+        const allDays = [];
+        const cursor = new Date(firstDate);
+        while (cursor <= today) {
+            allDays.push(cursor.toISOString().split('T')[0]);
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
+        // Contar incidencias por día
+        const dayCounts = {};
+        allDays.forEach(d => dayCounts[d] = 0);
+        incidents.forEach(i => {
+            const d = getIncidentCreatedDate(i.Fecha);
+            if (!d || isNaN(d.getTime())) return;
+            const key = d.toISOString().split('T')[0];
+            if (dayCounts[key] !== undefined) dayCounts[key]++;
+        });
+
+        // Labels más compactos: dd/MM solo cuando hay datos o cada 7 días
+        const labels = allDays.map((d, idx) => {
+            const hasDat = dayCounts[d] > 0;
+            const isWeekly = idx % 7 === 0;
+            if (hasDat || isWeekly) {
+                const parts = d.split('-');
+                return `${parts[2]}/${parts[1]}`;
+            }
+            return '';
+        });
+
+        new Chart(document.getElementById('chartEvolucion'), {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Incidencias registradas',
+                    data: allDays.map(d => dayCounts[d]),
+                    backgroundColor: allDays.map(d => dayCounts[d] > 0 ? 'rgba(59,125,216,.75)' : 'rgba(59,125,216,.08)'),
+                    borderColor: allDays.map(d => dayCounts[d] > 0 ? '#3b7dd8' : 'transparent'),
+                    borderWidth: 1, borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { family:'DM Sans', size:10 },
+                            maxRotation: 45, autoSkip: false,
+                            callback: function(val, idx) { return labels[idx]; }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        ticks: { font: { family:'DM Sans', size:11 }, stepSize: 1, precision: 0 },
+                        grid: { color: '#f0f4f9' },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+}
+    
+// ── CHATBOT ──────────────────────────────────────────────────────────────
+const FAQ = [
+    {
+        cat: '📍 Por tienda',
+        qs: [
+            { q: '¿Cuántas incidencias pendientes hay por tienda?',
+              a: () => { const stores=[...new Set(allIncidents.map(i=>i.DeviceStoreName||i.Tienda).filter(Boolean))].sort(); return stores.map(s=>{const p=allIncidents.filter(i=>(i.DeviceStoreName||i.Tienda)===s&&i.Resuelto!=='Si').length;return `<strong>${s}</strong>: ${p}`;}).join('<br>'); }},
+            { q: '¿Qué tienda tiene más incidencias pendientes?',
+              a: () => { const stores=[...new Set(allIncidents.map(i=>i.DeviceStoreName||i.Tienda).filter(Boolean))];let max=0,ms='—';stores.forEach(s=>{const n=allIncidents.filter(i=>(i.DeviceStoreName||i.Tienda)===s&&i.Resuelto!=='Si').length;if(n>max){max=n;ms=s;}});return `<strong>${ms}</strong> con ${max} incidencias pendientes.`; }},
+            { q: '¿Cuántos tickets SODCORP hay por tienda?',
+              a: () => { const stores=[...new Set(allIncidents.map(i=>i.DeviceStoreName||i.Tienda).filter(Boolean))].sort();const lines=stores.map(s=>{const n=allIncidents.filter(i=>(i.DeviceStoreName||i.Tienda)===s&&hasTicket(i)).length;return n>0?`<strong>${s}</strong>: ${n}`:null;}).filter(Boolean);return lines.length?lines.join('<br>'):'Ninguna tienda tiene tickets creados.'; }}
+        ]
+    },
+    {
+        cat: '🎫 Tickets',
+        qs: [
+            { q: '¿Cuántas incidencias tienen ticket creado?',
+              a: () => { const n=allIncidents.filter(i=>hasTicket(i)).length;return `<strong>${n}</strong> incidencias tienen ticket SODCORP creado.`; }},
+            { q: '¿Cuántas están sin respuesta (pendiente y sin ticket)?',
+              a: () => { const n=allIncidents.filter(i=>i.Resuelto!=='Si'&&!hasTicket(i)).length;return `<strong>${n}</strong> incidencias pendientes sin ticket creado.`; }},
+            { q: '¿Qué cámaras tienen ticket creado?',
+              a: () => { const list=allIncidents.filter(i=>hasTicket(i));if(!list.length)return 'Ninguna cámara tiene ticket creado.';return list.slice(0,8).map(i=>`Device <strong>${i.DeviceId}</strong> — ${i.DeviceStoreName||i.Tienda}`).join('<br>')+(list.length>8?`<br>…y ${list.length-8} más.`:''); }}
+        ]
+    },
+    {
+        cat: '⏱ Días de atraso',
+        qs: [
+            { q: '¿Qué cámaras llevan más días pendientes?',
+              a: () => { const p=allIncidents.filter(i=>i.Resuelto!=='Si').map(i=>({id:i.DeviceId,t:i.DeviceStoreName||i.Tienda,d:getIncidentDays(i.Fecha)})).sort((a,b)=>b.d-a.d).slice(0,6);return p.map(i=>`Device <strong>${i.id}</strong> (${i.t}): <strong>${i.d} días</strong>`).join('<br>'); }},
+            { q: '¿Cuántos días promedio llevan las pendientes?',
+              a: () => { const p=allIncidents.filter(i=>i.Resuelto!=='Si');if(!p.length)return 'No hay incidencias pendientes.';const avg=p.reduce((s,i)=>s+getIncidentDays(i.Fecha),0)/p.length;return `Promedio: <strong>${avg.toFixed(1)} días</strong> de atraso.`; }}
+        ]
+    },
+    {
+        cat: '🔁 Cámaras recurrentes',
+        qs: [
+            { q: '¿Qué cámaras tienen más incidencias históricas?',
+              a: () => {
+                const counts = {};
+                allIncidents.forEach(i => {
+                    const key = `Device ${i.DeviceId} (${i.DeviceStoreName||i.Tienda})`;
+                    counts[key] = (counts[key]||0) + 1;
+                });
+                const sorted = Object.entries(counts).filter(([,n])=>n>1).sort((a,b)=>b[1]-a[1]).slice(0,6);
+                if (!sorted.length) return 'Ninguna cámara tiene más de una incidencia registrada.';
+                return sorted.map(([k,n])=>`<strong>${k}</strong>: ${n} incidencias`).join('<br>');
+              }
+            },
+            { q: '¿Cuántas incidencias ha tenido un device específico?',
+              a: () => {
+                const counts = {};
+                allIncidents.forEach(i => { const k = String(i.DeviceId); counts[k]=(counts[k]||0)+1; });
+                const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+                return sorted.map(([id,n])=>{
+                    const inc = allIncidents.find(i=>String(i.DeviceId)===id);
+                    return `Device <strong>${id}</strong> (${inc?.DeviceStoreName||inc?.Tienda||'?'}): <strong>${n}</strong>`;
+                }).join('<br>');
+              }
+            },
+            { q: '¿Qué tienda tiene más cámaras con incidencias recurrentes?',
+              a: () => {
+                const storeCams = {};
+                const camCounts = {};
+                allIncidents.forEach(i => {
+                    const k = String(i.DeviceId);
+                    camCounts[k] = (camCounts[k]||0)+1;
+                    if (!storeCams[k]) storeCams[k] = i.DeviceStoreName||i.Tienda;
+                });
+                const storeTotals = {};
+                Object.entries(camCounts).forEach(([id,n]) => {
+                    if (n > 1) { const s=storeCams[id]||'?'; storeTotals[s]=(storeTotals[s]||0)+1; }
+                });
+                const sorted = Object.entries(storeTotals).sort((a,b)=>b[1]-a[1]);
+                if (!sorted.length) return 'No hay cámaras con incidencias recurrentes.';
+                return sorted.slice(0,5).map(([s,n])=>`<strong>${s}</strong>: ${n} cámara${n>1?'s':''} recurrente${n>1?'s':''}`).join('<br>');
+              }
+            }
+        ]
+    },
+    {
+        cat: '⏰ Más antiguas',
+        qs: [
+            { q: '¿Cuáles son las incidencias más antiguas sin resolver?',
+              a: () => {
+                const pend = allIncidents
+                    .filter(i => i.Resuelto !== 'Si')
+                    .map(i => ({id: getIncidentId(i), dev: i.DeviceId, tienda: i.DeviceStoreName||i.Tienda, tipo: i.Tipo, dias: getIncidentDays(i.Fecha)}))
+                    .sort((a,b) => b.dias - a.dias)
+                    .slice(0,5);
+                if (!pend.length) return 'No hay incidencias pendientes.';
+                return pend.map(i=>`<strong>${i.id||'—'}</strong> · Device ${i.dev} · ${i.tienda}<br><span style="color:var(--text-l)">${i.tipo} · ${i.dias} días</span>`).join('<br><br>');
+              }
+            },
+            { q: '¿Cuántas incidencias llevan más de 30 días sin resolver?',
+              a: () => {
+                const n = allIncidents.filter(i => i.Resuelto !== 'Si' && getIncidentDays(i.Fecha) > 30).length;
+                return n > 0 ? `<strong>${n}</strong> incidencias llevan más de 30 días pendientes.` : 'Ninguna incidencia supera los 30 días pendiente.';
+              }
+            }
+        ]
+    },
+    {
+        cat: '📊 Resumen',
+        qs: [
+            { q: '¿Cuántas incidencias hay en total?',
+              a: () => { const t=allIncidents.length,p=allIncidents.filter(i=>i.Resuelto!=='Si').length,r=allIncidents.filter(i=>i.Resuelto==='Si').length;return `Total: <strong>${t}</strong> — Pendientes: <strong>${p}</strong> — Resueltas: <strong>${r}</strong>`; }},
+            { q: '¿Cuál es el tipo de anomalía más frecuente?',
+              a: () => { const c={};allIncidents.forEach(i=>{const t=i.Tipo||'Sin tipo';c[t]=(c[t]||0)+1;});return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([t,n])=>`<strong>${t}</strong>: ${n}`).join('<br>'); }},
+            { q: '¿Cuántas son de Sodimac vs Sumato?',
+              a: () => { const sod=allIncidents.filter(i=>getIncidentResponsableTipoLabel(i)==='Sodimac').length,sum=allIncidents.filter(i=>getIncidentResponsableTipoLabel(i)==='Sumato').length;return `Sodimac: <strong>${sod}</strong> — Sumato: <strong>${sum}</strong>`; }}
+        ]
+    }
+];
+let chatCat=null;
+function renderChatQs(){const list=document.getElementById('chat-qs-list'),label=document.getElementById('chat-qs-label');list.innerHTML='';if(chatCat===null){label.textContent='Selecciona una categoría';FAQ.forEach((cat,i)=>{const btn=document.createElement('button');btn.className='cq-btn';btn.textContent=cat.cat;btn.onclick=()=>{chatCat=i;renderChatQs();};list.appendChild(btn);});}else{label.textContent=FAQ[chatCat].cat;FAQ[chatCat].qs.forEach(item=>{const btn=document.createElement('button');btn.className='cq-btn';btn.textContent=item.q;btn.onclick=()=>sendChatMsg(item.q,item.a);list.appendChild(btn);});const back=document.createElement('button');back.id='chat-back';back.textContent='← Volver';back.onclick=()=>{chatCat=null;renderChatQs();};list.appendChild(back);}}
+function sendChatMsg(q,aFn){const msgs=document.getElementById('chat-messages');const u=document.createElement('div');u.className='msg-user';u.textContent=q;msgs.appendChild(u);setTimeout(()=>{const b=document.createElement('div');b.className='msg-bot';b.innerHTML=aFn();msgs.appendChild(b);msgs.scrollTop=msgs.scrollHeight;},280);msgs.scrollTop=msgs.scrollHeight;}
+function toggleChat(){const panel=document.getElementById('chat-panel');const isOpen=panel.style.display==='flex';panel.style.display=isOpen?'none':'flex';if(!isOpen){document.getElementById('chat-badge').style.display='none';renderChatQs();}}
+
     </script>
+
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<!-- ── CHATBOT ── -->
+<div id="chat-btn" onclick="toggleChat()" title="Consultar datos">
+    <span>💬</span>
+    <div id="chat-badge">?</div>
+</div>
+<div id="chat-panel">
+    <div id="chat-header">
+        <img id="chat-header-img" src="https://i.imgur.com/wRjiu0U.jpeg" alt="Akira">
+        <div>
+            <div class="ch-name">Akira Assistant</div>
+            <div class="ch-sub">Consultas sobre el dashboard</div>
+        </div>
+        <button id="chat-close" onclick="toggleChat()">×</button>
+    </div>
+    <div id="chat-messages">
+        <div class="msg-bot">Hola 👋 Puedo responder preguntas sobre los datos del dashboard. ¿En qué te ayudo?</div>
+    </div>
+    <div id="chat-qs">
+        <div id="chat-qs-label">Selecciona una categoría</div>
+        <div id="chat-qs-list"></div>
+    </div>
+</div>
+
 </body>
 </html>
