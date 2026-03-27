@@ -628,11 +628,23 @@
             <span class="close" onclick="closeNuevaIncidenciaModal()">&times;</span>
         </div>
         <form id="addIncidentForm">
+            <!-- Toggle modo manual -->
+            <div class="form-group" style="margin-bottom:14px;">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:var(--text-m);">
+                    <input type="checkbox" id="toggleManualMode" style="width:15px;height:15px;cursor:pointer;">
+                    Cámara sin Device ID registrado
+                </label>
+            </div>
             <!-- Fila 1: Device + Tipo + Estado -->
             <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:14px;margin-bottom:14px;">
-                <div class="form-group">
+                <div class="form-group" id="groupDeviceId">
                     <label>Device ID</label>
-                    <input type="number" id="newDeviceId" required placeholder="Ej: 23">
+                    <input type="number" id="newDeviceId" placeholder="Ej: 23">
+                </div>
+                <div class="form-group" id="groupTiendaManual" style="display:none;">
+                    <label>Tienda <span style="color:#e53e3e">*</span></label>
+                    <input type="text" id="newTiendaManual" list="tiendasListManual" placeholder="Nombre de la tienda">
+                    <datalist id="tiendasListManual"></datalist>
                 </div>
                 <div class="form-group">
                     <label>Tipo de Incidencia</label>
@@ -654,6 +666,17 @@
                         <option value="Activa">Activa</option>
                         <option value="Inactiva">Inactiva</option>
                     </select>
+                </div>
+            </div>
+            <!-- Fila 1b: Campos extra modo manual -->
+            <div id="groupManualExtra" style="display:none;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                <div class="form-group">
+                    <label>Nombre / N° Cámara</label>
+                    <input type="text" id="newCamaraManual" placeholder="Ej: Cámara 03 acceso principal">
+                </div>
+                <div class="form-group">
+                    <label>IP (opcional)</label>
+                    <input type="text" id="newIPManual" placeholder="Ej: 192.168.1.100">
                 </div>
             </div>
             <!-- Fila 2: Descripción (full width) -->
@@ -1670,9 +1693,24 @@ function setupEvents() {
         applyFilters();
     });
     
+    // ── Toggle modo manual ──────────────────────────────────────────────────
+    document.getElementById('toggleManualMode').addEventListener('change', function() {
+        const manual = this.checked;
+        document.getElementById('groupDeviceId').style.display = manual ? 'none' : '';
+        document.getElementById('groupTiendaManual').style.display = manual ? '' : 'none';
+        document.getElementById('groupManualExtra').style.display = manual ? 'grid' : 'none';
+        document.getElementById('newDeviceId').value = '';
+        if (manual) {
+            const tiendas = [...new Set(allDevices.map(d => d.StoreName).filter(Boolean))].sort();
+            const dl = document.getElementById('tiendasListManual');
+            dl.innerHTML = tiendas.map(t => `<option value="${t}">`).join('');
+        }
+    });
+
     // ── Formulario nueva incidencia ────────────────────────────────────────
     document.getElementById('addIncidentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+        const esManual = document.getElementById('toggleManualMode').checked;
         const did = document.getElementById('newDeviceId').value.trim();
         const tipo = document.getElementById('newTipoAnomalia').value.trim();
         const estadoCamara = document.getElementById('newEstadoCamara').value.trim();
@@ -1683,28 +1721,37 @@ function setupEvents() {
         const responsable = document.getElementById('newResponsable').value.trim();
         const emailResponsable = (emailsResponsables[responsable] || '').trim();
 
+        const tiendaManual = esManual ? document.getElementById('newTiendaManual').value.trim() : '';
+        const camaraManual = esManual ? document.getElementById('newCamaraManual').value.trim() : '';
+        const ipManual = esManual ? document.getElementById('newIPManual').value.trim() : '';
+
         const missingFields = [];
-        if (!cliente) missingFields.push('Cliente');
-        if (!did) missingFields.push('DeviceID');
         if (!tipo) missingFields.push('Tipo Anomalía');
         if (!estadoCamara) missingFields.push('Estado');
         if (!responsableTipo) missingFields.push('Responsable');
         if (!desc) missingFields.push('Descripción');
         if (!registradoPor) missingFields.push('Registrado Por');
         if (!responsable) missingFields.push('Responsable Asignado');
+        if (esManual && !tiendaManual) missingFields.push('Tienda');
+        if (!esManual && !did) missingFields.push('DeviceID');
 
         if (missingFields.length) {
             alert('Debes completar todos los campos obligatorios:\n- ' + missingFields.join('\n- '));
             return;
         }
 
-        const dev = allDevices.find(d => String(d.DeviceId) === String(did));
-        if (!dev) { alert('DeviceID no encontrado'); return; }
-        
+        let dev = null;
+        if (!esManual) {
+            dev = allDevices.find(d => String(d.DeviceId) === String(did));
+            if (!dev) { alert('DeviceID no encontrado'); return; }
+        }
+
         const btn = document.getElementById('btnAddIncident');
         btn.disabled = true;
         btn.textContent = 'Agregando...';
-        
+
+        const tienda = esManual ? tiendaManual : (dev?.StoreName || '');
+
         try {
             const result = await postToAppsScript({
                 action: 'agregar_incidencia',
@@ -1717,27 +1764,28 @@ function setupEvents() {
                 cliente: 'Sodimac', Cliente: 'Sodimac',
                 registradoPor, Registrado_Por: registradoPor,
                 responsable, Responsable_Asignado: responsable,
-                emailResponsable
+                emailResponsable,
+                ...(esManual && { manual: true, tienda: tiendaManual, camara: camaraManual, ip: ipManual })
             });
 
             if (result.status === 'success') {
                 const idIncidencia = result.id || result.ID || result.idIncidencia || 'N/A';
-                const tienda = dev.StoreName || '';
                 // Abrir correo
-                openNuevaIncidenciaMailto({ id: idIncidencia, deviceId: did, tienda, tipo, descripcion: desc, registradoPor, responsable, cliente });
+                openNuevaIncidenciaMailto({ id: idIncidencia, deviceId: did || 'MANUAL', tienda, tipo, descripcion: desc, registradoPor, responsable, cliente });
                 // Agregar en memoria sin recargar
                 const newInc = normalizeIncidentRecord({
-                    DeviceId: did, Tienda: tienda, StoreName: tienda,
+                    DeviceId: did || '', Tienda: tienda, StoreName: tienda,
+                    Camara: camaraManual || (dev?.Name || ''),
+                    IP: ipManual || (dev?.IP || ''),
                     Tipo: tipo, Descripcion: desc, Estado: estadoCamara,
                     Responsable_Asignado: responsable, Registrado_Por: registradoPor,
                     ResponsableTipo: responsableTipo, Cliente: cliente,
                     Resuelto: 'No', Fecha: new Date().toLocaleString('es-CL'), ID: idIncidencia
                 });
-                const devObj = allDevices.find(d => String(d.DeviceId) === String(did));
                 newInc.ID = idIncidencia;
-                newInc.__uiKey = `${idIncidencia}::${did}::${allIncidents.length}`;
-                newInc.CameraActive = devObj ? String(devObj.Active) : '1';
-                newInc.DeviceName = devObj?.Name || '';
+                newInc.__uiKey = `${idIncidencia}::${did || 'M'}::${allIncidents.length}`;
+                newInc.CameraActive = dev ? String(dev.Active) : '1';
+                newInc.DeviceName = camaraManual || dev?.Name || '';
                 newInc.DeviceStoreName = tienda;
                 allIncidents.push(newInc);
                 closeNuevaIncidenciaModal();
