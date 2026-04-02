@@ -806,14 +806,7 @@ const APPS_SCRIPT_URLS = [
     'https://script.google.com/macros/s/AKfycby0Tqcg7GrErF5YrvXnoA6EHTlZ0dvkRCrjUqHowaEkJ0EAAYB2Tma7Uejhtll9Uxd4iA/exec'
 ];
 let activeAppsScriptUrl = APPS_SCRIPT_URLS[0];
-const USER_PASSWORDS = {
-    'Andrea Montes':      'am2026',
-    'Camila Acuña':       'ca2026',
-    'Victor Catalán':     'vc2026',
-    'Cael Tarifa':        'ct2026',
-    'Ricardo Ulloa':      'ru2026',
-    'Katherine Martinez': 'km2026'
-};
+const API_SECRET = 'Scm-xK9p-rT4q-2026';
 let loginAttempts = 0;
 let loggedUser = '';
 let currentDetailIncidentId = '';
@@ -1003,41 +996,56 @@ function togglePwd() {
     }
 }
 
-function validateLogin() {
+async function validateLogin() {
     const selectedUser = document.getElementById('loginUser').value;
     const pwd = document.getElementById('loginPassword').value;
     const errDiv = document.getElementById('loginError');
     const attDiv = document.getElementById('loginAttempts');
-    
+    const loginBtn = document.querySelector('.login-btn-dark');
+
     if (!loginUsers.includes(selectedUser)) {
         errDiv.textContent = 'Selecciona un usuario válido';
-        errDiv.style.display = 'block';
+        errDiv.style.opacity = '1';
         return;
     }
-    const correctPwd = USER_PASSWORDS[selectedUser] || '';
-    if (pwd === correctPwd) {
-        localStorage.setItem('auth', 'true');
-        localStorage.setItem('user', selectedUser);
-        loggedUser = selectedUser;
-        document.getElementById('loginModal').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-        document.getElementById('navUser').textContent = selectedUser;
-        // Registrar sesión en el script
-        postToAppsScript({ action: 'login', usuario: selectedUser }).catch(() => {});
-        loadData();
-    } else {
-        loginAttempts++;
-        if (loginAttempts >= 3) {
-            errDiv.textContent = '❌ Acceso bloqueado. Demasiados intentos.';
+    if (loginAttempts >= 3) return;
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Verificando...';
+
+    try {
+        const result = await postToAppsScript({ action: 'login', usuario: selectedUser, password: pwd });
+        if (result.valid) {
+            localStorage.setItem('auth', 'true');
+            localStorage.setItem('user', selectedUser);
+            loggedUser = selectedUser;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('navUser').textContent = selectedUser;
+            loadData();
+        } else {
+            loginAttempts++;
+            if (loginAttempts >= 3) {
+                errDiv.textContent = '❌ Acceso bloqueado. Demasiados intentos.';
+                errDiv.style.opacity = '1';
+                document.getElementById('loginPassword').disabled = true;
+                loginBtn.disabled = true;
+                return;
+            }
+            errDiv.textContent = `Contraseña incorrecta. Intento ${loginAttempts} de 3`;
             errDiv.style.opacity = '1';
-            document.getElementById('loginPassword').disabled = true;
-            return;
+            attDiv.textContent = `${3 - loginAttempts} intentos restantes`;
+            document.getElementById('loginPassword').value = '';
+            setTimeout(() => { errDiv.style.opacity = '0'; }, 2500);
         }
-        errDiv.textContent = `Contraseña incorrecta. Intento ${loginAttempts} de 3`;
+    } catch (err) {
+        errDiv.textContent = '❌ Error de conexión. Intenta nuevamente.';
         errDiv.style.opacity = '1';
-        attDiv.textContent = `${3 - loginAttempts} intentos restantes`;
-        document.getElementById('loginPassword').value = '';
-        setTimeout(() => { errDiv.style.opacity = '0'; }, 2500);
+    } finally {
+        if (loginAttempts < 3) {
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'INGRESAR';
+        }
     }
 }
 
@@ -1107,7 +1115,7 @@ async function postToAppsScript(payload) {
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {'Content-Type': 'text/plain;charset=utf-8'},
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ ...payload, apiKey: API_SECRET })
             });
             const rawText = await response.text();
             let result = null;

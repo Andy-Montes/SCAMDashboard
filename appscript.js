@@ -1,4 +1,19 @@
 // ==========================================
+// 0. SEGURIDAD
+// ==========================================
+
+const API_SECRET = 'Scm-xK9p-rT4q-2026';
+
+const USER_PASSWORDS = {
+  'Andrea Montes':      'am2026',
+  'Camila Acuña':       'ca2026',
+  'Victor Catalán':     'vc2026',
+  'Cael Tarifa':        'ct2026',
+  'Ricardo Ulloa':      'ru2026',
+  'Katherine Martinez': 'km2026'
+};
+
+// ==========================================
 // 1. CONFIGURACIÓN Y MAPEOS
 // ==========================================
 
@@ -299,6 +314,12 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    if (normalizeText(data.apiKey) !== API_SECRET) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'error', error: 'No autorizado' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const action  = normalizeText(data.action);
     const usuario = normalizeText(data.registradoPor || data.Registrado_Por || data.usuario || '');
 
@@ -318,9 +339,11 @@ function doPost(e) {
     // ------------------------------------------
     if (action === 'login') {
       const usr = normalizeText(data.usuario || '');
-      if (usr) registrarSesion(usr);
+      const pwd = normalizeText(data.password || '');
+      const valid = !!(usr && USER_PASSWORDS[usr] && USER_PASSWORDS[usr] === pwd);
+      if (valid) registrarSesion(usr);
       return ContentService
-        .createTextOutput(JSON.stringify({ status: 'success' }))
+        .createTextOutput(JSON.stringify({ status: 'success', valid: valid }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
