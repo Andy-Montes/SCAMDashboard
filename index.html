@@ -461,7 +461,6 @@
                 <optgroup label="Externos">
                     <option value="Ricardo Ulloa">Ricardo Ulloa</option>
                     <option value="Katherine Martinez">Katherine Martinez</option>
-                    <option value="Magda Arredondo">Magda Arredondo</option>
                 </optgroup>
             </select>
 
@@ -656,6 +655,7 @@
                         <option value="Camara mal posicionada/Reenfoque">Camara mal posicionada/Reenfoque</option>
                         <option value="Obstrucción de cámara">Obstrucción de cámara</option>
                         <option value="Error de configuración">Error de configuración</option>
+                        <option value="Faltan datos de configuración">Faltan datos de configuración</option>
                         <option value="Problema de Red">Problema de Red</option>
                     </select>
                 </div>
@@ -710,7 +710,6 @@
                         <optgroup label="Externos">
                             <option value="Ricardo Ulloa">Ricardo Ulloa</option>
                             <option value="Katherine Martinez">Katherine Martinez</option>
-                            <option value="Magda Arredondo">Magda Arredondo</option>
                         </optgroup>
                     </select>
                 </div>
@@ -787,7 +786,6 @@
                         <option value="Camila Acuña">Camila Acuña</option>
                         <option value="Ricardo Ulloa">Ricardo Ulloa</option>
                         <option value="Katherine Martinez">Katherine Martinez</option>
-                        <option value="Magda Arredondo">Magda Arredondo</option>
                     </select>
                 </div>
                 <div class="form-group" style="display:flex; align-items:flex-end;">
@@ -808,8 +806,7 @@ const USER_PASSWORDS = {
     'Victor Catalán':     'vc2026',
     'Cael Tarifa':        'ct2026',
     'Ricardo Ulloa':      'ru2026',
-    'Katherine Martinez': 'km2026',
-    'Magda Arredondo':    'ma2026'
+    'Katherine Martinez': 'km2026'
 };
 let loginAttempts = 0;
 let loggedUser = '';
@@ -823,8 +820,7 @@ const loginUsers = [
     'Victor Catalán',
     'Cael Tarifa',
     'Ricardo Ulloa',
-    'Katherine Martinez',
-    'Magda Arredondo'
+    'Katherine Martinez'
 ];
 
 const userEmails = {
@@ -833,8 +829,7 @@ const userEmails = {
     'Victor Catalán':     'vcatalan@sumatoid.com',
     'Cael Tarifa':        'ctarifa@sumatoid.com',
     'Ricardo Ulloa':      'ext_rjulloah@sodimac.cl',
-    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
-    'Magda Arredondo':    'ext_marredondo@sodimac.cl'
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl'
 };
 
 const emailsResponsables = {
@@ -842,22 +837,19 @@ const emailsResponsables = {
     'Cael Tarifa':        'ctarifa@sumatoid.com',
     'Camila Acuña':       'cacuna@sumatoid.com',
     'Ricardo Ulloa':      'ext_rjulloah@sodimac.cl',
-    'Katherine Martinez': 'kathmartinezg@sodimac.cl',
-    'Magda Arredondo':    'ext_marredondo@sodimac.cl'
+    'Katherine Martinez': 'kathmartinezg@sodimac.cl'
 };
 
 // Destinatarios fijos de notificaciones
 const NOTIF_NUEVA_INCIDENCIA = [
     'ext_rjulloah@sodimac.cl',       // Ricardo Ulloa
     'kathmartinezg@sodimac.cl',      // Katherine Martinez
-    'ext_marredondo@sodimac.cl',     // Magda Arredondo
     'amontes@sumatoid.com'           // Andrea Montes
 ];
 
 const NOTIF_RESUELTA = [
     'ext_rjulloah@sodimac.cl',       // Ricardo Ulloa
     'kathmartinezg@sodimac.cl',      // Katherine Martinez
-    'ext_marredondo@sodimac.cl',     // Magda Arredondo
     'amontes@sumatoid.com',          // Andrea Montes
     'cacuna@sumatoid.com'            // Camila Acuña
 ];
@@ -869,6 +861,7 @@ const TIPOS_ANOMALIA = [
     'Camara mal posicionada/Reenfoque',
     'Obstrucción de cámara',
     'Error de configuración',
+    'Faltan datos de configuración',
     'Problema de Red'
 ];
 
@@ -881,6 +874,7 @@ const MAP_TIPOS = {
     'Problema de imagen': 'PI',
     'Sin acceso a Camara': 'SA',
     'Sin acceso a cámara': 'SA',
+    'Faltan datos de configuración': 'FD',
     'Problema de Red': 'PR'
 };
 
@@ -1498,6 +1492,7 @@ function getTipoClass(t) {
     if (tl.includes('problema de imagen') || tl.includes('imagen')) return 'tipo-imagen';
     if (tl.includes('sin acceso')) return 'tipo-acceso';
     if (tl.includes('problema de red')) return 'tipo-red';
+    if (tl.includes('faltan datos')) return 'tipo-otro';
     return 'tipo-otro';
 }
 
@@ -1868,7 +1863,7 @@ async function resolveIncident(idInc) {
             closeDetailModal();
             applyFilters();
             renderKPIs();
-            // Abrir correo de resolución a Ricardo, Kathy, Magda, Andrea y Cami
+            // Abrir correo de resolución a Ricardo, Kathy, Andrea y Cami
             openResueltaMailto(inc);
         } else {
             alert('❌ Error: ' + (result.error || 'Error desconocido'));
