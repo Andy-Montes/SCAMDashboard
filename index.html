@@ -787,8 +787,12 @@
                     </select>
                 </div>
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Comentario / Observaciones</label>
-                    <textarea id="editObservaciones" rows="3" placeholder="Agrega o edita observaciones..."></textarea>
+                    <label>Historial de comentarios</label>
+                    <div id="editComentariosHistorial" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:8px 10px;min-height:48px;max-height:120px;overflow-y:auto;font-size:0.8rem;white-space:pre-wrap;color:#475569;"></div>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Agregar comentario</label>
+                    <textarea id="editNuevoComentario" rows="2" placeholder="Escribe un nuevo comentario..."></textarea>
                 </div>
                 <div class="form-group" style="display:flex; align-items:flex-end;">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
@@ -951,7 +955,8 @@ function normalizeIncidentRecord(raw = {}) {
     normalized.Responsable = normalized.Responsable_Asignado;
     normalized.ResponsableTipo = inferResponsableTipo(raw) || normalizeResponsableTipo(raw.Responsable ?? raw.responsable ?? '');
     normalized.Email_Responsable = raw.Email_Responsable ?? raw.EmailResponsable ?? raw['Email Responsable'] ?? raw.emailResponsable ?? '';
-    normalized.Observaciones = raw.Observaciones ?? raw.Observacion ?? raw.Observación ?? raw.observacion ?? '';
+    normalized.Observaciones = raw.Observaciones ?? '';
+    normalized.Comentarios = raw.Comentarios ?? '';
 
     return normalized;
 }
@@ -1809,7 +1814,15 @@ function setupEvents() {
         const responsableTipo = document.getElementById('editResponsableTipo').value;
         const responsable = document.getElementById('editResponsable').value;
         const emailResponsable = (emailsResponsables[responsable] || '').trim();
-        const observaciones = document.getElementById('editObservaciones').value;
+        const nuevoComentario = document.getElementById('editNuevoComentario').value.trim();
+        const inc = findIncidentByRef(idInc);
+        let comentarios = (inc && inc.Comentarios) ? inc.Comentarios : '';
+        if (nuevoComentario) {
+            const now = new Date();
+            const fecha = now.toLocaleDateString('es-CL') + ' ' + now.toLocaleTimeString('es-CL', {hour:'2-digit', minute:'2-digit'});
+            const entrada = `[${fecha} - ${loggedUser}]: ${nuevoComentario}`;
+            comentarios = comentarios ? comentarios + '\n' + entrada : entrada;
+        }
 
         try {
             if (!idInc) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
@@ -1822,11 +1835,10 @@ function setupEvents() {
                 responsableTipo, ResponsableTipo: responsableTipo,
                 responsable, Responsable_Asignado: responsable,
                 emailResponsable,
-                observaciones, Observaciones: observaciones
+                comentarios, Comentarios: comentarios
             });
             if (result.status === 'success') {
                 // Actualizar en memoria sin recargar
-                const inc = findIncidentByRef(idInc);
                 if (inc) {
                     inc.Tipo = tipo; inc.TipoAnomalia = tipo;
                     inc.Estado = estadoCamara;
@@ -1835,7 +1847,7 @@ function setupEvents() {
                     inc.ResponsableTipo = responsableTipo;
                     inc.Responsable_Asignado = responsable;
                     inc.Responsable = responsable;
-                    inc.Observaciones = observaciones;
+                    inc.Comentarios = comentarios;
                 }
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
@@ -1906,7 +1918,8 @@ function editIncident(idInc) {
         editResp.appendChild(opt);
     }
     editResp.value = assignedValue || 'Victor Catalán';
-    document.getElementById('editObservaciones').value = inc.Observaciones || '';
+    document.getElementById('editComentariosHistorial').textContent = inc.Comentarios || '(sin comentarios)';
+    document.getElementById('editNuevoComentario').value = '';
     document.getElementById('editModal').style.display = 'block';
 }
 
