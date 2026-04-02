@@ -371,6 +371,7 @@ function doPost(e) {
       if (userRow === -1) {
         // Primera vez: validar contra contraseñas iniciales
         const initialPwd = USER_PASSWORDS[usr] || '';
+        Logger.log('[login] usr="%s" pwd="%s" initialPwd="%s" match=%s', usr, pwd, initialPwd, pwd === initialPwd);
         if (!initialPwd || pwd !== initialPwd) {
           return ContentService
             .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
