@@ -347,6 +347,23 @@ function doPost(e) {
           .setMimeType(ContentService.MimeType.JSON);
       }
 
+      // --- Verificar bloqueo server-side ---
+      const props = PropertiesService.getScriptProperties();
+      const lockKey = 'lockout_' + usr;
+      const lockRaw = props.getProperty(lockKey);
+      if (lockRaw) {
+        const lock = JSON.parse(lockRaw);
+        const elapsed = (Date.now() - lock.since) / 60000; // minutos
+        if (elapsed < 15) {
+          const minutesLeft = Math.ceil(15 - elapsed);
+          return ContentService
+            .createTextOutput(JSON.stringify({ status: 'success', valid: false, locked: true, minutesLeft: minutesLeft }))
+            .setMimeType(ContentService.MimeType.JSON);
+        } else {
+          props.deleteProperty(lockKey);
+        }
+      }
+
       // Buscar usuario en hoja Usuarios
       let usuariosSheet = ss.getSheetByName(SHEETS.USUARIOS);
       if (!usuariosSheet) {
@@ -368,16 +385,27 @@ function doPost(e) {
         }
       }
 
+      const attKey = 'attempts_' + usr;
+
       if (userRow === -1) {
         // Primera vez: validar contra contraseñas iniciales
         const initialPwd = USER_PASSWORDS[usr] || '';
-        Logger.log('[login] usr="%s" pwd="%s" initialPwd="%s" match=%s', usr, pwd, initialPwd, pwd === initialPwd);
         if (!initialPwd || pwd !== initialPwd) {
+          const attempts = parseInt(props.getProperty(attKey) || '0') + 1;
+          if (attempts >= 3) {
+            props.setProperty(lockKey, JSON.stringify({ since: Date.now() }));
+            props.deleteProperty(attKey);
+            return ContentService
+              .createTextOutput(JSON.stringify({ status: 'success', valid: false, locked: true, minutesLeft: 15 }))
+              .setMimeType(ContentService.MimeType.JSON);
+          }
+          props.setProperty(attKey, String(attempts));
           return ContentService
             .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
             .setMimeType(ContentService.MimeType.JSON);
         }
         // Crear entrada en hoja Usuarios
+        props.deleteProperty(attKey);
         usuariosSheet.appendRow([usr, pwd, true]);
         registrarSesion(usr);
         return ContentService
@@ -387,10 +415,20 @@ function doPost(e) {
 
       // Usuario ya registrado
       if (pwd !== storedPwd) {
+        const attempts = parseInt(props.getProperty(attKey) || '0') + 1;
+        if (attempts >= 3) {
+          props.setProperty(lockKey, JSON.stringify({ since: Date.now() }));
+          props.deleteProperty(attKey);
+          return ContentService
+            .createTextOutput(JSON.stringify({ status: 'success', valid: false, locked: true, minutesLeft: 15 }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        props.setProperty(attKey, String(attempts));
         return ContentService
           .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
           .setMimeType(ContentService.MimeType.JSON);
       }
+      props.deleteProperty(attKey);
       registrarSesion(usr);
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'success', valid: true, mustChangePassword: esInicial }))
