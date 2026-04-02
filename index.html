@@ -1028,6 +1028,7 @@ async function validateLogin() {
 
     try {
         const result = await postToAppsScript({ action: 'login', usuario: selectedUser, password: pwd });
+        console.log('[login result]', JSON.stringify(result));
         if (result.valid) {
             if (result.mustChangePassword) {
                 // Mostrar paso 2: crear contraseña
