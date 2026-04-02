@@ -474,6 +474,19 @@
             <div id="loginError" class="login-error-dark" style="opacity:0;width:260px;text-align:center;"></div>
             <div id="loginAttempts" class="login-attempts-dark" style="width:260px;text-align:center;"></div>
         </div>
+
+        <!-- PASO 2: Crear nueva contraseña -->
+        <div id="changePasswordStep" style="display:none;flex-direction:column;align-items:flex-start;width:260px;gap:0;">
+            <div style="color:rgba(255,255,255,.9);font-size:13px;margin-bottom:16px;line-height:1.5;">
+                👋 Primera vez que ingresas.<br>Crea tu contraseña personal.
+            </div>
+            <div class="login-label">Nueva contraseña</div>
+            <input type="password" id="newPwd1" class="login-input-dark" placeholder="Mínimo 6 caracteres" style="width:260px;margin-bottom:14px;">
+            <div class="login-label">Confirmar contraseña</div>
+            <input type="password" id="newPwd2" class="login-input-dark" placeholder="Repite la contraseña" style="width:260px;">
+            <button onclick="submitCambiarPassword()" class="login-btn-dark" style="margin-top:16px;">GUARDAR CONTRASEÑA</button>
+            <div id="changePwdError" class="login-error-dark" style="opacity:0;width:260px;text-align:center;"></div>
+        </div>
     </div>
 
     <div id="mainContent" style="display:none;">
@@ -1016,6 +1029,12 @@ async function validateLogin() {
     try {
         const result = await postToAppsScript({ action: 'login', usuario: selectedUser, password: pwd });
         if (result.valid) {
+            if (result.mustChangePassword) {
+                // Mostrar paso 2: crear contraseña
+                document.querySelector('#loginModal > div:nth-child(4)').style.display = 'none';
+                document.getElementById('changePasswordStep').style.display = 'flex';
+                return;
+            }
             localStorage.setItem('auth', 'true');
             localStorage.setItem('user', selectedUser);
             loggedUser = selectedUser;
@@ -1046,6 +1065,55 @@ async function validateLogin() {
             loginBtn.disabled = false;
             loginBtn.textContent = 'INGRESAR';
         }
+    }
+}
+
+async function submitCambiarPassword() {
+    const selectedUser = document.getElementById('loginUser').value;
+    const pwd1 = document.getElementById('newPwd1').value;
+    const pwd2 = document.getElementById('newPwd2').value;
+    const errDiv = document.getElementById('changePwdError');
+    const btn = document.querySelector('#changePasswordStep .login-btn-dark');
+    const pwdActual = document.getElementById('loginPassword').value;
+
+    if (pwd1.length < 6) {
+        errDiv.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        errDiv.style.opacity = '1';
+        return;
+    }
+    if (pwd1 !== pwd2) {
+        errDiv.textContent = 'Las contraseñas no coinciden.';
+        errDiv.style.opacity = '1';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+    try {
+        const result = await postToAppsScript({
+            action: 'cambiar_password',
+            usuario: selectedUser,
+            passwordActual: pwdActual,
+            passwordNueva: pwd1
+        });
+        if (result.status === 'success') {
+            localStorage.setItem('auth', 'true');
+            localStorage.setItem('user', selectedUser);
+            loggedUser = selectedUser;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+            document.getElementById('navUser').textContent = selectedUser;
+            loadData();
+        } else {
+            errDiv.textContent = '❌ ' + (result.error || 'Error al guardar');
+            errDiv.style.opacity = '1';
+        }
+    } catch (err) {
+        errDiv.textContent = '❌ Error de conexión.';
+        errDiv.style.opacity = '1';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'GUARDAR CONTRASEÑA';
     }
 }
 

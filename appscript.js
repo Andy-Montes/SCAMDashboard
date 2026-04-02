@@ -65,7 +65,8 @@ const SHEETS = {
   CAMARAS:            'Total Cámaras',
   MANAGER:            'CamarasManager',
   LOG_SESIONES:       'Log_Sesiones',
-  LOG_MODIFICACIONES: 'Log_Modificaciones'
+  LOG_MODIFICACIONES: 'Log_Modificaciones',
+  USUARIOS:           'Usuarios'
 };
 
 // ==========================================
@@ -340,10 +341,101 @@ function doPost(e) {
     if (action === 'login') {
       const usr = normalizeText(data.usuario || '');
       const pwd = normalizeText(data.password || '');
-      const valid = !!(usr && USER_PASSWORDS[usr] && USER_PASSWORDS[usr] === pwd);
-      if (valid) registrarSesion(usr);
+      if (!usr || !pwd) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // Buscar usuario en hoja Usuarios
+      let usuariosSheet = ss.getSheetByName(SHEETS.USUARIOS);
+      if (!usuariosSheet) {
+        usuariosSheet = ss.insertSheet(SHEETS.USUARIOS);
+        usuariosSheet.appendRow(['Usuario', 'Password', 'EsInicial']);
+      }
+
+      const usrData = usuariosSheet.getDataRange().getValues();
+      let userRow = -1;
+      let storedPwd = '';
+      let esInicial = true;
+
+      for (let i = 1; i < usrData.length; i++) {
+        if (normalizeText(String(usrData[i][0])) === usr) {
+          userRow = i + 1;
+          storedPwd = normalizeText(String(usrData[i][1]));
+          esInicial = usrData[i][2] === true || String(usrData[i][2]).toLowerCase() === 'true';
+          break;
+        }
+      }
+
+      if (userRow === -1) {
+        // Primera vez: validar contra contraseñas iniciales
+        const initialPwd = USER_PASSWORDS[usr] || '';
+        if (!initialPwd || pwd !== initialPwd) {
+          return ContentService
+            .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+        // Crear entrada en hoja Usuarios
+        usuariosSheet.appendRow([usr, pwd, true]);
+        registrarSesion(usr);
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'success', valid: true, mustChangePassword: true }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      // Usuario ya registrado
+      if (pwd !== storedPwd) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'success', valid: false }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      registrarSesion(usr);
       return ContentService
-        .createTextOutput(JSON.stringify({ status: 'success', valid: valid }))
+        .createTextOutput(JSON.stringify({ status: 'success', valid: true, mustChangePassword: esInicial }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // ------------------------------------------
+    // CAMBIAR CONTRASEÑA
+    // ------------------------------------------
+    if (action === 'cambiar_password') {
+      const usr        = normalizeText(data.usuario || '');
+      const pwdActual  = normalizeText(data.passwordActual || '');
+      const pwdNueva   = normalizeText(data.passwordNueva || '');
+
+      if (!usr || !pwdActual || !pwdNueva) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'error', error: 'Faltan datos' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const usuariosSheet = ss.getSheetByName(SHEETS.USUARIOS);
+      if (!usuariosSheet) {
+        return ContentService
+          .createTextOutput(JSON.stringify({ status: 'error', error: 'Hoja Usuarios no encontrada' }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+
+      const usrData = usuariosSheet.getDataRange().getValues();
+      for (let i = 1; i < usrData.length; i++) {
+        if (normalizeText(String(usrData[i][0])) === usr) {
+          if (normalizeText(String(usrData[i][1])) !== pwdActual) {
+            return ContentService
+              .createTextOutput(JSON.stringify({ status: 'error', error: 'Contraseña actual incorrecta' }))
+              .setMimeType(ContentService.MimeType.JSON);
+          }
+          usuariosSheet.getRange(i + 1, 2).setValue(pwdNueva);  // nueva contraseña
+          usuariosSheet.getRange(i + 1, 3).setValue(false);     // ya no es inicial
+          registrarModificacion(usr, 'CambiarPassword', '', '');
+          return ContentService
+            .createTextOutput(JSON.stringify({ status: 'success', message: 'Contraseña actualizada' }))
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      }
+
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'error', error: 'Usuario no encontrado' }))
         .setMimeType(ContentService.MimeType.JSON);
     }
 
