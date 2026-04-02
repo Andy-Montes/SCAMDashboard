@@ -529,13 +529,12 @@
                     <div class="kpi-subtitle" id="kpiResueltasPct">--</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Con Ticket</div>
+                    <div class="kpi-label">Ticket Cargado</div>
                     <div class="kpi-value kpi-green" id="kpiConTicket">--</div>
                 </div>
                 <div class="kpi-card">
-                    <div class="kpi-label">Sin Respuesta</div>
+                    <div class="kpi-label">Respuesta Pendiente</div>
                     <div class="kpi-value kpi-yellow" id="kpiSinRespuesta">--</div>
-                    <div class="kpi-subtitle">Pendientes sin ticket</div>
                 </div>
             </div>
             
@@ -733,7 +732,6 @@
             <div class="modal-actions detail-modal-actions">
                 <button class="btn-resolve" id="detailResolveBtn">Resolver</button>
                 <button class="btn-edit" id="detailEditBtn">Editar</button>
-                <button class="btn-delete" id="detailDeleteBtn">Eliminar</button>
                 <button class="btn-primary" id="detailEmailBtn">Enviar email</button>
                 <button class="btn-primary" id="detailCopyBtn">Copiar</button>
             </div>
@@ -787,6 +785,10 @@
                         <option value="Ricardo Ulloa">Ricardo Ulloa</option>
                         <option value="Katherine Martinez">Katherine Martinez</option>
                     </select>
+                </div>
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>Comentario / Observaciones</label>
+                    <textarea id="editObservaciones" rows="3" placeholder="Agrega o edita observaciones..."></textarea>
                 </div>
                 <div class="form-group" style="display:flex; align-items:flex-end;">
                     <button type="submit" class="btn-primary">Guardar Cambios</button>
@@ -1586,20 +1588,17 @@ function openDetailModal(idInc) {
 
     const resolveBtn = document.getElementById('detailResolveBtn');
     const editBtn = document.getElementById('detailEditBtn');
-    const deleteBtn = document.getElementById('detailDeleteBtn');
     const hasId = Boolean(incidentId);
 
     resolveBtn.disabled = resolved || !hasId;
     resolveBtn.textContent = resolved ? 'Resuelta' : 'Resolver';
     editBtn.disabled = !hasId;
-    deleteBtn.disabled = !hasId;
-    [resolveBtn, editBtn, deleteBtn].forEach(btn => {
+    [resolveBtn, editBtn].forEach(btn => {
         btn.title = !hasId ? 'Esta incidencia no tiene ID en la hoja' : '';
     });
 
     document.getElementById('detailResolveBtn').onclick = () => resolveIncident(currentDetailIncidentKey);
     editBtn.onclick = () => { closeDetailModal(); editIncident(currentDetailIncidentKey); };
-    deleteBtn.onclick = () => deleteIncident(currentDetailIncidentKey);
     document.getElementById('detailEmailBtn').onclick = () => sendIncidentEmail(currentDetailIncidentKey);
     document.getElementById('detailCopyBtn').onclick = () => copyCard(currentDetailIncidentKey);
     document.getElementById('detailModal').style.display = 'block';
@@ -1810,7 +1809,8 @@ function setupEvents() {
         const responsableTipo = document.getElementById('editResponsableTipo').value;
         const responsable = document.getElementById('editResponsable').value;
         const emailResponsable = (emailsResponsables[responsable] || '').trim();
-        
+        const observaciones = document.getElementById('editObservaciones').value;
+
         try {
             if (!idInc) { alert('Esta incidencia no tiene ID único en la hoja.'); return; }
             const result = await postToAppsScript({
@@ -1821,7 +1821,8 @@ function setupEvents() {
                 registradoPor, Registrado_Por: registradoPor,
                 responsableTipo, ResponsableTipo: responsableTipo,
                 responsable, Responsable_Asignado: responsable,
-                emailResponsable
+                emailResponsable,
+                observaciones, Observaciones: observaciones
             });
             if (result.status === 'success') {
                 // Actualizar en memoria sin recargar
@@ -1834,6 +1835,7 @@ function setupEvents() {
                     inc.ResponsableTipo = responsableTipo;
                     inc.Responsable_Asignado = responsable;
                     inc.Responsable = responsable;
+                    inc.Observaciones = observaciones;
                 }
                 alert('✅ Incidencia editada correctamente');
                 closeEditModal();
@@ -1904,6 +1906,7 @@ function editIncident(idInc) {
         editResp.appendChild(opt);
     }
     editResp.value = assignedValue || 'Victor Catalán';
+    document.getElementById('editObservaciones').value = inc.Observaciones || '';
     document.getElementById('editModal').style.display = 'block';
 }
 
